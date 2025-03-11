@@ -169,64 +169,6 @@ def process_image():
         print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
-@app.route('/refine/<session_id>', methods=['POST'])
-def refine_content(session_id):
-    """Endpoint to refine the narrative and regenerate code"""
-    try:
-        data = request.json
-        revised_narrative = data.get('narrative')
-        
-        if not revised_narrative:
-            return jsonify({"error": "No revised narrative provided"}), 400
-        
-        # Get the project data from Supabase
-        result = supabase.table("manim_projects").select("*").eq("id", session_id).execute()
-        
-        if not result.data:
-            return jsonify({"error": "Project not found"}), 404
-        
-        # Update the narrative in storage
-        narrative_path = f"{session_id}/narrative.txt"
-        supabase.storage.from_("manim-generator").update(
-            narrative_path,
-            revised_narrative.encode('utf-8')
-        )
-        narrative_url = supabase.storage.from_("manim-generator").get_public_url(narrative_path)
-        
-        # Regenerate Manim code
-        manim_code = generate_manim_code(revised_narrative, session_id)
-        
-        # Update Manim code in storage
-        code_path = f"{session_id}/scene.py"
-        supabase.storage.from_("manim-generator").update(
-            code_path,
-            manim_code.encode('utf-8')
-        )
-        code_url = supabase.storage.from_("manim-generator").get_public_url(code_path)
-        
-        # Update project in database
-        supabase.table("manim_projects").update({
-            "narrative": revised_narrative,
-            "status": "code_updated",
-            "narrative_url": narrative_url,
-            "code_url": code_url
-        }).eq("id", session_id).execute()
-        
-        # Return paths and session_id for further interaction
-        return jsonify({
-            "session_id": session_id,
-            "narrative": revised_narrative,
-            "narrative_url": narrative_url,
-            "code_url": code_url,
-            "status": "refinement_complete",
-            "message": "Refinement complete. You can now render the video."
-        })
-    
-    except Exception as e:
-        import traceback
-        print(traceback.format_exc())
-        return jsonify({"error": str(e)}), 500
-
 def generate_narrative(image, session_id):
     """Generate narrative script from image using liteLLM with OpenRouter"""
     # Convert image to base64
