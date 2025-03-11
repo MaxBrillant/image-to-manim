@@ -57,42 +57,48 @@ To use Modal for cloud rendering:
    modal deploy modal_renderer.py
    ```
 
-## Running the Application
+## Running the API
 
-### Development Mode
+1. First, deploy the Modal renderer (if not already deployed):
 
-To run the application in development mode:
+   ```
+   modal deploy modal_renderer.py
+   ```
 
-```
-python app.py
-```
+2. Start the API server with:
+   ```
+   python app.py
+   ```
 
-### Production Mode
+The server will run at `http://localhost:5000`
 
-For production deployment, use Gunicorn WSGI server instead of the Flask development server:
+### Complete Setup Sequence
 
-1. Install Gunicorn (included in requirements.txt)
-2. Run the application using one of the provided scripts:
+For a fresh installation, follow these steps in order:
 
-On Linux/Mac:
+1. Install dependencies:
 
-```
-./start_server.sh
-```
+   ```
+   pip install -r requirements.txt
+   pip install modal
+   ```
 
-On Windows:
+2. Authenticate with Modal:
 
-```
-start_server.bat
-```
+   ```
+   modal token new
+   ```
 
-Or run Gunicorn directly:
+3. Deploy the Modal renderer:
 
-```
-gunicorn --workers=4 --bind=0.0.0.0:5000 wsgi:app
-```
+   ```
+   modal deploy modal_renderer.py
+   ```
 
-You can adjust the number of workers based on your server's CPU cores (a common formula is 2 \* number_of_cores + 1).
+4. Start the Flask API server:
+   ```
+   python app.py
+   ```
 
 ## API Endpoints
 
