@@ -1,9 +1,10 @@
 flask==2.3.3
 flask-cors==4.0.0
-pillow
+pillow==11.1.0
 python-dotenv==1.0.0
-manim==0.17.3
 supabase==2.13.0
 requests==2.31.0
 modal==0.73.91
-litellm==1.30.7
+litellm==1.63.6
+boto3==1.37.11
+gunicorn==21.2.0

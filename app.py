@@ -20,7 +20,8 @@ app = Flask(__name__)
 CORS(app)
 
 # API Keys
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -170,19 +171,22 @@ def process_image():
         return jsonify({"error": str(e)}), 500
 
 def generate_narrative(image, session_id):
-    """Generate narrative script from image using liteLLM with OpenRouter"""
+    """Generate narrative script from image using liteLLM with AWS Bedrock"""
     # Convert image to base64
     buffered = BytesIO()
     image.save(buffered, format="JPEG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
     
-    # Set up environment for liteLLM
-    os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
+    # Set up environment for liteLLM with AWS Bedrock
+    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
+    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
+    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
+
     
     try:
-        # Use liteLLM's completion method
+        # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model="openrouter/anthropic/claude-3.7-sonnet:thinking",
+            model = "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             messages=[{
                 "role": "user",
                 "content": [
@@ -198,12 +202,8 @@ def generate_narrative(image, session_id):
                 }
                 ]
             }],
-            max_tokens=4000,
-            api_base="https://openrouter.ai/api/v1",
-            extra_headers={
-                "HTTP-Referer": "https://image-to-manim.vercel.app",
-                "X-Title": "Image-to-Manim"
-            }
+            temperature=0.4,
+            max_tokens=4000
         )
         
         # Extract the content from the response
@@ -215,9 +215,11 @@ def generate_narrative(image, session_id):
         raise Exception(f"Failed to generate narrative: {str(e)}")
 
 def generate_manim_code(narrative, session_id):
-    """Generate Manim code from narrative using liteLLM with OpenRouter"""
-    # Set up environment for liteLLM
-    os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
+    """Generate Manim code from narrative using liteLLM with AWS Bedrock"""
+    # Set up environment for liteLLM with AWS Bedrock
+    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
+    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
+    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
     
     # Prompt for generating Manim code with precise timing
     prompt = f"""
@@ -248,19 +250,15 @@ Only provide the Python code without explanation, starting with the imports and 
 """
 
     try:
-        # Use liteLLM's completion method
+        # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model="openrouter/anthropic/claude-3.7-sonnet",
+            model="bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             messages=[{
                 "role": "user",
                 "content": prompt
             }],
-            max_tokens=4000,
-            api_base="https://openrouter.ai/api/v1",
-            extra_headers={
-                "HTTP-Referer": "https://image-to-manim.vercel.app",
-                "X-Title": "Image-to-Manim"
-            }
+            temperature=0.4,
+            max_tokens=4000
         )
         
         # Extract the content from the response
@@ -284,4 +282,5 @@ Only provide the Python code without explanation, starting with the imports and 
 
 if __name__ == '__main__':
     # Run the Flask app
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False)

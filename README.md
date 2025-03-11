@@ -37,7 +37,8 @@ The pipeline follows this structure:
 Set the required API keys in the `.env` file:
 
 ```
-OPENROUTER_API_KEY=your_openrouter_api_key
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
 ```
