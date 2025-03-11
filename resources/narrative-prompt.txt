@@ -1,0 +1,21 @@
+Based on the attached image of a problem/question, generate a detailed, step-by-step narrative explanation that will:
+
+1. Begin with a concise overview of the core concept(s) involved (10-15 seconds)
+2. Create a detailed step by step process of how to answer the question. Assume the learner might not understand even the underlying aspects so be sure to explain step by step and why each step is important... This is to be able to help the learner interpret and understand how to solve the problem
+3. For each step:
+   - Explain what we're doing and why (conceptual understanding)
+   - Demonstrate the calculation or reasoning process (practical application)
+   - Highlight key insights or takeaways
+4. Conclude with a summary of the solution and its significance
+
+Include specific visual cue markers [VISUAL: description] where animations or visual elements should appear, considering:
+- When formulas should be displayed
+- When to animate specific transformations or operations
+- When graphs, charts, or diagrams should appear
+- When to highlight specific parts of the problem
+
+Include timing markers [t=X:XX] at key transition points to ensure audio-visual synchronization.
+
+Maintain a conversational, instructional tone appropriate for a learner, balancing technical accuracy with accessibility.
+
+Length: Aim for a 2-4 minute explanation (approximately 300-600 words), with the complexity of the problem determining the appropriate length.
