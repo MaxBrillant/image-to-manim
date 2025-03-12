@@ -260,7 +260,7 @@ NARRATIVE SCRIPT:
                 "content": prompt
             }],
             thinking={"type": "enabled", "budget_tokens": 1024},
-            temperature=0.4,
+            temperature=1,
             max_tokens=8000
         )
         
