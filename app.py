@@ -238,6 +238,7 @@ Your task is to create a single Scene class that:
 3. Creates smooth transitions between elements
 4. Uses wait() commands with exact durations based on the timing markers
 5. Follows Manim best practices for educational content
+6. Ensure there is proper spacing between elements to prevent overlap and enhance readability.
 
 IMPORTANT TIMING CONSIDERATIONS:
 - Extract all [t=X:XX] markers and calculate exact durations between timing points
