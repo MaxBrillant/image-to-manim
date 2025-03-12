@@ -22,6 +22,7 @@ manim_image = (
         "texlive-latex-recommended",
         "texlive-science",
         "tipa",
+        "latexmk",
         "libcairo2",
         "libpango-1.0-0",
         "libpangocairo-1.0-0",

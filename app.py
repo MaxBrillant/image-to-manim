@@ -239,32 +239,29 @@ def generate_manim_code(narrative, session_id):
     
     # Prompt for generating Manim code with precise timing
     prompt = f"""
-Given the following educational narrative script, generate Python code using the Manim library to create an animation. 
+Generate complete, executable Manim Python code that precisely visualizes this educational narrative:
 
-The script contains:
-- [VISUAL: description] markers which indicate where specific animations or visual elements should appear
-- [t=X:XX] markers which indicate precise timing points (minutes:seconds) for transitions and animations
-
-Your task is to create a single Scene class that:
-1. Implements all the visual elements described in the [VISUAL] markers
-2. Precisely times animations based on the [t=X:XX] markers
-3. Enforce proper spacing between visual elements to prevent any overlap and to enhance readability.
-4. Creates smooth transitions between elements
-5. Uses wait() commands with exact durations based on the timing markers
-6. Follows Manim best practices for educational content
-
-IMPORTANT TIMING CONSIDERATIONS:
-- Extract all [t=X:XX] markers and calculate exact durations between timing points
-- Use these exact durations in your animations and wait() commands
-- The animation must progress at exactly the pace indicated by the timing markers
-- If no timing is specified for a section, distribute time evenly
-
-The code should be complete, runnable, and properly import all necessary modules from the manim library.
-Only provide the Python code without explanation, starting with the imports and ending with the scene class.
-
-
-NARRATIVE SCRIPT:
 {narrative}
+
+
+Your code must:
+
+1. Create a single Scene class implementing all [VISUAL: description] elements
+2. Time animations exactly according to [t=X:XX] markers (minutes:seconds)
+3. Calculate precise wait() durations between timing points
+4. Create smooth transitions with proper spacing between elements
+5. Follow 3Blue1Brown-style best practices for educational animations
+
+Technical requirements:
+- Extract ALL timing markers and maintain exact pacing throughout
+- Evenly distribute time for sections without explicit timing
+- Ensure visual elements are properly positioned to prevent overlap
+- Use appropriate Manim objects (TextMobject, MathTex, etc.) for mathematical concepts
+- Include all necessary imports and configuration
+
+If the narrative contains mathematical equations, use LaTeX syntax correctly within Manim.
+
+Provide ONLY the complete Python code with no explanations, starting with imports and ending with the complete Scene class.
 """
 
     try:
@@ -276,6 +273,7 @@ NARRATIVE SCRIPT:
                 "content": prompt
             }],
             temperature=0.4,
+            top_p=0.9,
             max_tokens=8192
         )
         
