@@ -128,10 +128,26 @@ def process_image():
                 result_future = renderer.render_video.remote(session_id, manim_code)
             
                 print(result_future)
+                # Check if video_url is null and retry up to 3 times
+                video_url = result_future.get("video_url")
+                retry_count = 0
+                max_retries = 3
+                
+                while video_url is None and retry_count < max_retries:
+                    print(f"Video URL is None, retrying render request ({retry_count + 1}/{max_retries})...")
+                    retry_count += 1
+                    # Wait a moment before retrying
+                    import time
+                    time.sleep(2)
+                    # Make a new render request
+                    result_future = renderer.render_video.remote(session_id, manim_code)
+                    print(f"Retry {retry_count} result: {result_future}")
+                    video_url = result_future.get("video_url")
+                
                 # Update project with video URL
                 supabase.table("manim_projects").update({
                     "status": "render_complete",
-                    "video_url": result_future.get("video_url"),
+                    "video_url": video_url,
                 }).eq("id", session_id).execute()
             
                 # Return response with details
@@ -139,7 +155,7 @@ def process_image():
                     "session_id": session_id,
                     "narrative": narrative,
                     "narrative_url": narrative_url,
-                    "video_url": result_future.get("video_url"),
+                    "video_url": video_url,
                     "code_url": code_url,
                     "image_url": image_url,
                     "status": "render_complete",

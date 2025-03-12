@@ -147,36 +147,8 @@ class ManimRenderer:
                         {"content-type": "video/mp4"}
                     )
                     
-                    # Get public URL with retry mechanism
-                    video_url = None
-                    max_retries = 3
-                    retry_count = 0
-                    
-                    while not video_url and retry_count < max_retries:
-                        try:
-                            # Verify the file exists in storage before getting URL
-                            file_exists = self.supabase.storage.from_("manim-generator").list(session_id)
-                            print(f"Storage files for {session_id}: {file_exists}")
-                            
-                            video_url = self.supabase.storage.from_("manim-generator").get_public_url(storage_video_path)
-                            print(f"Retrieved video URL: {video_url}")
-                            
-                            if not video_url:
-                                print(f"Attempt {retry_count + 1}: Video URL is null, retrying...")
-                                retry_count += 1
-                                # Small delay before retry
-                                import time
-                                time.sleep(2)
-                            
-                        except Exception as e:
-                            print(f"Error retrieving video URL: {str(e)}")
-                            retry_count += 1
-                            if retry_count >= max_retries:
-                                break
-                            # Small delay before retry
-                            import time
-                            time.sleep(2)
-                
+                    # Get public URL
+                    video_url = self.supabase.storage.from_("manim-generator").get_public_url(storage_video_path)
                     
                     # Update project status
                     self.supabase.table("manim_projects").update({
