@@ -259,8 +259,9 @@ NARRATIVE SCRIPT:
                 "role": "user",
                 "content": prompt
             }],
+            thinking={"type": "enabled", "budget_tokens": 1024},
             temperature=0.4,
-            max_tokens=4000
+            max_tokens=8000
         )
         
         # Extract the content from the response
