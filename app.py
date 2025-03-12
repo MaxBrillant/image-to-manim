@@ -126,11 +126,8 @@ def process_image():
             # Call the Modal function asynchronously
             with app.run():
                 result_future = renderer.render_video.remote(session_id, manim_code)
-                while True:
-                    result = result_future.get()
-                    if result.get("video_url") is not None:
-                        break
-                    # If video_url is not present, requeue the job
+                if "video_url" not in result_future:
+                    print("Video URL not found. Rerunning function...")
                     result_future = renderer.render_video.remote(session_id, manim_code)
             
                 print(result_future)
