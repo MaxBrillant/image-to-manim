@@ -186,7 +186,7 @@ def generate_narrative(image, session_id):
     try:
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model = "bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+            model = "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             messages=[{
                 "role": "user",
                 "content": [
@@ -254,7 +254,7 @@ NARRATIVE SCRIPT:
     try:
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model="bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+            model="bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             messages=[{
                 "role": "user",
                 "content": prompt
