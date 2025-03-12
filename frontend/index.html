@@ -112,7 +112,9 @@
             messageDiv.classList.remove("error");
           } else {
             messageDiv.textContent =
-              "Error: " + (result.message || "Video URL not found");
+              "Error: " +
+              (result.message ||
+                "Something went wrong while rendering your video :( Please try again after some time.");
             messageDiv.classList.add("error");
           }
         } catch (error) {
