@@ -229,25 +229,26 @@ The script contains:
 - [VISUAL: description] markers which indicate where specific animations or visual elements should appear
 - [t=X:XX] markers which indicate precise timing points (minutes:seconds) for transitions and animations
 
-NARRATIVE SCRIPT:
-{narrative}
-
 Your task is to create a single Scene class that:
 1. Implements all the visual elements described in the [VISUAL] markers
 2. Precisely times animations based on the [t=X:XX] markers
-3. Creates smooth transitions between elements
-4. Uses wait() commands with exact durations based on the timing markers
-5. Follows Manim best practices for educational content
-6. Ensure there is proper spacing between elements to prevent overlap and enhance readability.
+3. Enforce proper spacing between visual elements to prevent any overlap and to enhance readability.
+4. Creates smooth transitions between elements
+5. Uses wait() commands with exact durations based on the timing markers
+6. Follows Manim best practices for educational content
 
 IMPORTANT TIMING CONSIDERATIONS:
 - Extract all [t=X:XX] markers and calculate exact durations between timing points
 - Use these exact durations in your animations and wait() commands
 - The animation must progress at exactly the pace indicated by the timing markers
-- If no timing is specified for a section, distribute time evenly but maintain overall pace
+- If no timing is specified for a section, distribute time evenly
 
 The code should be complete, runnable, and properly import all necessary modules from the manim library.
 Only provide the Python code without explanation, starting with the imports and ending with the scene class.
+
+
+NARRATIVE SCRIPT:
+{narrative}
 """
 
     try:
