@@ -4,19 +4,6 @@ FROM python:3.10-slim
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3-dev \
-    ffmpeg \
-    libcairo2-dev \
-    libpango1.0-dev \
-    texlive \
-    texlive-latex-extra \
-    texlive-fonts-extra \
-    texlive-latex-recommended \
-    texlive-science \
-    tipa \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    sox \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
