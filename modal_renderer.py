@@ -51,8 +51,8 @@ class ManimRenderer:
         
         
     @method()
-    def render_video(self, session_id, manim_code):
-        """Render a Manim video based on provided code"""
+    def render_video(self, session_id, manim_code, retry_count=0, max_retries=3):
+        """Render a Manim video based on provided code with retry mechanism"""
         try:
             # Ensure supabase is initialized
             self.__enter__()
@@ -103,15 +103,21 @@ class ManimRenderer:
                 # Find the rendered video
                 videos_dir = os.path.join(temp_dir, "videos")
                 if not os.path.exists(videos_dir):
-                    self.supabase.table("manim_projects").update({
-                        "status": "render_failed",
-                        "render_error": "No video directory created"
-                    }).eq("id", session_id).execute()
-                    
-                    return {
-                        "status": "error",
-                        "message": "No video directory created"
-                    }
+                    if retry_count < max_retries:
+                        print(f"No video directory created. Retrying ({retry_count + 1}/{max_retries})...")
+                        
+                        # Retry with incremented retry count
+                        return self.render_video(session_id, manim_code, retry_count + 1, max_retries)
+                    else:
+                        self.supabase.table("manim_projects").update({
+                            "status": "render_failed",
+                            "render_error": f"No video directory created after {max_retries} attempts"
+                        }).eq("id", session_id).execute()
+                        
+                        return {
+                            "status": "error",
+                            "message": f"No video directory created after {max_retries} attempts"
+                        }
                 
                 # Find the most recently created MP4 file
                 mp4_files = []
@@ -121,15 +127,21 @@ class ManimRenderer:
                             mp4_files.append(os.path.join(root, file))
                 
                 if not mp4_files:
-                    self.supabase.table("manim_projects").update({
-                        "status": "render_failed",
-                        "render_error": "No video file was generated"
-                    }).eq("id", session_id).execute()
-                    
-                    return {
-                        "status": "error",
-                        "message": "No video file was generated"
-                    }
+                    if retry_count < max_retries:
+                        print(f"No video file was generated. Retrying ({retry_count + 1}/{max_retries})...")
+                        
+                        # Retry with incremented retry count
+                        return self.render_video(session_id, manim_code, retry_count + 1, max_retries)
+                    else:
+                        self.supabase.table("manim_projects").update({
+                            "status": "render_failed",
+                            "render_error": f"No video file was generated after {max_retries} attempts"
+                        }).eq("id", session_id).execute()
+                        
+                        return {
+                            "status": "error",
+                            "message": f"No video file was generated after {max_retries} attempts"
+                        }
                 
                 video_path = max(mp4_files, key=os.path.getsize)
                 

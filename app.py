@@ -126,9 +126,6 @@ def process_image():
             # Call the Modal function asynchronously
             with app.run():
                 result_future = renderer.render_video.remote(session_id, manim_code)
-                if "video_url" not in result_future:
-                    print("Video URL not found. Rerunning function...")
-                    result_future = renderer.render_video.remote(session_id, manim_code)
             
                 print(result_future)
                 # Update project with video URL
