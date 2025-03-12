@@ -243,25 +243,86 @@ Generate complete, executable Manim Python code that precisely visualizes this e
 
 {narrative}
 
-
 Your code must:
-
 1. Create a single Scene class implementing all [VISUAL: description] elements
 2. Time animations exactly according to [t=X:XX] markers (minutes:seconds)
 3. Calculate precise wait() durations between timing points
 4. Create smooth transitions with proper spacing between elements
 5. Follow 3Blue1Brown-style best practices for educational animations
 
-Technical requirements:
-- Extract ALL timing markers and maintain exact pacing throughout
-- Evenly distribute time for sections without explicit timing
-- Ensure visual elements are properly positioned to prevent overlap
-- Use appropriate Manim objects (TextMobject, MathTex, etc.) for mathematical concepts
-- Include all necessary imports and configuration
+Below is an example of correctly formatted code based on a sample narrative:
 
-If the narrative contains mathematical equations, use LaTeX syntax correctly within Manim.
+EXAMPLE NARRATIVE:
+[t=0:00] Let's explore the concept of derivatives.
+[VISUAL: Show the equation f(x) = x²]
+[t=0:10] The derivative measures the rate of change of a function.
+[VISUAL: Draw a tangent line to the parabola]
+[t=0:25] As we move along the curve, the slope of this tangent line changes.
+[VISUAL: Animate the tangent line moving along the curve]
+[t=0:40] This changing slope is precisely what the derivative function f'(x) = 2x represents.
+[VISUAL: Show the equation f'(x) = 2x alongside the original function]
 
-Provide ONLY the complete Python code with no explanations, starting with imports and ending with the complete Scene class.
+EXAMPLE CODE:
+```python
+from manim import *
+
+class DerivativeExample(Scene):
+    def construct(self):
+        # [t=0:00] Start of animation
+        
+        # [VISUAL: Show the equation f(x) = x²]
+        function_eq = MathTex(r"f(x) = x^2").scale(1.5)
+        self.play(Write(function_eq), run_time=3)
+        self.wait(7)  # Wait until t=0:10
+        
+        # [t=0:10] The derivative measures the rate of change
+        function_eq.generate_target()
+        function_eq.target.move_to(UP*2)
+        self.play(MoveToTarget(function_eq), run_time=2)
+        
+        # Create axes and parabola
+        axes = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 9, 1],
+            axis_config={"color": BLUE},
+        ).add_coordinates()
+        
+        graph = axes.plot(lambda x: x**2, color=YELLOW)
+        graph_label = axes.get_graph_label(graph, "f(x)=x^2", x_val=2, direction=UP)
+        
+        graph_group = VGroup(axes, graph, graph_label)
+        graph_group.scale(0.7).shift(DOWN*0.5)
+        
+        self.play(Create(axes), run_time=2)
+        self.play(Create(graph), run_time=2)
+        self.play(Write(graph_label), run_time=1)
+        self.wait(8)  # Continue waiting until t=0:25
+        
+        # [t=0:25] Draw a tangent line
+        x_tracker = ValueTracker(1)
+        
+        def get_tangent_line():
+            x = x_tracker.get_value()
+            slope = 2*x
+            point = axes.coords_to_point(x, x**2)
+            line = Line(
+                point + LEFT * 3,
+                point + RIGHT * 3,
+                color=RED
+            ).set_slope(slope)
+            return line
+        
+        tangent = always_redraw(get_tangent_line)
+        self.play(Create(tangent), run_time=2)
+        
+        # [t=0:40] Animate the tangent moving along the curve
+        self.play(x_tracker.animate.set_value(-2), run_time=7)
+        self.play(x_tracker.animate.set_value(2), run_time=6)
+        
+        # [VISUAL: Show the derivative equation]
+        derivative_eq = MathTex(r"f'(x) = 2x").scale(1.5).next_to(function_eq, DOWN*2)
+        self.play(Write(derivative_eq), run_time=3)
+        self.wait(2)
 """
 
     try:
