@@ -83,6 +83,16 @@ PROBLEM TYPE-SPECIFIC IMPLEMENTATIONS:
   * Use color coding to distinguish different outcomes or categories
   * Position tables and charts with sufficient spacing
 
+MATHEMATICAL ACCURACY REQUIREMENTS:
+- CRITICAL: Implement the EXACT mathematical solution provided in the narrative
+- DO NOT modify, simplify, or "fix" the mathematical content from the narrative
+- Ensure all equations, formulas, and calculations match the narrative precisely
+- Double-check all mathematical expressions for correctness before implementing them
+- For graphs and plots, ensure the functions are implemented correctly
+- For geometric constructions, follow the exact steps described in the narrative
+- If the narrative contains multiple solution approaches, implement all of them as specified
+- Verify that any mathematical transformations are implemented correctly
+
 ERROR PREVENTION:
 - Ensure all MathTex expressions have properly escaped LaTeX syntax
 - Check that all animations have appropriate run_time parameters
