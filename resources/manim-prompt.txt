@@ -2,6 +2,10 @@ Generate complete, executable Manim Python code that precisely visualizes this e
 
 {{narrative}}
 
+-- Goal --
+Create professional-quality mathematical animations that accurately represent the educational narrative provided, with precise timing, proper visual elements, and clear mathematical representations.
+
+-- Return Format --
 Your code must:
 1. Create a single Scene class implementing all [VISUAL: description] elements
 2. Time animations exactly according to [t=X:XX] markers (minutes:seconds)
@@ -11,36 +15,6 @@ Your code must:
 6. Handle all LaTeX formatting correctly, especially for mathematical expressions
 7. Implement color coding and highlighting as specified in the narrative
 8. Create appropriate visual elements for the specific type of mathematical problem
-
-CRITICAL LAYOUT AND TIMING REQUIREMENTS:
-- Use a standard scene with dimensions 14 units wide by 8 units high (Manim default)
-- Define constants for scene boundaries: LEFT_EDGE = -7, RIGHT_EDGE = 7, TOP_EDGE = 4, BOTTOM_EDGE = -4
-- STRICTLY ENFORCE these boundaries - NO element should extend beyond these limits
-- Implement boundary checking for ALL elements before adding them to the scene
-- For text and equations, use get_width() and get_height() to ensure they fit within boundaries
-- Scale down any element that would otherwise extend beyond scene boundaries
-- Divide the screen into clear zones (top, middle, bottom) for different types of content
-- Position elements with EXACT coordinates to prevent overlapping
-- Clear or fade out elements when they are no longer needed
-- Use a consistent coordinate system throughout the animation
-- Track current_time precisely and calculate all wait durations exactly
-- Ensure each visual element has enough space around it (at least 0.8 units)
-- Use MoveToTarget() or Transform() to reposition elements rather than creating new ones
-- STRICTLY limit the number of elements visible at once (maximum 2-3 major elements)
-- Scale elements appropriately based on their importance and available space
-- Use config.frame_height (8) and config.frame_width (14) to reference screen dimensions
-
-VISUAL SIMPLICITY AND ANTI-OVERLAP MEASURES:
-- Implement a visual_registry dictionary to track all element positions and dimensions
-- Before adding any new element, check for potential overlaps with existing elements
-- Use buffer zones around each element (minimum 0.8 units in each direction)
-- For text elements, use scale(0.7) or smaller to prevent excessive size
-- For equations, use scale(1.0) for main focus and scale(0.8) for secondary elements
-- Implement a clear_zone() helper method to remove all elements from a specific area
-- Use FadeOut() for ALL elements that are no longer needed
-- For each major section, start with a clean slate by clearing previous elements
-- Implement strict positioning with move_to() rather than relative positioning
-- Use shift() only for minor adjustments, not primary positioning
 
 TECHNICAL IMPLEMENTATION REQUIREMENTS:
 - Parse all timing markers [t=X:XX] to calculate exact wait() durations
@@ -83,6 +57,37 @@ PROBLEM TYPE-SPECIFIC IMPLEMENTATIONS:
   * Use color coding to distinguish different outcomes or categories
   * Position tables and charts with sufficient spacing
 
+-- Warnings --
+CRITICAL LAYOUT AND TIMING REQUIREMENTS:
+- Use a standard scene with dimensions 14 units wide by 8 units high (Manim default)
+- Define constants for scene boundaries: LEFT_EDGE = -7, RIGHT_EDGE = 7, TOP_EDGE = 4, BOTTOM_EDGE = -4
+- STRICTLY ENFORCE these boundaries - NO element should extend beyond these limits
+- Implement boundary checking for ALL elements before adding them to the scene
+- For text and equations, use get_width() and get_height() to ensure they fit within boundaries
+- Scale down any element that would otherwise extend beyond scene boundaries
+- Divide the screen into clear zones (top, middle, bottom) for different types of content
+- Position elements with EXACT coordinates to prevent overlapping
+- Clear or fade out elements when they are no longer needed
+- Use a consistent coordinate system throughout the animation
+- Track current_time precisely and calculate all wait durations exactly
+- Ensure each visual element has enough space around it (at least 0.8 units)
+- Use MoveToTarget() or Transform() to reposition elements rather than creating new ones
+- STRICTLY limit the number of elements visible at once (maximum 2-3 major elements)
+- Scale elements appropriately based on their importance and available space
+- Use config.frame_height (8) and config.frame_width (14) to reference screen dimensions
+
+VISUAL SIMPLICITY AND ANTI-OVERLAP MEASURES:
+- Implement a visual_registry dictionary to track all element positions and dimensions
+- Before adding any new element, check for potential overlaps with existing elements
+- Use buffer zones around each element (minimum 0.8 units in each direction)
+- For text elements, use scale(0.7) or smaller to prevent excessive size
+- For equations, use scale(1.0) for main focus and scale(0.8) for secondary elements
+- Implement a clear_zone() helper method to remove all elements from a specific area
+- Use FadeOut() for ALL elements that are no longer needed
+- For each major section, start with a clean slate by clearing previous elements
+- Implement strict positioning with move_to() rather than relative positioning
+- Use shift() only for minor adjustments, not primary positioning
+
 MATHEMATICAL ACCURACY REQUIREMENTS:
 - CRITICAL: Implement the EXACT mathematical solution provided in the narrative
 - DO NOT modify, simplify, or "fix" the mathematical content from the narrative
@@ -103,8 +108,7 @@ ERROR PREVENTION:
 - Test all ValueTracker ranges to ensure they don't cause errors
 - Add buffer time between animations to prevent timing issues
 
-Below is an example of correctly formatted code based on a sample narrative:
-
+-- Context Dump --
 EXAMPLE NARRATIVE:
 [t=0:00] Let's explore the concept of derivatives.
 [VISUAL: Show the equation f(x) = x²]
