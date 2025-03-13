@@ -284,7 +284,6 @@ class DerivativeExample(Scene):
         axes = Axes(
             x_range=[-3, 3, 1],
             y_range=[0, 9, 1],
-            axis_config={"color": BLUE},
         ).add_coordinates()
         
         graph = axes.plot(lambda x: x**2, color=YELLOW)

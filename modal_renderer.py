@@ -17,6 +17,7 @@ manim_image = (
         "libcairo2-dev",
         "libpango1.0-dev",
         "texlive",
+        "texlive-full",
         "texlive-latex-extra",
         "texlive-fonts-extra",
         "texlive-latex-recommended",
