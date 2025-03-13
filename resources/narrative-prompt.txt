@@ -1,21 +1,45 @@
-Based on the attached image of a problem/question, generate a detailed, step-by-step narrative explanation that will:
+Based on the attached image of a mathematical problem, craft a comprehensive educational narrative that will be animated with Manim. Your narrative should:
 
-1. Begin with a concise overview of the core concept(s) involved (10-15 seconds)
-2. Create a detailed step by step process of how to answer the question. Assume the learner might not understand even the underlying aspects so be sure to explain step by step and why each step is important... This is to be able to help the learner interpret and understand how to solve the problem
-3. For each step:
-   - Explain what we're doing and why (conceptual understanding)
-   - Demonstrate the calculation or reasoning process (practical application)
-   - Highlight key insights or takeaways
-4. Conclude with a summary of the solution and its significance
+1. START WITH CONTEXT (15-20 seconds):
+   - Begin with a brief, intuitive explanation of the core mathematical concept(s)
+   - Relate the concept to real-world applications or familiar ideas when possible
+   - Include a [t=0:00] marker at the very beginning
+   - Include a [VISUAL: Display problem statement from image] marker
 
-Include specific visual cue markers [VISUAL: description] where animations or visual elements should appear, considering:
-- When formulas should be displayed
-- When to animate specific transformations or operations
-- When graphs, charts, or diagrams should appear
-- When to highlight specific parts of the problem
+2. PROBLEM BREAKDOWN (30-45 seconds):
+   - [VISUAL: Highlight key components of the problem]
+   - Identify what we're solving for and what information we're given
+   - Explain any relevant formulas or theorems needed (with [VISUAL: Show formula] markers)
+   - Include timing markers [t=X:XX] at the beginning of this section
 
-Include timing markers [t=X:XX] at key transition points to ensure audio-visual synchronization.
+3. STEP-BY-STEP SOLUTION (60-120 seconds):
+   - Number each step clearly with specific timing markers [t=X:XX]
+   - For EACH step include:
+     a) What we're doing conceptually (the "why")
+     b) The precise mathematical operation (the "how")
+     c) [VISUAL: markers for each mathematical transformation]
+     d) Common mistakes or misconceptions to avoid
 
-Maintain a conversational, instructional tone appropriate for a learner, balancing technical accuracy with accessibility.
+4. VERIFICATION & ANSWER (30 seconds):
+   - Show how to verify the solution if applicable
+   - Present the final answer clearly with [VISUAL: Highlight final answer] marker
+   - Explain what the answer means in context of the original problem
 
-Length: Aim for a 2-4 minute explanation (approximately 300-600 words), with the complexity of the problem determining the appropriate length.
+5. CONCEPTUAL REINFORCEMENT (30 seconds):
+   - Connect back to the larger mathematical concept
+   - Explain how this problem exemplifies the concept
+   - Suggest how this approach could be applied to similar problems
+
+TECHNICAL REQUIREMENTS:
+- Include [t=X:XX] timing markers (minutes:seconds) at EVERY major transition
+- Include detailed [VISUAL: specific description] markers for ALL visual elements
+- For equations, use [VISUAL: Show equation LaTeX] with the exact LaTeX syntax
+- For graphs/diagrams, specify [VISUAL: Create graph with these elements: X, Y, Z]
+- For highlighting, specify [VISUAL: Highlight this part of the equation in COLOR]
+
+TONE & STYLE:
+- Use clear, direct language at a high school or early college level
+- Employ a conversational "teaching voice" that's engaging but authoritative
+- Use precise mathematical terminology but always explain specialized terms
+
+APPROXIMATE LENGTH: 2-4 minutes of narration (300-600 words)
