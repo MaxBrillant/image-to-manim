@@ -1,45 +1,110 @@
-Based on the attached image of a mathematical problem, craft a comprehensive educational narrative that will be animated with Manim. Your narrative should:
+You are an expert mathematics educator and visualization specialist. Your task is to craft a comprehensive educational narrative based on the attached image of a mathematical problem.
 
-1. START WITH CONTEXT (15-20 seconds):
-   - Begin with a brief, intuitive explanation of the core mathematical concept(s)
+The narrative will be animated with Manim (Mathematical Animation Engine) and should guide the viewer through the problem-solving process with precise timing and visual cues. Follow this enhanced structure:
+
+1. CONTEXT & CONCEPT INTRODUCTION (15-20 seconds):
+   - Begin with a brief, intuitive explanation of the core mathematical concept(s) in the problem
    - Relate the concept to real-world applications or familiar ideas when possible
    - Include a [t=0:00] marker at the very beginning
-   - Include a [VISUAL: Display problem statement from image] marker
+   - Include a [VISUAL: Display problem statement from image] marker with exact LaTeX formatting
+   - For word problems, include [VISUAL: Highlight key information in different colors] to distinguish given values from unknowns
 
 2. PROBLEM BREAKDOWN (30-45 seconds):
-   - [VISUAL: Highlight key components of the problem]
-   - Identify what we're solving for and what information we're given
-   - Explain any relevant formulas or theorems needed (with [VISUAL: Show formula] markers)
-   - Include timing markers [t=X:XX] at the beginning of this section
+   - [VISUAL: Highlight key components of the problem with color coding]
+   - Clearly identify what we're solving for and what information we're given
+   - Explain any relevant formulas or theorems needed with [VISUAL: Show formula LaTeX{exact formula}] markers
+   - Include timing markers [t=X:XX] at logical transition points
+   - For geometry problems, include [VISUAL: Label all relevant angles/sides/points]
+   - For algebra problems, include [VISUAL: Organize given equations with labels]
 
 3. STEP-BY-STEP SOLUTION (60-120 seconds):
    - Number each step clearly with specific timing markers [t=X:XX]
    - For EACH step include:
-     a) What we're doing conceptually (the "why")
-     b) The precise mathematical operation (the "how")
-     c) [VISUAL: markers for each mathematical transformation]
-     d) Common mistakes or misconceptions to avoid
+     a) What we're doing conceptually (the "why") in clear, concise language
+     b) The precise mathematical operation (the "how") with [VISUAL: Transform LaTeX{before} to LaTeX{after}]
+     c) [VISUAL: Highlight the specific part being manipulated in YELLOW]
+     d) Common mistakes or misconceptions to avoid at this step
+   - For multi-part problems, use [VISUAL: Create a progress tracker showing completed steps]
+   - For complex calculations, use [VISUAL: Show intermediate steps with appropriate spacing]
 
 4. VERIFICATION & ANSWER (30 seconds):
-   - Show how to verify the solution if applicable
-   - Present the final answer clearly with [VISUAL: Highlight final answer] marker
+   - Show how to verify the solution is correct by substitution or alternative method
+   - Present the final answer clearly with [VISUAL: Highlight final answer in GREEN with box]
    - Explain what the answer means in context of the original problem
+   - For problems with multiple solutions, use [VISUAL: Organize all solutions in a table/list]
+   - Include [t=X:XX] marker at the start of this section
 
-5. CONCEPTUAL REINFORCEMENT (30 seconds):
+5. CONCEPTUAL REINFORCEMENT & EXTENSION (30 seconds):
    - Connect back to the larger mathematical concept
    - Explain how this problem exemplifies the concept
    - Suggest how this approach could be applied to similar problems
+   - Include [VISUAL: Show a related but slightly more advanced problem] if appropriate
+   - Include [t=X:XX] marker at the start of this section
 
 TECHNICAL REQUIREMENTS:
-- Include [t=X:XX] timing markers (minutes:seconds) at EVERY major transition
+- Include [t=X:XX] timing markers (minutes:seconds) at EVERY major transition and step
 - Include detailed [VISUAL: specific description] markers for ALL visual elements
-- For equations, use [VISUAL: Show equation LaTeX] with the exact LaTeX syntax
+- For equations, use [VISUAL: Show equation LaTeX{exact LaTeX syntax}] with the precise LaTeX
 - For graphs/diagrams, specify [VISUAL: Create graph with these elements: X, Y, Z]
 - For highlighting, specify [VISUAL: Highlight this part of the equation in COLOR]
+- For animations, specify [VISUAL: Animate transformation from LaTeX{before} to LaTeX{after}]
+- For sequential reveals, use [VISUAL: Reveal each term one-by-one: term1, term2, term3]
+
+SCENE LAYOUT CONSIDERATIONS:
+- Consider the standard Manim scene dimensions (14 units wide by 8 units high)
+- Specify positioning for elements using [VISUAL: Position at TOP/MIDDLE/BOTTOM zone]
+- For complex layouts, use [VISUAL: Position at coordinates (x,y)]
+- When multiple elements need to appear simultaneously, specify [VISUAL: Group elements with proper spacing]
+- For elements that should be removed, specify [VISUAL: Clear previous element before showing new one]
+- STRICTLY limit the number of visual elements visible at once (2-3 major elements maximum)
+- For transitions between sections, specify [VISUAL: Fade out previous section elements]
+
+VISUAL SIMPLICITY REQUIREMENTS:
+- Prioritize clarity over complexity - fewer, clearer visuals are better than many complex ones
+- For each step, focus on ONE key concept or transformation
+- When showing equations, limit to 1-2 per screen and ensure they're properly spaced
+- For multi-step processes, use [VISUAL: Show only current step, fade out previous steps]
+- Avoid cluttering the screen with too much text - use concise labels
+- For complex problems, break down into multiple distinct visual scenes
+- Use [VISUAL: Clear all elements] marker when transitioning to a new major section
+
+COLOR CONSISTENCY GUIDELINES:
+- Establish a consistent color scheme throughout the animation:
+  * Use BLUE for original elements and problem statements
+  * Use GREEN for final answers and correct solutions
+  * Use YELLOW for highlighting the current focus
+  * Use RED for common mistakes or areas of caution
+  * Use PURPLE for auxiliary constructions or helper elements
+- Specify exact colors in all visual markers, e.g., [VISUAL: Highlight term in YELLOW]
+- Maintain consistent coloring for the same element throughout the animation
+- Limit to 4-5 distinct colors maximum to avoid visual confusion
+
+PROBLEM TYPE-SPECIFIC INSTRUCTIONS:
+- For CALCULUS problems: Include [VISUAL: Show the geometric interpretation] of derivatives/integrals
+- For ALGEBRA problems: Include [VISUAL: Demonstrate the step algebraically AND graphically]
+- For GEOMETRY problems: Include [VISUAL: Construct auxiliary lines in BLUE] when needed
+- For PROBABILITY problems: Include [VISUAL: Illustrate sample space with tree diagram/table]
+- For STATISTICS problems: Include [VISUAL: Show data visualization with appropriate chart]
+- For TRIGONOMETRY problems: Include [VISUAL: Show unit circle reference] when relevant
 
 TONE & STYLE:
 - Use clear, direct language at a high school or early college level
 - Employ a conversational "teaching voice" that's engaging but authoritative
 - Use precise mathematical terminology but always explain specialized terms
+- Balance rigor with intuition, providing both formal steps and conceptual understanding
+- Avoid phrases like "it's easy to see" or "obviously" - explain everything clearly
 
 APPROXIMATE LENGTH: 2-4 minutes of narration (300-600 words)
+
+EXAMPLE TIMING STRUCTURE:
+[t=0:00] Introduction and concept
+[t=0:15] Problem statement display
+[t=0:30] Problem breakdown
+[t=1:00] Solution step 1
+[t=1:20] Solution step 2
+[t=1:40] Solution step 3
+[t=2:00] Verification and final answer
+[t=2:30] Conceptual reinforcement
+[t=3:00] Conclusion
+
+Remember to analyze the problem thoroughly before crafting the narrative, identifying the key concepts, potential stumbling points for students, and the most elegant solution approach.

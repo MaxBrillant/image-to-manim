@@ -1,0 +1,222 @@
+Generate complete, executable Manim Python code that precisely visualizes this educational narrative:
+
+{{narrative}}
+
+Your code must:
+1. Create a single Scene class implementing all [VISUAL: description] elements
+2. Time animations exactly according to [t=X:XX] markers (minutes:seconds)
+3. Calculate precise wait() durations between timing points
+4. Create smooth transitions with proper spacing between elements
+5. Follow 3Blue1Brown-style best practices for educational animations
+6. Handle all LaTeX formatting correctly, especially for mathematical expressions
+7. Implement color coding and highlighting as specified in the narrative
+8. Create appropriate visual elements for the specific type of mathematical problem
+
+CRITICAL LAYOUT AND TIMING REQUIREMENTS:
+- Use a standard scene with dimensions 14 units wide by 8 units high (Manim default)
+- Define constants for scene boundaries: LEFT_EDGE = -7, RIGHT_EDGE = 7, TOP_EDGE = 4, BOTTOM_EDGE = -4
+- Divide the screen into clear zones (top, middle, bottom) for different types of content
+- Position elements with EXACT coordinates to prevent overlapping
+- Clear or fade out elements when they are no longer needed
+- Use a consistent coordinate system throughout the animation
+- Track current_time precisely and calculate all wait durations exactly
+- Ensure each visual element has enough space around it (at least 0.8 units)
+- Use MoveToTarget() or Transform() to reposition elements rather than creating new ones
+- STRICTLY limit the number of elements visible at once (maximum 2-3 major elements)
+- Scale elements appropriately based on their importance and available space
+- Use config.frame_height (8) and config.frame_width (14) to reference screen dimensions
+
+VISUAL SIMPLICITY AND ANTI-OVERLAP MEASURES:
+- Implement a visual_registry dictionary to track all element positions and dimensions
+- Before adding any new element, check for potential overlaps with existing elements
+- Use buffer zones around each element (minimum 0.8 units in each direction)
+- For text elements, use scale(0.7) or smaller to prevent excessive size
+- For equations, use scale(1.0) for main focus and scale(0.8) for secondary elements
+- Implement a clear_zone() helper method to remove all elements from a specific area
+- Use FadeOut() for ALL elements that are no longer needed
+- For each major section, start with a clean slate by clearing previous elements
+- Implement strict positioning with move_to() rather than relative positioning
+- Use shift() only for minor adjustments, not primary positioning
+
+TECHNICAL IMPLEMENTATION REQUIREMENTS:
+- Parse all timing markers [t=X:XX] to calculate exact wait() durations
+- Implement all [VISUAL: description] elements using appropriate Manim objects
+- For LaTeX expressions in [VISUAL: Show equation LaTeX{...}], use MathTex(r"...") with proper escaping
+- For highlighting, use set_color() with the specified color (e.g., YELLOW, GREEN, BLUE, RED)
+- For transformations, use TransformMatchingTex() or ReplacementTransform() for smooth transitions
+- For step-by-step reveals, use succession of Write() or FadeIn() animations with appropriate timing
+- For progress trackers, create a VGroup of elements that update as steps are completed
+- Group related elements using VGroup() for easier positioning and transformations
+- Add comments that correspond to narrative sections and timing markers
+
+SCENE COMPOSITION GUIDELINES:
+- TOP ZONE (y > 1): Use for titles, main equations, and problem statements
+- MIDDLE ZONE (-1 < y < 1): Use for primary visualizations, graphs, and animations
+- BOTTOM ZONE (y < -1): Use for step-by-step working, additional notes
+- Use a grid system for positioning (e.g., TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, etc.)
+- When transitioning between sections, clear previous elements with FadeOut()
+- For complex scenes, use separate methods for each major section
+- Track the position of all elements to ensure proper spacing
+- Use a consistent color scheme throughout the animation
+
+PROBLEM TYPE-SPECIFIC IMPLEMENTATIONS:
+- For CALCULUS problems:
+  * Use axes.plot() for functions and their derivatives
+  * Implement get_tangent_line() functions for derivative visualizations
+  * Use ValueTracker() for animating points moving along curves
+  * Position graphs in the MIDDLE zone with equations in the TOP zone
+- For ALGEBRA problems:
+  * Use TransformMatchingTex() for step-by-step algebraic manipulations
+  * Create side-by-side algebraic and graphical representations when needed
+  * Position equations in a vertical sequence with clear spacing
+- For GEOMETRY problems:
+  * Use Polygon(), Line(), Angle(), etc. for geometric constructions
+  * Implement proper labeling of points, angles, and sides
+  * Center geometric constructions in the MIDDLE zone
+  * Use different colors for original shapes vs. auxiliary constructions
+- For PROBABILITY/STATISTICS problems:
+  * Create appropriate charts, tables, or tree diagrams
+  * Use color coding to distinguish different outcomes or categories
+  * Position tables and charts with sufficient spacing
+
+ERROR PREVENTION:
+- Ensure all MathTex expressions have properly escaped LaTeX syntax
+- Check that all animations have appropriate run_time parameters
+- Verify that wait() durations add up correctly based on timing markers
+- Ensure all created objects are properly displayed with play() or add() methods
+- Handle potential edge cases in mathematical functions (e.g., divisions by zero)
+- Use try/except blocks for potentially problematic calculations
+- Test all ValueTracker ranges to ensure they don't cause errors
+- Add buffer time between animations to prevent timing issues
+
+Below is an example of correctly formatted code based on a sample narrative:
+
+EXAMPLE NARRATIVE:
+[t=0:00] Let's explore the concept of derivatives.
+[VISUAL: Show the equation f(x) = x²]
+[t=0:10] The derivative measures the rate of change of a function.
+[VISUAL: Draw a tangent line to the parabola]
+[t=0:25] As we move along the curve, the slope of this tangent line changes.
+[VISUAL: Animate the tangent line moving along the curve]
+[t=0:40] This changing slope is precisely what the derivative function f'(x) = 2x represents.
+[VISUAL: Show the equation f'(x) = 2x alongside the original function]
+
+EXAMPLE CODE:
+```python
+from manim import *
+
+class DerivativeExample(Scene):
+    def construct(self):
+        # Define screen zones
+        TOP_ZONE = 2.5
+        MIDDLE_ZONE = 0
+        BOTTOM_ZONE = -2.5
+        
+        # Track current time
+        current_time = 0
+        
+        # [t=0:00] Start of animation
+        # [VISUAL: Show the equation f(x) = x²]
+        title = Text("Exploring Derivatives").scale(0.8).to_edge(UP)
+        self.play(Write(title), run_time=2)
+        current_time += 2
+        
+        function_eq = MathTex(r"f(x) = x^2").scale(1.5)
+        function_eq.move_to([0, TOP_ZONE, 0])
+        self.play(Write(function_eq), run_time=3)
+        current_time += 3
+        
+        # Wait until t=0:10 (5 more seconds)
+        self.wait(5)
+        current_time = 10
+        
+        # [t=0:10] The derivative measures the rate of change
+        derivative_text = Text("The derivative measures the rate of change").scale(0.7)
+        derivative_text.next_to(title, DOWN)
+        self.play(Write(derivative_text), run_time=2)
+        current_time += 2
+        
+        # Create axes and parabola in the MIDDLE zone
+        axes = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 9, 1],
+            axis_config={"include_tip": True}
+        ).add_coordinates()
+        
+        axes.move_to([0, MIDDLE_ZONE, 0])
+        axes.scale(0.7)  # Scale to fit in the middle zone
+        
+        graph = axes.plot(lambda x: x**2, color=YELLOW)
+        graph_label = axes.get_graph_label(graph, r"f(x)=x^2", x_val=2, direction=UP)
+        
+        graph_group = VGroup(axes, graph, graph_label)
+        
+        self.play(Create(axes), run_time=2)
+        current_time += 2
+        
+        self.play(Create(graph), run_time=2)
+        current_time += 2
+        
+        self.play(Write(graph_label), run_time=1)
+        current_time += 1
+        
+        # Wait until t=0:25 (8 more seconds)
+        remaining_time = 25 - current_time
+        self.wait(remaining_time)
+        current_time = 25
+        
+        # [t=0:25] Draw a tangent line
+        # Fade out the derivative text to make room
+        self.play(FadeOut(derivative_text), run_time=1)
+        current_time += 1
+        
+        tangent_text = Text("The slope changes as we move along the curve").scale(0.7)
+        tangent_text.next_to(title, DOWN)
+        self.play(Write(tangent_text), run_time=2)
+        current_time += 2
+        
+        x_tracker = ValueTracker(1)
+        
+        def get_tangent_line():
+            x = x_tracker.get_value()
+            slope = 2*x
+            point = axes.coords_to_point(x, x**2)
+            line = Line(
+                point + LEFT * 2,
+                point + RIGHT * 2,
+                color=RED
+            ).set_slope(slope)
+            return line
+        
+        tangent = always_redraw(get_tangent_line)
+        self.play(Create(tangent), run_time=2)
+        current_time += 2
+        
+        # Wait until t=0:40 (10 more seconds)
+        remaining_time = 40 - current_time
+        
+        # [t=0:40] Animate the tangent moving along the curve
+        self.play(x_tracker.animate.set_value(-2), run_time=remaining_time/2)
+        self.play(x_tracker.animate.set_value(2), run_time=remaining_time/2)
+        current_time = 40
+        
+        # [VISUAL: Show the derivative equation]
+        # Fade out the tangent text to make room
+        self.play(FadeOut(tangent_text), run_time=1)
+        current_time += 1
+        
+        derivative_eq = MathTex(r"f'(x) = 2x").scale(1.5)
+        derivative_eq.move_to([0, BOTTOM_ZONE, 0])
+        self.play(Write(derivative_eq), run_time=3)
+        current_time += 3
+        
+        # Add a connecting line or arrow between the function and its derivative
+        arrow = Arrow(function_eq.get_bottom(), derivative_eq.get_top(), buff=0.3)
+        self.play(Create(arrow), run_time=1)
+        current_time += 1
+        
+        # Final wait
+        self.wait(2)
+```
+
+Now, generate complete, executable Manim code for the provided narrative. Follow the structure and best practices shown in the example, but adapt to the specific mathematical content and visual requirements in the narrative. Pay special attention to proper positioning, timing, and layout to ensure elements don't overlap and are properly placed on screen.
