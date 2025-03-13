@@ -15,6 +15,10 @@ Your code must:
 CRITICAL LAYOUT AND TIMING REQUIREMENTS:
 - Use a standard scene with dimensions 14 units wide by 8 units high (Manim default)
 - Define constants for scene boundaries: LEFT_EDGE = -7, RIGHT_EDGE = 7, TOP_EDGE = 4, BOTTOM_EDGE = -4
+- STRICTLY ENFORCE these boundaries - NO element should extend beyond these limits
+- Implement boundary checking for ALL elements before adding them to the scene
+- For text and equations, use get_width() and get_height() to ensure they fit within boundaries
+- Scale down any element that would otherwise extend beyond scene boundaries
 - Divide the screen into clear zones (top, middle, bottom) for different types of content
 - Position elements with EXACT coordinates to prevent overlapping
 - Clear or fade out elements when they are no longer needed
