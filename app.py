@@ -128,22 +128,47 @@ def process_image():
                 result_future = renderer.render_video.remote(session_id, manim_code)
             
                 print(result_future)
-                # Check if video_url is null and retry up to 3 times
+                # Check if rendering was successful
                 video_url = result_future.get("video_url")
+                error_message = result_future.get("error")
                 retry_count = 0
-                max_retries = 3
+                max_retries = 2
+                current_code = manim_code
                 
                 while video_url is None and retry_count < max_retries:
-                    print(f"Video URL is None, retrying render request ({retry_count + 1}/{max_retries})...")
+                    print(f"Rendering failed with error: {error_message}")
+                    print(f"Regenerating Manim code based on error ({retry_count + 1}/{max_retries})...")
                     retry_count += 1
+                    
+                    # Regenerate the Manim code based on the error
+                    current_code = regenerate_manim_code(narrative, current_code, error_message, session_id)
+                    
+                    # Delete the old code and replace it with the new code
+                    try:
+                        # Delete the old file first
+                        supabase.storage.from_("manim-generator").remove([code_path])
+                        print(f"Deleted old code file: {code_path}")
+                    except Exception as delete_error:
+                        print(f"Error deleting old code file: {str(delete_error)}")
+                    
+                    # Upload the new code to the same path
+                    supabase.storage.from_("manim-generator").upload(
+                        code_path,
+                        current_code.encode('utf-8'),
+                        {"upsert": True}  # Overwrite if exists
+                    )
+                    print(f"Uploaded new code to: {code_path}")
+                    
                     # Wait a moment before retrying
                     import time
                     time.sleep(2)
-                    # Make a new render request
-                    result_future = renderer.render_video.remote(session_id, manim_code)
+                    
+                    # Make a new render request with the regenerated code
+                    result_future = renderer.render_video.remote(session_id, current_code)
                     print(f"Retry {retry_count} result: {result_future}")
                     video_url = result_future.get("video_url")
-                
+                    error_message = result_future.get("error")
+            
                 # Update project with video URL
                 supabase.table("manim_projects").update({
                     "status": "render_complete",
@@ -275,6 +300,73 @@ def generate_manim_code(narrative, session_id):
     except Exception as e:
         print(f"Error generating Manim code: {str(e)}")
         raise Exception(f"Failed to generate Manim code: {str(e)}")
+
+def regenerate_manim_code(narrative, previous_code, error_message, session_id):
+    """Regenerate Manim code based on previous code and error message"""
+    # Set up environment for liteLLM with AWS Bedrock
+    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
+    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
+    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
+    
+    # Create a prompt that includes the previous code and error message
+    prompt = f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
+
+ERROR MESSAGE:
+{error_message}
+
+PREVIOUS CODE:
+```python
+{previous_code}
+```
+
+NARRATIVE TO VISUALIZE:
+{narrative}
+
+Please analyze the error message carefully and fix the Manim code to create a working animation that visualizes the narrative. 
+Make sure to:
+1. Fix any syntax errors or bugs in the code
+2. Simplify complex animations that might be causing rendering issues
+3. Ensure all objects are properly defined before being used
+4. Remove any problematic elements while preserving the core visualization
+5. Return ONLY the fixed Python code with no explanations or markdown
+
+The code should be complete, runnable, and properly implement the Scene class.
+"""
+
+    try:
+        # Use liteLLM's completion method with AWS Bedrock
+        response = completion(
+            model="bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }],
+            temperature=0.2,  # Lower temperature for more deterministic output
+            top_p=0.9,
+            max_tokens=8192
+        )
+        
+        # Extract the content from the response
+        fixed_code = response.choices[0].message.content
+        
+        # Extract code if it's wrapped in markdown code blocks
+        if "```python" in fixed_code and "```" in fixed_code:
+            import re
+            code_blocks = re.findall(r'```python\n(.*?)```', fixed_code, re.DOTALL)
+            if code_blocks:
+                fixed_code = code_blocks[0]
+        
+        # Add comment with session id and retry information
+        fixed_code = f"# Regenerated Manim code for session: {session_id}\n# Fixed version after rendering error\n\n{fixed_code}"
+        
+        print(f"Successfully regenerated Manim code based on error")
+        return fixed_code
+        
+    except Exception as e:
+        print(f"Error regenerating Manim code: {str(e)}")
+        # If regeneration fails, return the original code
+        print("Returning original code due to regeneration failure")
+        return previous_code
 
 if __name__ == '__main__':
     # Run the Flask app
