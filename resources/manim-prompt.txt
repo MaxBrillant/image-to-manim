@@ -1,236 +1,337 @@
-Generate complete, executable Manim Python code that precisely visualizes this educational narrative:
+# Manim Code Generator for Short Mathematical Animations
 
-{{narrative}}
+Generate complete, executable Manim Python code that elegantly visualizes the provided mathematical narrative. Your code should create professional animations similar to 3Blue1Brown and FutureAdmit videos, optimized for short (1-2 minute) explanations with high visual impact. Focus on creating smooth, intuitive animations that convey mathematically correct concepts clearly and beautifully.
 
-Your code must:
-1. Create a single Scene class implementing all [VISUAL: description] elements
-2. Time animations exactly according to [t=X:XX] markers (minutes:seconds)
-3. Calculate precise wait() durations between timing points
-4. Create smooth transitions with proper spacing between elements
-5. Follow 3Blue1Brown-style best practices for educational animations
-6. Handle all LaTeX formatting correctly, especially for mathematical expressions
-7. Implement color coding and highlighting as specified in the narrative
-8. Create appropriate visual elements for the specific type of mathematical problem
+## CORE REQUIREMENTS FOR SHORT VIDEOS
 
-CRITICAL LAYOUT AND TIMING REQUIREMENTS:
-- Use a standard scene with dimensions 14 units wide by 8 units high (Manim default)
-- Define constants for scene boundaries: LEFT_EDGE = -7, RIGHT_EDGE = 7, TOP_EDGE = 4, BOTTOM_EDGE = -4
-- STRICTLY ENFORCE these boundaries - NO element should extend beyond these limits
-- Implement boundary checking for ALL elements before adding them to the scene
-- For text and equations, use get_width() and get_height() to ensure they fit within boundaries
-- Scale down any element that would otherwise extend beyond scene boundaries
-- Divide the screen into clear zones (top, middle, bottom) for different types of content
-- Position elements with EXACT coordinates to prevent overlapping
-- Clear or fade out elements when they are no longer needed
-- Use a consistent coordinate system throughout the animation
-- Track current_time precisely and calculate all wait durations exactly
-- Ensure each visual element has enough space around it (at least 0.8 units)
-- Use MoveToTarget() or Transform() to reposition elements rather than creating new ones
-- STRICTLY limit the number of elements visible at once (maximum 2-3 major elements)
-- Scale elements appropriately based on their importance and available space
-- Use config.frame_height (8) and config.frame_width (14) to reference screen dimensions
+1. Create a well-structured `Scene` class implementing all visual elements with elegant transitions
+2. Implement precise timing based on [t=X:XX] markers for a 1-2 minute video
+3. Use smooth, meaningful animations with proper easing functions that enhance understanding
+4. Maintain proper spacing and layout with dynamic camera movements when appropriate
+5. Ensure mathematical accuracy and visual clarity with high-contrast elements
+6. Handle LaTeX formatting correctly with animated appearance/transformations
+7. Implement the specific color scheme consistently with proper color gradients
+8. Optimize for visual impact with minimal text and maximum intuition
 
-VISUAL SIMPLICITY AND ANTI-OVERLAP MEASURES:
-- Implement a visual_registry dictionary to track all element positions and dimensions
-- Before adding any new element, check for potential overlaps with existing elements
-- Use buffer zones around each element (minimum 0.8 units in each direction)
-- For text elements, use scale(0.7) or smaller to prevent excessive size
-- For equations, use scale(1.0) for main focus and scale(0.8) for secondary elements
-- Implement a clear_zone() helper method to remove all elements from a specific area
-- Use FadeOut() for ALL elements that are no longer needed
-- For each major section, start with a clean slate by clearing previous elements
-- Implement strict positioning with move_to() rather than relative positioning
-- Use shift() only for minor adjustments, not primary positioning
+## OPTIMIZED IMPLEMENTATION STRUCTURE
 
-TECHNICAL IMPLEMENTATION REQUIREMENTS:
-- Parse all timing markers [t=X:XX] to calculate exact wait() durations
-- Implement all [VISUAL: description] elements using appropriate Manim objects
-- For LaTeX expressions in [VISUAL: Show equation LaTeX{...}], use MathTex(r"...") with proper escaping
-- For highlighting, use set_color() with the specified color (e.g., YELLOW, GREEN, BLUE, RED)
-- For transformations, use TransformMatchingTex() or ReplacementTransform() for smooth transitions
-- For step-by-step reveals, use succession of Write() or FadeIn() animations with appropriate timing
-- For progress trackers, create a VGroup of elements that update as steps are completed
-- Group related elements using VGroup() for easier positioning and transformations
-- Add comments that correspond to narrative sections and timing markers
+Start with this enhanced structure and expand appropriately:
 
-SCENE COMPOSITION GUIDELINES:
-- TOP ZONE (y > 1): Use for titles, main equations, and problem statements
-- MIDDLE ZONE (-1 < y < 1): Use for primary visualizations, graphs, and animations
-- BOTTOM ZONE (y < -1): Use for step-by-step working, additional notes
-- Use a grid system for positioning (e.g., TOP_LEFT, TOP, TOP_RIGHT, LEFT, CENTER, etc.)
-- When transitioning between sections, clear previous elements with FadeOut()
-- For complex scenes, use separate methods for each major section
-- Track the position of all elements to ensure proper spacing
-- Use a consistent color scheme throughout the animation
-
-PROBLEM TYPE-SPECIFIC IMPLEMENTATIONS:
-- For CALCULUS problems:
-  * Use axes.plot() for functions and their derivatives
-  * Implement get_tangent_line() functions for derivative visualizations
-  * Use ValueTracker() for animating points moving along curves
-  * Position graphs in the MIDDLE zone with equations in the TOP zone
-- For ALGEBRA problems:
-  * Use TransformMatchingTex() for step-by-step algebraic manipulations
-  * Create side-by-side algebraic and graphical representations when needed
-  * Position equations in a vertical sequence with clear spacing
-- For GEOMETRY problems:
-  * Use Polygon(), Line(), Angle(), etc. for geometric constructions
-  * Implement proper labeling of points, angles, and sides
-  * Center geometric constructions in the MIDDLE zone
-  * Use different colors for original shapes vs. auxiliary constructions
-- For PROBABILITY/STATISTICS problems:
-  * Create appropriate charts, tables, or tree diagrams
-  * Use color coding to distinguish different outcomes or categories
-  * Position tables and charts with sufficient spacing
-
-MATHEMATICAL ACCURACY REQUIREMENTS:
-- CRITICAL: Implement the EXACT mathematical solution provided in the narrative
-- DO NOT modify, simplify, or "fix" the mathematical content from the narrative
-- Ensure all equations, formulas, and calculations match the narrative precisely
-- Double-check all mathematical expressions for correctness before implementing them
-- For graphs and plots, ensure the functions are implemented correctly
-- For geometric constructions, follow the exact steps described in the narrative
-- If the narrative contains multiple solution approaches, implement all of them as specified
-- Verify that any mathematical transformations are implemented correctly
-
-ERROR PREVENTION:
-- Ensure all MathTex expressions have properly escaped LaTeX syntax
-- Check that all animations have appropriate run_time parameters
-- Verify that wait() durations add up correctly based on timing markers
-- Ensure all created objects are properly displayed with play() or add() methods
-- Handle potential edge cases in mathematical functions (e.g., divisions by zero)
-- Use try/except blocks for potentially problematic calculations
-- Test all ValueTracker ranges to ensure they don't cause errors
-- Add buffer time between animations to prevent timing issues
-
-Below is an example of correctly formatted code based on a sample narrative:
-
-EXAMPLE NARRATIVE:
-[t=0:00] Let's explore the concept of derivatives.
-[VISUAL: Show the equation f(x) = x²]
-[t=0:10] The derivative measures the rate of change of a function.
-[VISUAL: Draw a tangent line to the parabola]
-[t=0:25] As we move along the curve, the slope of this tangent line changes.
-[VISUAL: Animate the tangent line moving along the curve]
-[t=0:40] This changing slope is precisely what the derivative function f'(x) = 2x represents.
-[VISUAL: Show the equation f'(x) = 2x alongside the original function]
-
-EXAMPLE CODE:
 ```python
 from manim import *
+import numpy as np
 
-class DerivativeExample(Scene):
+class MathExplanationScene(Scene):
     def construct(self):
-        # Define screen zones
-        TOP_ZONE = 2.5
-        MIDDLE_ZONE = 0
-        BOTTOM_ZONE = -2.5
+        # Initialize timing and tracking variables
+        self.current_time = 0
+        self.visual_registry = {}
         
-        # Track current time
-        current_time = 0
+        # Define constants for positioning
+        self.TOP_ZONE = 2.5
+        self.MIDDLE_ZONE = 0
+        self.BOTTOM_ZONE = -2.5
         
-        # [t=0:00] Start of animation
-        # [VISUAL: Show the equation f(x) = x²]
-        title = Text("Exploring Derivatives").scale(0.8).to_edge(UP)
-        self.play(Write(title), run_time=2)
-        current_time += 2
+        # Define enhanced color scheme (using darker/richer colors for better contrast)
+        self.PROBLEM_COLOR = BLUE_E
+        self.SOLUTION_COLOR = GREEN_D
+        self.HIGHLIGHT_COLOR = YELLOW_D
+        self.ERROR_COLOR = RED_E
+        self.AUXILIARY_COLOR = PURPLE_D
         
-        function_eq = MathTex(r"f(x) = x^2").scale(1.5)
-        function_eq.move_to([0, TOP_ZONE, 0])
-        self.play(Write(function_eq), run_time=3)
-        current_time += 3
+        # Define animation constants
+        self.DEFAULT_ANIMATION_RUN_TIME = 1.2  # Slower pacing for better comprehension
+        self.TRANSFORM_RUN_TIME = 1.5
+        self.WRITE_RUN_TIME = 1.2
+        self.FADE_RUN_TIME = 0.8
         
-        # Wait until t=0:10 (5 more seconds)
-        self.wait(5)
-        current_time = 10
+        # Camera settings for dynamic movements
+        self.camera_config = {
+            "background_color": BLACK
+        }
         
-        # [t=0:10] The derivative measures the rate of change
-        derivative_text = Text("The derivative measures the rate of change").scale(0.7)
-        derivative_text.next_to(title, DOWN)
-        self.play(Write(derivative_text), run_time=2)
-        current_time += 2
+        # Helper methods
+        self.setup_helper_methods()
         
-        # Create axes and parabola in the MIDDLE zone
-        axes = Axes(
-            x_range=[-3, 3, 1],
-            y_range=[0, 9, 1],
-            axis_config={"include_tip": True}
-        ).add_coordinates()
+        # Main animation sections for short videos
+        self.visual_hook_section()
+        self.problem_essence_section()
+        self.key_insight_section()
+        self.visual_solution_section()
+        self.insight_application_section()
         
-        axes.move_to([0, MIDDLE_ZONE, 0])
-        axes.scale(0.7)  # Scale to fit in the middle zone
+    def setup_helper_methods(self):
+        # Define helper methods here
+        pass
         
-        graph = axes.plot(lambda x: x**2, color=YELLOW)
-        graph_label = axes.get_graph_label(graph, r"f(x)=x^2", x_val=2, direction=UP)
+    def sync_to_time(self, time_str):
+        # Implementation to sync animations to timing markers
+        pass
         
-        graph_group = VGroup(axes, graph, graph_label)
-        
-        self.play(Create(axes), run_time=2)
-        current_time += 2
-        
-        self.play(Create(graph), run_time=2)
-        current_time += 2
-        
-        self.play(Write(graph_label), run_time=1)
-        current_time += 1
-        
-        # Wait until t=0:25 (8 more seconds)
-        remaining_time = 25 - current_time
-        self.wait(remaining_time)
-        current_time = 25
-        
-        # [t=0:25] Draw a tangent line
-        # Fade out the derivative text to make room
-        self.play(FadeOut(derivative_text), run_time=1)
-        current_time += 1
-        
-        tangent_text = Text("The slope changes as we move along the curve").scale(0.7)
-        tangent_text.next_to(title, DOWN)
-        self.play(Write(tangent_text), run_time=2)
-        current_time += 2
-        
-        x_tracker = ValueTracker(1)
-        
-        def get_tangent_line():
-            x = x_tracker.get_value()
-            slope = 2*x
-            point = axes.coords_to_point(x, x**2)
-            line = Line(
-                point + LEFT * 2,
-                point + RIGHT * 2,
-                color=RED
-            ).set_slope(slope)
-            return line
-        
-        tangent = always_redraw(get_tangent_line)
-        self.play(Create(tangent), run_time=2)
-        current_time += 2
-        
-        # Wait until t=0:40 (10 more seconds)
-        remaining_time = 40 - current_time
-        
-        # [t=0:40] Animate the tangent moving along the curve
-        self.play(x_tracker.animate.set_value(-2), run_time=remaining_time/2)
-        self.play(x_tracker.animate.set_value(2), run_time=remaining_time/2)
-        current_time = 40
-        
-        # [VISUAL: Show the derivative equation]
-        # Fade out the tangent text to make room
-        self.play(FadeOut(tangent_text), run_time=1)
-        current_time += 1
-        
-        derivative_eq = MathTex(r"f'(x) = 2x").scale(1.5)
-        derivative_eq.move_to([0, BOTTOM_ZONE, 0])
-        self.play(Write(derivative_eq), run_time=3)
-        current_time += 3
-        
-        # Add a connecting line or arrow between the function and its derivative
-        arrow = Arrow(function_eq.get_bottom(), derivative_eq.get_top(), buff=0.3)
-        self.play(Create(arrow), run_time=1)
-        current_time += 1
-        
-        # Final wait
-        self.wait(2)
+    # Define other section methods...
 ```
 
-Now, generate complete, executable Manim code for the provided narrative. Follow the structure and best practices shown in the example, but adapt to the specific mathematical content and visual requirements in the narrative. Pay special attention to proper positioning, timing, and layout to ensure elements don't overlap and are properly placed on screen.
+## ESSENTIAL HELPER METHODS
+
+Implement these key helper methods for effective animations:
+
+1. **Time synchronization**: Create a method to sync animations to timing markers
+2. **Element positioning**: Develop a system for consistent placement in TOP, MIDDLE, and BOTTOM zones
+3. **Zone transitions**: Implement elegant transitions between different visual states
+4. **Transformation with highlighting**: Create methods to emphasize important parts during transformations
+5. **Camera movement**: Use camera focus and zooming to direct attention to key elements
+
+## CAMERA HANDLING AND SCENE SETUP
+
+When implementing camera movements and scene setup:
+
+1. **Use the correct scene class**:
+   - For camera movements, extend `MovingCameraScene` instead of `Scene`:
+   ```python
+   class MathExplanationScene(MovingCameraScene):
+       def construct(self):
+           # Now you can use self.camera.frame for movements
+   ```
+   - For 3D visualizations, use `ThreeDScene`
+   - For interactive scenes, use `InteractiveScene`
+
+2. **Camera movement techniques**:
+   - Use `self.camera.frame.animate.scale(factor)` for zooming (only in `MovingCameraScene`)
+   - Use `self.camera.frame.animate.move_to(point)` for panning
+   - Use `self.camera.frame.animate.set_width(width)` to fit specific content
+   - Always check compatibility with your Manim version
+
+3. **Fallback techniques** (for standard `Scene` class):
+   - Use `self.play(Group(*mobjects).animate.scale(factor))` to scale objects instead of camera
+   - Use `self.play(Group(*mobjects).animate.shift(direction))` for movement
+   - Create focus effects with highlighting and scaling of specific elements
+
+## SPECIALIZED VISUALIZATION TECHNIQUES
+
+Develop specialized visualization techniques for different problem types:
+
+1. **For CALCULUS**:
+   - Create methods for animated tangent lines, dynamic Riemann sums, and limit visualizations
+   - Implement smooth parameter changes and dynamic zooming for derivatives and integrals
+   - Use area shading with opacity transitions for integral representations
+
+2. **For GEOMETRY**:
+   - Develop techniques for dynamic angle arcs, congruence highlighting, and transformations
+   - Create methods for elegant construction sequences with appearing/disappearing elements
+   - Implement perspective shifts to demonstrate geometric relationships
+
+3. **For ALGEBRA**:
+   - Create term highlighting and tracking methods with color gradients
+   - Implement smooth substitution animations with morphing effects
+   - Develop synchronized animations for equivalent operations
+
+4. **For PROBABILITY/STATISTICS**:
+   - Create dynamic probability tree diagrams with cascading highlights
+   - Implement sample space visualizations with partitioning animations
+   - Develop distribution transformation techniques with smooth transitions
+
+## ANIMATION ENHANCEMENT TECHNIQUES
+
+Implement these techniques for more engaging animations:
+
+1. **Animated write-ons**: Create methods for emphasizing key points with timed text appearance
+2. **Morphing transitions**: Develop smooth transformations between different representations
+3. **Dynamic highlighting**: Implement pulsing effects and color changes to direct attention
+4. **Camera movements**: Use zooming, panning, and rotation to enhance visual understanding
+5. **Easing functions**: Apply appropriate timing curves to make animations feel natural
+6. **Strategic pauses**: Add deliberate pauses after key concepts to allow processing time
+
+## PACING AND TIMING ADJUSTMENTS
+
+1. **Add appropriate pauses**:
+   ```python
+   # Add a pause after an important concept
+   self.wait(1.5)  # 1.5 seconds to process the information
+   self.current_time += 1.5
+   ```
+
+2. **Use slower animation speeds** for complex transformations:
+   ```python
+   # For complex mathematical transformations, use longer run times
+   self.play(
+       Transform(equation1, equation2),
+       run_time=2.0  # Slower for better comprehension
+   )
+   self.current_time += 2.0
+   ```
+
+3. **Break complex animations** into smaller, easier-to-follow steps:
+   ```python
+   # Instead of one complex animation
+   # self.play(AnimationGroup(anim1, anim2, anim3, anim4))
+   
+   # Use multiple simpler animations with pauses
+   self.play(anim1, run_time=1.0)
+   self.current_time += 1.0
+   self.wait(0.5)  # Brief pause
+   self.current_time += 0.5
+   
+   self.play(anim2, run_time=1.0)
+   self.current_time += 1.0
+   ```
+
+4. **Add visual cues** to help viewers track the progression:
+   ```python
+   # Add progress indicators or step counters
+   step_counter = Integer(1).to_corner(UL)
+   self.add(step_counter)
+   
+   # Update for each major step
+   self.play(
+       ChangeDecimalToValue(step_counter, 2),
+       run_time=0.8
+   )
+   self.current_time += 0.8
+   ```
+
+## CRITICAL IMPLEMENTATION DETAILS
+
+1. **Proper timing**:
+   - Use `self.current_time` to track elapsed time
+   - Calculate wait durations based on timing markers
+   - Add appropriate run_time to all animations
+
+2. **Layout management**:
+   - Use `move_to()` for precise positioning
+   - Implement proper spacing between elements (0.8 units minimum)
+   - Track all elements in the visual registry
+   - Clear zones before adding new elements
+
+3. **Mathematical accuracy and correctness**:
+   - Implement exact formulas as provided in the narrative
+   - Use proper LaTeX syntax for all mathematical expressions
+   - Ensure transformations preserve mathematical meaning
+   - Verify all calculations and mathematical operations before implementation
+   - Double-check all mathematical steps for logical correctness
+   - Never implement formulas or concepts you're uncertain about
+   - Ensure all visualizations accurately represent the underlying mathematics
+
+4. **Visual clarity**:
+   - Limit number of elements on screen (2-3 major elements maximum)
+   - Scale elements appropriately based on importance
+   - Use clear borders and backgrounds for text elements
+   - Implement smooth transitions between scenes
+
+## ENSURING MATHEMATICAL CORRECTNESS
+
+1. **Verify all mathematical operations** in your code before implementation
+2. **Test edge cases** to ensure visualizations remain mathematically accurate
+3. **Implement only what you understand completely** - do not guess at mathematical concepts
+4. **Use standard mathematical libraries** for complex calculations rather than implementing from scratch
+5. **Include validation checks** for mathematical operations where appropriate
+6. **Document mathematical assumptions** clearly in code comments
+7. **Prioritize correctness over visual appeal** when they conflict
+8. **Double-check all solutions** using alternative methods when possible
+9. **Never implement a solution you're uncertain about** - mathematical correctness is non-negotiable
+10. **Verify that animations accurately represent** mathematical transformations without distortion
+11. **Cross-check all numerical values** to ensure they're precisely correct
+
+## LATEX USAGE IN MANIM
+
+1. **LaTeX Package Availability**:
+   - Manim uses a limited set of LaTeX packages by default
+   - The `\cancel` command requires the `cancel` package which may not be available
+   - Use `tex_template` to add required packages:
+   ```python
+   # At the beginning of your scene class
+   custom_template = TexTemplate()
+   custom_template.add_to_preamble(r"\usepackage{cancel}")
+   
+   # When creating tex objects
+   eq = MathTex(r"\frac{x}{\cancel{y}}", tex_template=custom_template)
+   ```
+
+2. **Safe Alternatives to Problematic Commands**:
+   - Instead of `\cancel{x}`, use `\xcancel{x}` (requires `cancel` package)
+   - Alternative to cancellation: use color or crossing lines manually:
+   ```python
+   # Create the fraction without cancel
+   eq = MathTex(r"\frac{(2x+3y)(x-2y)}{(x-2y)(x-2y)}")
+   
+   # Add a line to cross out terms manually
+   term_to_cancel = eq.get_part_by_tex("x-2y")
+   cancel_line = Line(
+       term_to_cancel.get_corner(UL), 
+       term_to_cancel.get_corner(DR),
+       color=RED
+   )
+   eq.add(cancel_line)
+   ```
+
+3. **Proper Escaping**:
+   - Use raw strings (`r"..."`) for all LaTeX expressions
+   - Double backslashes when not using raw strings: `"\\frac{x}{y}"`
+   - Escape special characters: `\{`, `\}`, `\&`, `\$`, `\#`, `\_`, `\%`
+
+4. **Testing LaTeX Expressions**:
+   - Test complex LaTeX expressions in isolation before using in animations
+   - Use `self.add(MathTex("your expression"))` to quickly test rendering
+   - Break complex expressions into smaller parts
+
+## COMMON ERRORS AND COMPATIBILITY ISSUES
+
+1. **Camera frame manipulation**:
+   - Error: `AttributeError: 'Camera' object has no attribute 'frame'`
+   - Solution: Use `MovingCameraScene` instead of `Scene` when camera movements are needed
+
+2. **LaTeX compilation errors**:
+   - Error: `ValueError: latex error converting to dvi`
+   - Solution: Check LaTeX syntax, ensure required packages are included, test expressions in isolation
+
+3. **Version compatibility**:
+   - Different Manim versions have different APIs and class structures
+   - Always check documentation for your specific Manim version
+   - Include version-specific alternatives when possible
+
+4. **Performance considerations**:
+   - Avoid creating too many mobjects at once
+   - Use `VGroup` to manage collections of objects
+   - Consider using lower quality settings during development
+
+5. **Debugging techniques**:
+   - Add `self.wait()` calls to pause at specific points
+   - Use `self.add(Tex("Debug point"))` to mark locations in the animation
+   - Print values to console for tracking variables
+
+## IMPLEMENTATION GUIDANCE
+
+When implementing visualizations for different problem types, focus on:
+
+1. **Mathematical correctness above all else** - this is your primary responsibility
+2. **Creating clear visual representations** that highlight the key mathematical concepts
+3. **Using appropriate animation techniques** specific to each problem domain
+4. **Maintaining consistent visual language** throughout the animation
+5. **Emphasizing the key insight** identified in the narrative
+6. **Using color and motion purposefully** to guide attention
+
+For each problem type, implement methods that create the appropriate visual elements and animate them according to the narrative's timing markers. Use the specialized techniques described above to create engaging, intuitive animations that effectively communicate mathematical concepts.
+
+Remember that the goal is to create short (1-2 minute) videos that focus on a single key insight rather than comprehensive coverage of a topic. Your animations should support this goal by being concise, focused, and visually striking.
+
+## FINAL INTEGRATION OF NARRATIVE AND CODE
+
+Your final code should:
+
+1. Precisely follow the narrative structure
+2. Implement all visual elements described in the narrative
+3. Maintain proper timing according to the [t=X:XX] markers
+4. Create smooth transitions between scenes
+5. Ensure all mathematical content is accurate and well-formatted
+6. Create engaging, visually appealing animations
+7. Maintain proper spacing and layout of elements
+
+Remember to test your code with small sections before integrating everything. Focus on creating a coherent visual flow that enhances understanding of the mathematical concepts.
+
+Code quality is crucial - include comments, use descriptive variable names, and structure your code logically for readability and maintainability.
+
+Generate complete, executable code that precisely matches the provided narrative and meets all the requirements specified above.
+
+
+EDUCATIONAL NARRATIVE:
+
+{{narrative}}
