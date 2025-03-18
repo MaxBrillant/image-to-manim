@@ -151,18 +151,21 @@ def process_image():
                     except Exception as delete_error:
                         print(f"Error deleting old code file: {str(delete_error)}")
                     
-                    # Upload the new code to the same path
-                    supabase.storage.from_("manim-generator").upload(
-                        code_path,
-                        current_code.encode('utf-8'),
-                        {"upsert": True}  # Overwrite if exists
-                    )
-                    print(f"Uploaded new code to: {code_path}")
+                    try:
+                        supabase.storage.from_("manim-generator").upload(
+                            code_path,
+                            current_code.encode('utf-8')
+                        )
+                        print(f"Uploaded new code to: {code_path}")
+                    except Exception as upload_error:
+                        print(f"Error uploading new code file: {str(upload_error)}")
                     
                     # Wait a moment before retrying
                     import time
                     time.sleep(2)
                     
+                    
+                    print(f"Retrying rendering job ({retry_count}/{max_retries})...")
                     # Make a new render request with the regenerated code
                     result_future = renderer.render_video.remote(session_id, current_code)
                     print(f"Retry {retry_count} result: {result_future}")
@@ -227,14 +230,14 @@ def generate_narrative(image, session_id):
     try:
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model = "bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+            model = "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             messages=[{
+                "role": "system",
+                "content": NARRATIVE_PROMPT_TEMPLATE
+            },
+            {
                 "role": "user",
                 "content": [
-                    {
-                        "type": "text",
-                        "text": NARRATIVE_PROMPT_TEMPLATE
-                    },
                     {
                     "type": "image_url",
                     "image_url": {
@@ -243,8 +246,8 @@ def generate_narrative(image, session_id):
                 }
                 ]
             }],
-            temperature=0.4,
-            max_tokens=8192
+            max_tokens=8192,
+            thinking={"type": "enabled", "budget_tokens": 1024},
         )
         
         # Extract the content from the response
@@ -267,19 +270,22 @@ def generate_manim_code(narrative, session_id):
         MANIM_PROMPT_TEMPLATE = f.read()
     
     # Format the prompt with the narrative
-    prompt = MANIM_PROMPT_TEMPLATE.replace("{{narrative}}", narrative)
+    prompt = MANIM_PROMPT_TEMPLATE
 
     try:
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
             model="bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
             messages=[{
-                "role": "user",
+                "role": "system",
                 "content": prompt
+            },
+            {
+                "role": "user",
+                "content": "NARRATIVE: " + narrative
             }],
-            temperature=0.4,
-            top_p=0.9,
-            max_tokens=8192
+            temperature=0.5,
+            max_tokens=8192,
         )
         
         # Extract the content from the response
@@ -300,6 +306,7 @@ def generate_manim_code(narrative, session_id):
     except Exception as e:
         print(f"Error generating Manim code: {str(e)}")
         raise Exception(f"Failed to generate Manim code: {str(e)}")
+
 
 def regenerate_manim_code(narrative, previous_code, error_message, session_id):
     """Regenerate Manim code based on previous code and error message"""
@@ -341,9 +348,8 @@ The code should be complete, runnable, and properly implement the Scene class.
                 "role": "user",
                 "content": prompt
             }],
-            temperature=0.2,  # Lower temperature for more deterministic output
-            top_p=0.9,
-            max_tokens=8192
+            temperature=0.2,
+            max_tokens=8192,
         )
         
         # Extract the content from the response

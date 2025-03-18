@@ -330,8 +330,3 @@ Remember to test your code with small sections before integrating everything. Fo
 Code quality is crucial - include comments, use descriptive variable names, and structure your code logically for readability and maintainability.
 
 Generate complete, executable code that precisely matches the provided narrative and meets all the requirements specified above.
-
-
-EDUCATIONAL NARRATIVE:
-
-{{narrative}}
