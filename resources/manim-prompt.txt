@@ -2,6 +2,16 @@
 
 Generate complete, executable Manim Python code that elegantly visualizes the provided mathematical narrative. Your code should create professional animations similar to 3Blue1Brown and FutureAdmit videos, optimized for short (1-2 minute) explanations with high visual impact. Focus on creating smooth, intuitive animations that convey mathematically correct concepts clearly and beautifully.
 
+## CRITICAL PRIORITY: PREVENTING VISUAL CROWDING
+
+VISUAL CLARITY IS ESSENTIAL - NEVER allow overlapping or crowded elements:
+
+1. **Maximum of 2-3 major elements on screen at any time**
+2. **Always remove or fade out previous elements before introducing new ones**
+3. **Maintain minimum spacing of 1.0 units between elements**
+4. **Use clear transitions between scenes with proper cleanup**
+5. **Track all displayed elements and manage their visibility**
+
 ## CORE REQUIREMENTS FOR SHORT VIDEOS
 
 1. Create a well-structured `Scene` class implementing all visual elements with elegant transitions

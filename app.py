@@ -62,12 +62,22 @@ def process_image():
         
         # Step 1: Upload the original image to Supabase
         print("Uploading image to Supabase...")
+        # Detect original format or use JPEG as fallback
+        img_format = image_file.content_type.split('/')[-1] if image_file.content_type else 'jpeg'
+        if img_format.lower() not in ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'tiff', 'webp']:
+            img_format = 'jpeg'  # Default to JPEG for unsupported formats
+        
+        # Use original extension for the file path
+        file_ext = img_format.lower()
+        if file_ext == 'jpeg':
+            file_ext = 'jpg'
+        
         buffered = BytesIO()
-        img.save(buffered, format="JPEG")
+        img.save(buffered, format=img_format.upper())
         img_bytes = buffered.getvalue()
         
-        # Upload to Supabase storage
-        image_path = f"{session_id}/original.jpg"
+        # Upload to Supabase storage with correct extension
+        image_path = f"{session_id}/original.{file_ext}"
         supabase.storage.from_("manim-generator").upload(
             image_path,
             img_bytes
@@ -216,10 +226,16 @@ def process_image():
 
 def generate_narrative(image, session_id):
     """Generate narrative script from image using liteLLM with AWS Bedrock"""
-    # Convert image to base64
+    # Convert image to base64 preserving its format
     buffered = BytesIO()
-    image.save(buffered, format="JPEG")
+    img_format = image.format if image.format else "JPEG"
+    image.save(buffered, format=img_format)
     img_str = base64.b64encode(buffered.getvalue()).decode()
+    
+    # Determine the MIME type for the base64 string
+    mime_type = f"image/{img_format.lower()}"
+    if mime_type == "image/jpg":
+        mime_type = "image/jpeg"
     
     # Set up environment for liteLLM with AWS Bedrock
     os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
@@ -241,7 +257,7 @@ def generate_narrative(image, session_id):
                     {
                     "type": "image_url",
                     "image_url": {
-                        "url": "data:image/jpeg;base64," + img_str,
+                        "url": f"data:{mime_type};base64," + img_str,
                     },
                 }
                 ]
@@ -263,7 +279,7 @@ def generate_manim_code(narrative, session_id):
     # Set up environment for liteLLM with AWS Bedrock
     os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
     os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
+    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
     
     # Load Manim prompt template
     with open("resources/manim-prompt.txt", "r") as f:
@@ -275,7 +291,7 @@ def generate_manim_code(narrative, session_id):
     try:
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model="bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+            model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
                 "role": "system",
                 "content": prompt
@@ -284,7 +300,7 @@ def generate_manim_code(narrative, session_id):
                 "role": "user",
                 "content": "NARRATIVE: " + narrative
             }],
-            temperature=0.5,
+            temperature=0.2,
             max_tokens=8192,
         )
         
@@ -313,7 +329,7 @@ def regenerate_manim_code(narrative, previous_code, error_message, session_id):
     # Set up environment for liteLLM with AWS Bedrock
     os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
     os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
+    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
     
     # Create a prompt that includes the previous code and error message
     prompt = f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
@@ -343,7 +359,7 @@ The code should be complete, runnable, and properly implement the Scene class.
     try:
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
-            model="bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+            model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
                 "role": "user",
                 "content": prompt
