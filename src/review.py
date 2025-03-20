@@ -8,7 +8,7 @@ from google import genai
 from google.genai import types
 from src.config import GEMINI_API_KEY
 
-def review_video(video_url, narrative):
+def review_video(video_url):
     """Review the video and provide feedback with scoring"""
     try:
         print(f"Starting video review for: {video_url}")

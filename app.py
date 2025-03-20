@@ -115,12 +115,11 @@ def process_image():
         
         video_url = render_result.get("video_url")
         error_message = render_result.get("error")
-        current_code = render_result.get("current_code", manim_code)
         
         if video_url:
             # Review the video quality and gather feedback
             print("Reviewing video quality...")
-            review_result = review_video(video_url, narrative)
+            review_result = review_video(video_url)
             
             score = review_result["score"]
             review_text = review_result["review"]
@@ -136,8 +135,7 @@ def process_image():
                 
                 # Attempt to improve the video based on feedback
                 improved_result = improve_video_from_feedback(
-                    session_id, 
-                    current_code, 
+                    session_id,
                     narrative, 
                     review_text, 
                     score, 

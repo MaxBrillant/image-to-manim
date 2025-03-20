@@ -192,7 +192,7 @@ The code should be complete, runnable, and properly implement the Scene class.
         return previous_code
 
 
-def improve_video_from_feedback(session_id, current_code, narrative, review_text, score, code_path):
+def improve_video_from_feedback(session_id, narrative, review_text, score, code_path):
     """Function to improve video based on feedback reviews"""
     
     # Set up environment for liteLLM with AWS Bedrock
@@ -207,29 +207,24 @@ def improve_video_from_feedback(session_id, current_code, narrative, review_text
             manim_code_guide = guide_file.read()
 
         # Create prompt for feedback-based regeneration
-        feedback_prompt = f"""You are an expert Manim developer. You need to improve the following Manim code based on feedback.
+        feedback_prompt = f"""You are an expert Manim developer. You need to improve the Manim code based on feedback.
 
-REVIEW FEEDBACK:
-{review_text}
+    REVIEW FEEDBACK:
+    {review_text}
 
-CURRENT CODE:
-```python
-{current_code}
-```
+    NARRATIVE TO VISUALIZE:
+    {narrative}
 
-NARRATIVE TO VISUALIZE:
-{narrative}
+    # MANIM CODE GUIDE REFERENCE
+    {manim_code_guide}
 
-# MANIM CODE GUIDE REFERENCE
-{manim_code_guide}
+    Please analyze the feedback carefully and create a new animation that visualizes the narrative. 
+    Make sure to:
+    1. Address the specific issues mentioned in the feedback
+    2. Return ONLY the improved Python code with no explanations or markdown
 
-Please analyze the feedback carefully and improve the Manim code to create a better animation that visualizes the narrative. 
-Make sure to:
-1. Address the specific issues mentioned in the feedback
-2. Return ONLY the improved Python code with no explanations or markdown
-
-The code should be complete, runnable, and properly implement the Scene class.
-"""
+    The code should be complete, runnable, and properly implement the Scene class.
+    """
         
         # Generate improved code using feedback
         response = completion(
