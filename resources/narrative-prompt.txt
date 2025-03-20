@@ -131,6 +131,6 @@ MATHEMATICAL ACCURACY IS THE ABSOLUTE HIGHEST PRIORITY. Never sacrifice correctn
 - **Use visual cues** to help viewers track the progression of ideas
 - **Avoid information overload** by limiting the rate of new information introduction
 
-## APPROXIMATE LENGTH: 1.5-2.5 minutes of narration (150-300 words)
+## APPROXIMATE LENGTH: 1-2 minutes of narration (150-300 words)
 
 Analyze the mathematical problem thoroughly before crafting your narrative. Identify the single most important insight that makes the solution elegant, and build your entire explanation around this key idea. Prioritize visual clarity and conceptual understanding over comprehensive coverage, while maintaining strict mathematical accuracy. Remember that a slightly slower, more deliberate explanation that viewers can follow is more effective than a rushed explanation that covers more ground.

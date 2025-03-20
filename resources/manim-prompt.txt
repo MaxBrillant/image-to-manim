@@ -23,64 +23,6 @@ VISUAL CLARITY IS ESSENTIAL - NEVER allow overlapping or crowded elements:
 7. Implement the specific color scheme consistently with proper color gradients
 8. Optimize for visual impact with minimal text and maximum intuition
 
-## OPTIMIZED IMPLEMENTATION STRUCTURE
-
-Start with this enhanced structure and expand appropriately:
-
-```python
-from manim import *
-import numpy as np
-
-class MathExplanationScene(Scene):
-    def construct(self):
-        # Initialize timing and tracking variables
-        self.current_time = 0
-        self.visual_registry = {}
-        
-        # Define constants for positioning
-        self.TOP_ZONE = 2.5
-        self.MIDDLE_ZONE = 0
-        self.BOTTOM_ZONE = -2.5
-        
-        # Define enhanced color scheme (using darker/richer colors for better contrast)
-        self.PROBLEM_COLOR = BLUE_E
-        self.SOLUTION_COLOR = GREEN_D
-        self.HIGHLIGHT_COLOR = YELLOW_D
-        self.ERROR_COLOR = RED_E
-        self.AUXILIARY_COLOR = PURPLE_D
-        
-        # Define animation constants
-        self.DEFAULT_ANIMATION_RUN_TIME = 1.2  # Slower pacing for better comprehension
-        self.TRANSFORM_RUN_TIME = 1.5
-        self.WRITE_RUN_TIME = 1.2
-        self.FADE_RUN_TIME = 0.8
-        
-        # Camera settings for dynamic movements
-        self.camera_config = {
-            "background_color": BLACK
-        }
-        
-        # Helper methods
-        self.setup_helper_methods()
-        
-        # Main animation sections for short videos
-        self.visual_hook_section()
-        self.problem_essence_section()
-        self.key_insight_section()
-        self.visual_solution_section()
-        self.insight_application_section()
-        
-    def setup_helper_methods(self):
-        # Define helper methods here
-        pass
-        
-    def sync_to_time(self, time_str):
-        # Implementation to sync animations to timing markers
-        pass
-        
-    # Define other section methods...
-```
-
 ## ESSENTIAL HELPER METHODS
 
 Implement these key helper methods for effective animations:
@@ -151,54 +93,6 @@ Implement these techniques for more engaging animations:
 5. **Easing functions**: Apply appropriate timing curves to make animations feel natural
 6. **Strategic pauses**: Add deliberate pauses after key concepts to allow processing time
 
-## PACING AND TIMING ADJUSTMENTS
-
-1. **Add appropriate pauses**:
-   ```python
-   # Add a pause after an important concept
-   self.wait(1.5)  # 1.5 seconds to process the information
-   self.current_time += 1.5
-   ```
-
-2. **Use slower animation speeds** for complex transformations:
-   ```python
-   # For complex mathematical transformations, use longer run times
-   self.play(
-       Transform(equation1, equation2),
-       run_time=2.0  # Slower for better comprehension
-   )
-   self.current_time += 2.0
-   ```
-
-3. **Break complex animations** into smaller, easier-to-follow steps:
-   ```python
-   # Instead of one complex animation
-   # self.play(AnimationGroup(anim1, anim2, anim3, anim4))
-   
-   # Use multiple simpler animations with pauses
-   self.play(anim1, run_time=1.0)
-   self.current_time += 1.0
-   self.wait(0.5)  # Brief pause
-   self.current_time += 0.5
-   
-   self.play(anim2, run_time=1.0)
-   self.current_time += 1.0
-   ```
-
-4. **Add visual cues** to help viewers track the progression:
-   ```python
-   # Add progress indicators or step counters
-   step_counter = Integer(1).to_corner(UL)
-   self.add(step_counter)
-   
-   # Update for each major step
-   self.play(
-       ChangeDecimalToValue(step_counter, 2),
-       run_time=0.8
-   )
-   self.current_time += 0.8
-   ```
-
 ## CRITICAL IMPLEMENTATION DETAILS
 
 1. **Proper timing**:
@@ -240,73 +134,6 @@ Implement these techniques for more engaging animations:
 9. **Never implement a solution you're uncertain about** - mathematical correctness is non-negotiable
 10. **Verify that animations accurately represent** mathematical transformations without distortion
 11. **Cross-check all numerical values** to ensure they're precisely correct
-
-## LATEX USAGE IN MANIM
-
-1. **LaTeX Package Availability**:
-   - Manim uses a limited set of LaTeX packages by default
-   - The `\cancel` command requires the `cancel` package which may not be available
-   - Use `tex_template` to add required packages:
-   ```python
-   # At the beginning of your scene class
-   custom_template = TexTemplate()
-   custom_template.add_to_preamble(r"\usepackage{cancel}")
-   
-   # When creating tex objects
-   eq = MathTex(r"\frac{x}{\cancel{y}}", tex_template=custom_template)
-   ```
-
-2. **Safe Alternatives to Problematic Commands**:
-   - Instead of `\cancel{x}`, use `\xcancel{x}` (requires `cancel` package)
-   - Alternative to cancellation: use color or crossing lines manually:
-   ```python
-   # Create the fraction without cancel
-   eq = MathTex(r"\frac{(2x+3y)(x-2y)}{(x-2y)(x-2y)}")
-   
-   # Add a line to cross out terms manually
-   term_to_cancel = eq.get_part_by_tex("x-2y")
-   cancel_line = Line(
-       term_to_cancel.get_corner(UL), 
-       term_to_cancel.get_corner(DR),
-       color=RED
-   )
-   eq.add(cancel_line)
-   ```
-
-3. **Proper Escaping**:
-   - Use raw strings (`r"..."`) for all LaTeX expressions
-   - Double backslashes when not using raw strings: `"\\frac{x}{y}"`
-   - Escape special characters: `\{`, `\}`, `\&`, `\$`, `\#`, `\_`, `\%`
-
-4. **Testing LaTeX Expressions**:
-   - Test complex LaTeX expressions in isolation before using in animations
-   - Use `self.add(MathTex("your expression"))` to quickly test rendering
-   - Break complex expressions into smaller parts
-
-## COMMON ERRORS AND COMPATIBILITY ISSUES
-
-1. **Camera frame manipulation**:
-   - Error: `AttributeError: 'Camera' object has no attribute 'frame'`
-   - Solution: Use `MovingCameraScene` instead of `Scene` when camera movements are needed
-
-2. **LaTeX compilation errors**:
-   - Error: `ValueError: latex error converting to dvi`
-   - Solution: Check LaTeX syntax, ensure required packages are included, test expressions in isolation
-
-3. **Version compatibility**:
-   - Different Manim versions have different APIs and class structures
-   - Always check documentation for your specific Manim version
-   - Include version-specific alternatives when possible
-
-4. **Performance considerations**:
-   - Avoid creating too many mobjects at once
-   - Use `VGroup` to manage collections of objects
-   - Consider using lower quality settings during development
-
-5. **Debugging techniques**:
-   - Add `self.wait()` calls to pause at specific points
-   - Use `self.add(Tex("Debug point"))` to mark locations in the animation
-   - Print values to console for tracking variables
 
 ## IMPLEMENTATION GUIDANCE
 

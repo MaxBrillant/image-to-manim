@@ -8,7 +8,7 @@ from modal import Image, App, method, fastapi_endpoint, Mount, Secret
 
 # Define the Modal image with Manim dependencies
 manim_image = (
-    Image.debian_slim()
+    Image.debian_slim(python_version="3.11")  # Using latest stable Python version
     .apt_install(
         "build-essential",
         "python3-dev",
@@ -16,14 +16,8 @@ manim_image = (
         "ffmpeg",
         "libcairo2-dev",
         "libpango1.0-dev",
-        "texlive",
         "texlive-full",
-        "texlive-latex-extra",
-        "texlive-fonts-extra",
-        "texlive-latex-recommended",
-        "texlive-science",
         "tipa",
-        "latexmk",
         "libcairo2",
         "libpango-1.0-0",
         "libpangocairo-1.0-0",
@@ -146,7 +140,10 @@ class ManimRenderer:
                     self.supabase.storage.from_("manim-generator").upload(
                         storage_video_path,
                         video_bytes,
-                        {"content-type": "video/mp4"}
+                        {
+                            "content-type": "video/mp4",
+                            "upsert": "true"
+                        }
                     )
                     
                     # Get public URL

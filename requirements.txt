@@ -7,4 +7,5 @@ requests==2.31.0
 modal==0.73.91
 litellm==1.63.6
 boto3==1.37.11
+google-genai==1.7.0
 gunicorn==21.2.0

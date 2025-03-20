@@ -1,43 +1,21 @@
+"""
+Main application file for the image-to-manim service
+"""
 import os
-import base64
+import uuid
 from io import BytesIO
-import json
-import requests
 from flask import Flask, request, jsonify
-from litellm import completion
 from flask_cors import CORS
 from PIL import Image
-from dotenv import load_dotenv
-import tempfile
-import subprocess
-import uuid
-from supabase import create_client, Client
 
-# Load environment variables
-load_dotenv()
+# Import from our modules
+from src.config import supabase
+from src.generation import generate_narrative, generate_manim_code, improve_video_from_feedback
+from src.render import queue_manim_rendering
+from src.review import review_video
 
 app = Flask(__name__)
 CORS(app)
-
-# API Keys
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-# Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# Check if Manim is installed
-try:
-    subprocess.run(["manim", "--version"], capture_output=True, text=True)
-    print("Manim installation found.")
-except:
-    print("WARNING: Manim might not be installed or not in PATH")
-
-# Load narrative prompt template
-with open("resources/narrative-prompt.txt", "r") as f:
-    NARRATIVE_PROMPT_TEMPLATE = f.read()
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -126,69 +104,99 @@ def process_image():
         
         # Step 5: Queue the Manim rendering job on Modal
         print("Queuing Manim rendering job...")
-        try:
-            from modal_renderer import app, ManimRenderer
+        
+        # Call the function to queue the rendering job
+        render_result = queue_manim_rendering(
+            session_id=session_id,
+            manim_code=manim_code,
+            narrative=narrative,
+            code_path=code_path
+        )
+        
+        video_url = render_result.get("video_url")
+        error_message = render_result.get("error")
+        current_code = render_result.get("current_code", manim_code)
+        
+        if video_url:
+            # Review the video quality and gather feedback
+            print("Reviewing video quality...")
+            review_result = review_video(video_url, narrative)
             
-            # Update status
-            supabase.table("manim_projects").update({"status": "queued_for_rendering"}).eq("id", session_id).execute()
+            score = review_result["score"]
+            review_text = review_result["review"]
+            needs_improvement = review_result["needs_improvement"]
             
-            renderer = ManimRenderer()
-            # Call the Modal function asynchronously
-            with app.run():
-                result_future = renderer.render_video.remote(session_id, manim_code)
+            # If score is low, regenerate the Manim code and re-render
+            feedback_retry_count = 0
+            max_feedback_retries = 1  # Limit to one feedback-based retry
             
-                print(result_future)
-                # Check if rendering was successful
-                video_url = result_future.get("video_url")
-                error_message = result_future.get("error")
-                retry_count = 0
-                max_retries = 2
-                current_code = manim_code
+            if needs_improvement and feedback_retry_count < max_feedback_retries:
+                print(f"Video quality score is low ({score}/100). Regenerating based on feedback...")
+                feedback_retry_count += 1
                 
-                while video_url is None and retry_count < max_retries:
-                    print(f"Rendering failed with error: {error_message}")
-                    print(f"Regenerating Manim code based on error ({retry_count + 1}/{max_retries})...")
-                    retry_count += 1
+                # Attempt to improve the video based on feedback
+                improved_result = improve_video_from_feedback(
+                    session_id, 
+                    current_code, 
+                    narrative, 
+                    review_text, 
+                    score, 
+                    code_path
+                )
+                
+                if improved_result.get("success", False):
+                    # Video was successfully improved
+                    improved_code = improved_result.get("improved_code")
                     
-                    # Regenerate the Manim code based on the error
-                    current_code = regenerate_manim_code(narrative, current_code, error_message, session_id)
-                    
-                    # Delete the old code and replace it with the new code
-                    try:
-                        # Delete the old file first
-                        supabase.storage.from_("manim-generator").remove([code_path])
-                        print(f"Deleted old code file: {code_path}")
-                    except Exception as delete_error:
-                        print(f"Error deleting old code file: {str(delete_error)}")
-                    
-                    try:
-                        supabase.storage.from_("manim-generator").upload(
-                            code_path,
-                            current_code.encode('utf-8')
-                        )
-                        print(f"Uploaded new code to: {code_path}")
-                    except Exception as upload_error:
-                        print(f"Error uploading new code file: {str(upload_error)}")
-                    
-                    # Wait a moment before retrying
-                    import time
-                    time.sleep(2)
-                    
-                    
-                    print(f"Retrying rendering job ({retry_count}/{max_retries})...")
-                    # Make a new render request with the regenerated code
-                    result_future = renderer.render_video.remote(session_id, current_code)
-                    print(f"Retry {retry_count} result: {result_future}")
-                    video_url = result_future.get("video_url")
-                    error_message = result_future.get("error")
-            
-                # Update project with video URL
-                supabase.table("manim_projects").update({
-                    "status": "render_complete",
-                    "video_url": video_url,
-                }).eq("id", session_id).execute()
-            
-                # Return response with details
+                    print("Queuing improved Manim rendering job...")
+                    # Call the function to queue the rendering job
+                    render_result = queue_manim_rendering(
+                        session_id=session_id,
+                        manim_code=improved_code,
+                        narrative=narrative,
+                        code_path=code_path
+                    )
+                    video_url = render_result.get("video_url")
+
+                    if video_url:
+                        # Use the improved video URL for the response
+                        response = {
+                            "session_id": session_id,
+                            "narrative": narrative,
+                            "narrative_url": narrative_url,
+                            "video_url": video_url,  # This is the improved video URL
+                            "code_url": code_url,
+                            "image_url": image_url,
+                            "status": "improved_render_complete",
+                            "original_review": {
+                                "score": score,
+                                "review": review_text
+                            },
+                            "improved_review": {
+                                "score": score,
+                                "review": review_text
+                            },
+                            "message": f"Processing complete - video has been improved based on feedback. Original score: {score}/100."
+                        }
+                else:
+                    # Improvement attempt failed, use the original video
+                    error = improved_result.get("error", "Unknown error")
+                    response = {
+                        "session_id": session_id,
+                        "narrative": narrative,
+                        "narrative_url": narrative_url,
+                        "video_url": video_url,
+                        "code_url": code_url,
+                        "image_url": image_url,
+                        "status": "review_complete",
+                        "review": {
+                            "score": score,
+                            "review": review_text
+                        },
+                        "message": f"Processing complete - video has been reviewed (score: {score}/100). Improvement attempt failed: {error}"
+                    }
+            else:
+                # No improvement needed or already at max retries, return with review information
                 response = {
                     "session_id": session_id,
                     "narrative": narrative,
@@ -196,16 +204,15 @@ def process_image():
                     "video_url": video_url,
                     "code_url": code_url,
                     "image_url": image_url,
-                    "status": "render_complete",
-                    "message": "Processing complete - video has been rendered and is available."
+                    "status": "review_complete",
+                    "review": {
+                        "score": score,
+                        "review": review_text
+                    },
+                    "message": f"Processing complete - video has been rendered and reviewed. Score: {score}/100."
                 }
-                    
-                return jsonify(response)
-            
-        except Exception as modal_error:
-            print(f"Error queuing Modal job: {str(modal_error)}")
-            
-            # Return response with details but note rendering wasn't started
+        else:
+            # Rendering failed
             response = {
                 "session_id": session_id,
                 "narrative": narrative,
@@ -213,182 +220,16 @@ def process_image():
                 "code_url": code_url,
                 "image_url": image_url,
                 "status": "code_generated",
-                "message": "Code generation complete, but video rendering could not be queued.",
-                "error": str(modal_error)
+                "message": "Code generation complete, but video rendering failed.",
+                "error": error_message
             }
-                
-            return jsonify(response)
+        
+        return jsonify(response)
     
     except Exception as e:
         import traceback
         print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
-
-def generate_narrative(image, session_id):
-    """Generate narrative script from image using liteLLM with AWS Bedrock"""
-    # Convert image to base64 preserving its format
-    buffered = BytesIO()
-    img_format = image.format if image.format else "JPEG"
-    image.save(buffered, format=img_format)
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    
-    # Determine the MIME type for the base64 string
-    mime_type = f"image/{img_format.lower()}"
-    if mime_type == "image/jpg":
-        mime_type = "image/jpeg"
-    
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
-
-    
-    try:
-        # Use liteLLM's completion method with AWS Bedrock
-        response = completion(
-            model = "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-            messages=[{
-                "role": "system",
-                "content": NARRATIVE_PROMPT_TEMPLATE
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:{mime_type};base64," + img_str,
-                    },
-                }
-                ]
-            }],
-            max_tokens=8192,
-            thinking={"type": "enabled", "budget_tokens": 1024},
-        )
-        
-        # Extract the content from the response
-        narrative = response.choices[0].message.content
-        return narrative
-        
-    except Exception as e:
-        print(f"Error generating narrative: {str(e)}")
-        raise Exception(f"Failed to generate narrative: {str(e)}")
-
-def generate_manim_code(narrative, session_id):
-    """Generate Manim code from narrative using liteLLM with AWS Bedrock"""
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
-    
-    # Load Manim prompt template
-    with open("resources/manim-prompt.txt", "r") as f:
-        MANIM_PROMPT_TEMPLATE = f.read()
-    
-    # Format the prompt with the narrative
-    prompt = MANIM_PROMPT_TEMPLATE
-
-    try:
-        # Use liteLLM's completion method with AWS Bedrock
-        response = completion(
-            model="bedrock/converse/us.deepseek.r1-v1:0",
-            messages=[{
-                "role": "system",
-                "content": prompt
-            },
-            {
-                "role": "user",
-                "content": "NARRATIVE: " + narrative
-            }],
-            temperature=0.2,
-            max_tokens=8192,
-        )
-        
-        # Extract the content from the response
-        manim_code = response.choices[0].message.content
-        
-        # Extract code if it's wrapped in markdown code blocks
-        if "```python" in manim_code and "```" in manim_code:
-            import re
-            code_blocks = re.findall(r'```python\n(.*?)```', manim_code, re.DOTALL)
-            if code_blocks:
-                manim_code = code_blocks[0]
-        
-        # Add comment with session id
-        manim_code = f"# Generated Manim code for session: {session_id}\n\n{manim_code}"
-        
-        return manim_code
-        
-    except Exception as e:
-        print(f"Error generating Manim code: {str(e)}")
-        raise Exception(f"Failed to generate Manim code: {str(e)}")
-
-
-def regenerate_manim_code(narrative, previous_code, error_message, session_id):
-    """Regenerate Manim code based on previous code and error message"""
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
-    
-    # Create a prompt that includes the previous code and error message
-    prompt = f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
-
-ERROR MESSAGE:
-{error_message}
-
-PREVIOUS CODE:
-```python
-{previous_code}
-```
-
-NARRATIVE TO VISUALIZE:
-{narrative}
-
-Please analyze the error message carefully and fix the Manim code to create a working animation that visualizes the narrative. 
-Make sure to:
-1. Fix any syntax errors or bugs in the code
-2. Simplify complex animations that might be causing rendering issues
-3. Ensure all objects are properly defined before being used
-4. Remove any problematic elements while preserving the core visualization
-5. Return ONLY the fixed Python code with no explanations or markdown
-
-The code should be complete, runnable, and properly implement the Scene class.
-"""
-
-    try:
-        # Use liteLLM's completion method with AWS Bedrock
-        response = completion(
-            model="bedrock/converse/us.deepseek.r1-v1:0",
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }],
-            temperature=0.2,
-            max_tokens=8192,
-        )
-        
-        # Extract the content from the response
-        fixed_code = response.choices[0].message.content
-        
-        # Extract code if it's wrapped in markdown code blocks
-        if "```python" in fixed_code and "```" in fixed_code:
-            import re
-            code_blocks = re.findall(r'```python\n(.*?)```', fixed_code, re.DOTALL)
-            if code_blocks:
-                fixed_code = code_blocks[0]
-        
-        # Add comment with session id and retry information
-        fixed_code = f"# Regenerated Manim code for session: {session_id}\n# Fixed version after rendering error\n\n{fixed_code}"
-        
-        print(f"Successfully regenerated Manim code based on error")
-        return fixed_code
-        
-    except Exception as e:
-        print(f"Error regenerating Manim code: {str(e)}")
-        # If regeneration fails, return the original code
-        print("Returning original code due to regeneration failure")
-        return previous_code
 
 if __name__ == '__main__':
     # Run the Flask app
