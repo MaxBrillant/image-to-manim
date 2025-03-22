@@ -160,20 +160,11 @@ def process_image():
                         # Use the improved video URL for the response
                         response = {
                             "session_id": session_id,
-                            "narrative": narrative,
                             "narrative_url": narrative_url,
                             "video_url": video_url,  # This is the improved video URL
                             "code_url": code_url,
                             "image_url": image_url,
                             "status": "improved_render_complete",
-                            "original_review": {
-                                "score": score,
-                                "review": review_text
-                            },
-                            "improved_review": {
-                                "score": score,
-                                "review": review_text
-                            },
                             "message": f"Processing complete - video has been improved based on feedback. Original score: {score}/100."
                         }
                 else:
@@ -181,39 +172,28 @@ def process_image():
                     error = improved_result.get("error", "Unknown error")
                     response = {
                         "session_id": session_id,
-                        "narrative": narrative,
                         "narrative_url": narrative_url,
                         "video_url": video_url,
                         "code_url": code_url,
                         "image_url": image_url,
                         "status": "review_complete",
-                        "review": {
-                            "score": score,
-                            "review": review_text
-                        },
                         "message": f"Processing complete - video has been reviewed (score: {score}/100). Improvement attempt failed: {error}"
                     }
             else:
                 # No improvement needed or already at max retries, return with review information
                 response = {
                     "session_id": session_id,
-                    "narrative": narrative,
                     "narrative_url": narrative_url,
                     "video_url": video_url,
                     "code_url": code_url,
                     "image_url": image_url,
                     "status": "review_complete",
-                    "review": {
-                        "score": score,
-                        "review": review_text
-                    },
                     "message": f"Processing complete - video has been rendered and reviewed. Score: {score}/100."
                 }
         else:
             # Rendering failed
             response = {
                 "session_id": session_id,
-                "narrative": narrative,
                 "narrative_url": narrative_url,
                 "code_url": code_url,
                 "image_url": image_url,
