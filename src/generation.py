@@ -207,24 +207,30 @@ def improve_video_from_feedback(session_id, narrative, review_text, score, code_
             manim_code_guide = guide_file.read()
 
         # Create prompt for feedback-based regeneration
-        feedback_prompt = f"""You are an expert Manim developer. You need to improve the Manim code based on feedback.
+        # Read the current code from the file
+        with open(code_path, "r") as code_file:
+            current_code = code_file.read()
 
-    REVIEW FEEDBACK:
-    {review_text}
+        feedback_prompt = f"""You are an expert Manim developer tasked with improving the Manim code based on user feedback.
 
-    NARRATIVE TO VISUALIZE:
-    {narrative}
+        REVIEW FEEDBACK (Score: {score}/100):
+        {review_text}
 
-    # MANIM CODE GUIDE REFERENCE
-    {manim_code_guide}
+        NARRATIVE TO VISUALIZE:
+        {narrative}
 
-    Please analyze the feedback carefully and create a new animation that visualizes the narrative. 
-    Make sure to:
-    1. Address the specific issues mentioned in the feedback
-    2. Return ONLY the improved Python code with no explanations or markdown
+        # MANIM CODE GUIDE REFERENCE
+        {manim_code_guide}
 
-    The code should be complete, runnable, and properly implement the Scene class.
-    """
+        Please carefully analyze both the feedback and current code to create an improved animation:
+        1. Address each specific issue mentioned in the feedback directly
+        2. Identify and enhance the positive aspects highlighted in the review
+        3. Maintain any successful elements from the current code
+        4. Optimize performance and visual quality based on the feedback
+        5. Return ONLY the improved Python code with no explanations or markdown
+
+        The code should be complete, runnable, and properly implement the Scene class.
+        """
         
         # Generate improved code using feedback
         response = completion(

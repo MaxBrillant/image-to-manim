@@ -46,7 +46,7 @@ def review_video(video_url):
         Provide:
         1. A numerical score out of 100 (format exactly as "SCORE: XX/100").
         2. At least 2 specific strengths of the animation.
-        3. Between 5 to 10 specific areas for improvement with actionable suggestions, focusing especially on positioning and timing issues.
+        3. All the specific areas for improvement with actionable suggestions, focusing especially on positioning and timing issues.
         4. Detailed reasoning for each point of feedback.
         
         Your review should be strict and analyze each technical detail.

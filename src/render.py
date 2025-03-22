@@ -35,7 +35,7 @@ def queue_manim_rendering(session_id, manim_code, narrative, code_path):
             video_url = result_future.get("video_url")
             error_message = result_future.get("error")
             retry_count = 0
-            max_retries = 2
+            max_retries = 3
             current_code = manim_code
             
             # Handle rendering failures and retries

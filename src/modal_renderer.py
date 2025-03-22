@@ -35,7 +35,7 @@ manim_image = (
 app = App("manim-renderer", image=manim_image, secrets=[Secret.from_name("supabase-secrets")])
 
 # Modal class for rendering
-@app.cls(cpu=8, memory=16384, timeout=600)
+@app.cls(gpu="A10G", timeout=300)
 class ManimRenderer:
     def __enter__(self):
         # Get environment variables from secrets
