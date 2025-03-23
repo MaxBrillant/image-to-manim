@@ -92,7 +92,6 @@ def process_image():
         project_data = {
             "id": session_id,
             "status": "code_generated",
-            "narrative": narrative,
             "narrative_url": narrative_url,
             "code_url": code_url,
             "image_url": image_url,
@@ -136,8 +135,9 @@ def process_image():
                 # Attempt to improve the video based on feedback
                 improved_result = improve_video_from_feedback(
                     session_id,
-                    narrative, 
-                    review_text, 
+                    manim_code,
+                    review_text,
+                    narrative,  
                     score, 
                     code_path
                 )

@@ -192,7 +192,7 @@ The code should be complete, runnable, and properly implement the Scene class.
         return previous_code
 
 
-def improve_video_from_feedback(session_id, narrative, review_text, score, code_path):
+def improve_video_from_feedback(session_id, current_code, review_text, narrative, score, code_path):
     """Function to improve video based on feedback reviews"""
     
     # Set up environment for liteLLM with AWS Bedrock
@@ -206,11 +206,6 @@ def improve_video_from_feedback(session_id, narrative, review_text, score, code_
         with open(manim_guide_path, "r") as guide_file:
             manim_code_guide = guide_file.read()
 
-        # Create prompt for feedback-based regeneration
-        # Read the current code from the file
-        with open(code_path, "r") as code_file:
-            current_code = code_file.read()
-
         feedback_prompt = f"""You are an expert Manim developer tasked with improving the Manim code based on user feedback.
 
         REVIEW FEEDBACK (Score: {score}/100):
@@ -222,11 +217,11 @@ def improve_video_from_feedback(session_id, narrative, review_text, score, code_
         # MANIM CODE GUIDE REFERENCE
         {manim_code_guide}
 
-        Please carefully analyze both the feedback and current code to create an improved animation:
+        Please carefully analyze both the feedback to create an improved animation:
         1. Address each specific issue mentioned in the feedback directly
-        2. Identify and enhance the positive aspects highlighted in the review
-        3. Maintain any successful elements from the current code
-        4. Optimize performance and visual quality based on the feedback
+        2. Optimize performance and visual quality based on the feedback
+        3. Ensure the animation aligns with the narrative and is visually engaging
+        4. Aim to achieve a much higher score in the next review (more than 90/100)
         5. Return ONLY the improved Python code with no explanations or markdown
 
         The code should be complete, runnable, and properly implement the Scene class.

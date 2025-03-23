@@ -30,26 +30,25 @@ def review_video(video_url):
         You are an expert animation critic with a keen eye for detail. Review this educational animation video that was created.
 
         Evaluate the animation with special focus on visual element positioning and timing:
-        1. Element positioning (Check for overlapping elements, out-of-bounds items, or poor spacing)
-        2. Timing and synchronization (Analyze transitions, element appearance/disappearance timing)
-        3. Visual clarity (How well does it communicate concepts?)
-        4. Educational value (How effectively does it teach the topic?)
-        5. Overall animation quality (How smooth and professional is it?)
+        1. Visual clarity (How well does it communicate concepts?)
+        2. Educational value (How effectively does it teach the topic?)
+        3. Overall animation quality (How smooth and professional is it?)
+        4. Element positioning (Check for overlapping elements, out-of-bounds items, or poor spacing)
+        5. Timing and synchronization (Analyze transitions, element appearance/disappearance timing)
 
         Pay extra attention to:
-        - Elements that overlap or collide with each other
-        - Text or objects that go beyond screen boundaries
         - Poorly timed transitions or animations
         - Inconsistent spacing between elements
         - Animation elements that appear too quickly or slowly
+        - Elements that overlap or collide with each other
+        - Text or objects that go beyond screen boundaries
 
         Provide:
         1. A numerical score out of 100 (format exactly as "SCORE: XX/100").
-        2. At least 2 specific strengths of the animation.
-        3. All the specific areas for improvement with actionable suggestions, focusing especially on positioning and timing issues.
-        4. Detailed reasoning for each point of feedback.
+        2. All the individual and specific areas for improvement with actionable suggestions, focusing especially on positioning and timing issues.
+        3. Detailed reasoning for each point of feedback.
         
-        Your review should be strict and analyze each technical detail.
+        Your review should be very strict and analyze each technical and visual detail.
         """
 
         # Make the API call to review the video
@@ -89,7 +88,7 @@ def review_video(video_url):
         review_result = {
             "score": score,
             "review": review_text,
-            "needs_improvement": score < 95  # Consider scores below 95 as needing improvement
+            "needs_improvement": score < 90  # Consider scores below 90 as needing improvement
         }
         
         return review_result
