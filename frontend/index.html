@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image to Manim</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -11,53 +15,150 @@
         margin: 0;
         padding: 0;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        min-height: 100vh;
+        position: relative;
+        overflow-y: auto;
       }
       #container {
         background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 1.25rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.1);
         text-align: center;
+        max-width: 30rem;
+        width: 90%;
       }
       h1 {
         color: #333;
       }
+      a {
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
       form {
-        margin-bottom: 20px;
+        margin-bottom: 1.25rem;
       }
-      input[type="file"] {
-        margin-bottom: 10px;
+      .file-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
       }
-      button {
+      .file-upload-input {
+        display: none;
+      }
+      .file-upload-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 7.5rem;
+        border: 0.125rem dashed #ccc;
+        border-radius: 0.5rem;
+        background-color: #f8f8f8;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 0.9375rem;
+      }
+      .file-upload-label:hover {
+        border-color: #007bff;
+        background-color: #f0f7ff;
+      }
+      .file-upload-label-text {
+        color: #666;
+        font-size: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .file-upload-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #007bff;
+      }
+      .image-preview-container {
+        width: 100%;
+        max-height: 12.5rem;
+        overflow: hidden;
+        margin-bottom: 0.9375rem;
+        border-radius: 0.5rem;
+        display: none;
+        border: 0.0625rem solid #ddd;
+        position: relative;
+      }
+      .image-preview {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        max-height: 12.5rem;
+      }
+
+      .change-image-btn {
+        position: absolute;
+        bottom: 0.625rem;
+        right: 0.625rem;
+        background-color: rgba(225, 225, 225, 0.8);
+        color: rgb(70, 70, 70);
+        border: 0.0625rem solid #363636;
+        border-radius: 0.25rem;
+        padding: 0.3125rem 0.625rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        z-index: 10;
+      }
+
+      .change-image-btn:hover {
+        background-color: rgba(225, 225, 225, 0.7);
+      }
+      .submit-button {
+        width: 100%;
         background-color: #007bff;
         color: #fff;
         border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.25rem;
         cursor: pointer;
+        transition: all 0.3s ease;
+        display: none; /* Hidden by default */
       }
       button:hover {
         background-color: #0056b3;
       }
       #message {
-        margin-top: 20px;
+        margin-top: 1.25rem;
       }
       #message.error {
         color: red;
       }
       #loading {
         display: none;
-        margin-top: 20px;
+        margin-top: 1.25rem;
         color: #007bff;
       }
       #timer {
         display: none;
-        margin-top: 10px;
+        margin-top: 0.625rem;
         color: #007bff;
-        font-size: 14px;
+        font-size: 0.875rem;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 0.625rem 0;
+        margin-top: 1.25rem;
+        font-size: 0.875rem;
+        color: #666;
+        width: 100%;
+      }
+      .github-link {
+        color: #373737;
+        text-decoration: none;
+        margin-left: 3.125rem;
       }
     </style>
     <script>
@@ -86,13 +187,54 @@
         clearInterval(timerInterval);
       }
 
+      function handleImageSelection(event) {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          const previewContainer = document.getElementById(
+            "imagePreviewContainer"
+          );
+          const preview = document.getElementById("imagePreview");
+          const fileUploadLabel = document.querySelector(".file-upload-label");
+          const submitButton = document.querySelector(".submit-button");
+
+          reader.onload = function (e) {
+            preview.src = e.target.result;
+
+            // Hide the file picker and show the preview and submit button
+            fileUploadLabel.style.display = "none";
+            previewContainer.style.display = "block";
+            submitButton.style.display = "inline-block";
+
+            // Make sure the change image button exists
+            if (!document.querySelector(".change-image-btn")) {
+              const changeBtn = document.createElement("button");
+              changeBtn.className = "change-image-btn";
+              changeBtn.textContent = "Change Image";
+              changeBtn.onclick = function (e) {
+                e.preventDefault();
+                // Trigger the file input click to open the file picker dialog
+                document.getElementById("imageInput").click();
+              };
+              previewContainer.appendChild(changeBtn);
+            }
+          };
+
+          reader.readAsDataURL(file);
+        }
+      }
+
       async function uploadImage(event) {
         event.preventDefault();
         const formData = new FormData(document.getElementById("imageForm"));
         const loadingDiv = document.getElementById("loading");
         const messageDiv = document.getElementById("message");
+        const submitButton = document.querySelector(".submit-button");
+        const changeImageButton = document.querySelector(".change-image-btn");
         loadingDiv.style.display = "block";
         messageDiv.innerHTML = "";
+        submitButton.style.display = "none";
+        changeImageButton.style.display = "none";
         startTimer();
         try {
           const response = await fetch(
@@ -114,28 +256,126 @@
             messageDiv.textContent =
               "Error: Something went wrong while rendering your video :( Please try again after some time.";
             messageDiv.classList.add("error");
+            submitButton.style.display = "inline-block";
+            changeImageButton.style.display = "inline-block";
           }
         } catch (error) {
           loadingDiv.style.display = "none";
           stopTimer();
           messageDiv.textContent = "Error: " + error.message;
           messageDiv.classList.add("error");
+          submitButton.style.display = "inline-block";
+          changeImageButton.style.display = "inline-block";
         }
       }
+
+      // Set up drag and drop functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const dropZone = document.querySelector(".file-upload-label");
+        const fileInput = document.getElementById("imageInput");
+
+        ["dragover", "dragenter"].forEach((eventName) => {
+          dropZone.addEventListener(
+            eventName,
+            function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              this.style.borderColor = "#007bff";
+              this.style.backgroundColor = "#f0f7ff";
+            },
+            false
+          );
+        });
+
+        ["dragleave", "dragend"].forEach((eventName) => {
+          dropZone.addEventListener(
+            eventName,
+            function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              this.style.borderColor = "#ccc";
+              this.style.backgroundColor = "#f8f8f8";
+            },
+            false
+          );
+        });
+
+        dropZone.addEventListener(
+          "drop",
+          function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.borderColor = "#ccc";
+            this.style.backgroundColor = "#f8f8f8";
+
+            const dt = e.dataTransfer;
+            if (dt.files.length) {
+              fileInput.files = dt.files;
+              // Trigger the change event manually
+              const event = new Event("change");
+              fileInput.dispatchEvent(event);
+            }
+          },
+          false
+        );
+
+        // Add change event listener to the file input
+        fileInput.addEventListener("change", handleImageSelection);
+      });
     </script>
   </head>
   <body>
     <div id="container">
-      <h1>Image to Manim</h1>
+      <h1>Math to Animation</h1>
+      <p>
+        Upload an image of a math problem to generate a step-by-step educational
+        animation explaining it, inspired by the visualization style of
+        <a href="https://www.youtube.com/@3Blue1Brown">3Blue1Brown</a>, using
+        the <a href="https://github.com/3b1b/manim">Manim library</a>.
+      </p>
       <form id="imageForm" onsubmit="uploadImage(event)">
-        <input type="file" name="image" accept="image/*" required />
-        <button type="submit">Upload Image</button>
+        <div class="file-upload">
+          <label for="imageInput" class="file-upload-label">
+            <span class="file-upload-label-text">
+              <span class="file-upload-icon">🖼️</span>
+              Click to select an image or drag & drop
+            </span>
+          </label>
+          <input
+            type="file"
+            id="imageInput"
+            name="image"
+            class="file-upload-input"
+            accept="image/*"
+            required
+          />
+          <div class="image-preview-container" id="imagePreviewContainer">
+            <img
+              src="#"
+              alt="Preview"
+              class="image-preview"
+              id="imagePreview"
+            />
+          </div>
+        </div>
+        <button type="submit" class="submit-button">Upload Image</button>
       </form>
       <div id="loading">
         Processing... (Rendering your video will take some time)
       </div>
       <div id="timer"></div>
       <div id="message"></div>
+    </div>
+    <div class="footer">
+      made with ❤️ by <a href="https://x.com/max_brillant">Max Brillant</a>
+      <a
+        class="github-link"
+        href="https://github.com/MaxBrillant/image-to-manim"
+        target="_blank"
+      >
+        <i class="fab fa-github"></i>
+        GitHub
+      </a>
     </div>
   </body>
 </html>
