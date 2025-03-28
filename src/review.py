@@ -43,7 +43,7 @@ def review_video(video_url):
         - Elements that overlap or collide with each other
         - Text or objects that go beyond screen boundaries
 
-        Provide:
+        Provide ONLY the following in your review/response:
         1. A numerical score out of 100 (format exactly as "SCORE: XX/100").
         2. All the individual and specific areas for improvement with actionable suggestions, focusing especially on positioning and timing issues.
         3. Detailed reasoning for each point of feedback.

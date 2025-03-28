@@ -87,13 +87,20 @@ def generate_manim_code(narrative, session_id):
             model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
                 "role": "system",
-                "content": enhanced_prompt
+                "content": f"""
+                    You are an expert Manim developer. You need to create a Manim animation that visualizes the provided narrative.
+
+                    Ensure the Manim code generated ONLY refers to the MANIM CODE GUIDE REFERENCE
+
+                    MANIM CODE GUIDE REFERENCE:
+                    {manim_code_guide}
+                    """
             },
             {
                 "role": "user",
-                "content": "NARRATIVE: " + narrative
+                "content": "NARRATIVE: \n" + narrative
             }],
-            temperature=0.2,
+            temperature=0.4,
             max_tokens=8192,
         )
         
@@ -129,41 +136,38 @@ def regenerate_manim_code(narrative, previous_code, error_message, session_id):
         manim_guide_path = os.path.join("resources", "manim_code_guide.txt")
         with open(manim_guide_path, "r") as guide_file:
             manim_code_guide = guide_file.read()
-        
-        # Create a prompt that includes the previous code, error message, and code guide
-        prompt = f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
-
-ERROR MESSAGE:
-{error_message}
-
-PREVIOUS CODE:
-```python
-{previous_code}
-```
-
-NARRATIVE TO VISUALIZE:
-{narrative}
-
-# MANIM CODE GUIDE REFERENCE
-{manim_code_guide}
-
-Please analyze the error message carefully and fix the Manim code to create a working animation that visualizes the narrative. 
-Make sure to:
-1. Fix any syntax errors or bugs in the code
-2. Simplify complex animations that might be causing rendering issues
-3. Ensure all objects are properly defined before being used
-4. Remove any problematic elements while preserving the core visualization
-5. Return ONLY the fixed Python code with no explanations or markdown
-
-The code should be complete, runnable, and properly implement the Scene class.
-"""
 
         # Use liteLLM's completion method with AWS Bedrock
         response = completion(
             model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
+                "role": "system",
+                "content": f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
+
+                    Please analyze the error message carefully and fix the Manim code to create a working animation that visualizes the narrative. 
+                    Make sure to:
+                    1. Fix any syntax errors or bugs in the code
+                    2. Simplify complex animations that might be causing rendering issues
+                    3. Ensure the Manim code generated ONLY refers to the MANIM CODE GUIDE REFERENCE
+
+                    NARRATIVE TO VISUALIZE:
+                    {narrative}
+
+                    # MANIM CODE GUIDE REFERENCE:
+                    {manim_code_guide}
+                    """
+            },
+                      {
                 "role": "user",
-                "content": prompt
+                "content": f"""
+                    ERROR MESSAGE:
+                    {error_message[-5000:]}
+
+                    PREVIOUS CODE:
+                    ```python
+                    {previous_code}
+                    ```
+                    """
             }],
             temperature=0.2,
             max_tokens=8192,
@@ -205,36 +209,36 @@ def improve_video_from_feedback(session_id, current_code, review_text, narrative
         manim_guide_path = os.path.join("resources", "manim_code_guide.txt")
         with open(manim_guide_path, "r") as guide_file:
             manim_code_guide = guide_file.read()
-
-        feedback_prompt = f"""You are an expert Manim developer tasked with improving the Manim code based on user feedback.
-
-        REVIEW FEEDBACK (Score: {score}/100):
-        {review_text}
-
-        NARRATIVE TO VISUALIZE:
-        {narrative}
-
-        # MANIM CODE GUIDE REFERENCE
-        {manim_code_guide}
-
-        Please carefully analyze both the feedback to create an improved animation:
-        1. Address each specific issue mentioned in the feedback directly
-        2. Optimize performance and visual quality based on the feedback
-        3. Ensure the animation aligns with the narrative and is visually engaging
-        4. Aim to achieve a much higher score in the next review (more than 90/100)
-        5. Return ONLY the improved Python code with no explanations or markdown
-
-        The code should be complete, runnable, and properly implement the Scene class.
-        """
         
         # Generate improved code using feedback
         response = completion(
             model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
+                "role": "system",
+                "content": f"""You are an expert Manim developer tasked with improving the Manim code based on user feedback.
+
+                    Please carefully analyze both the feedback to create an improved animation:
+                    1. Address each specific issue mentioned in the feedback directly
+                    2. Optimize performance and visual quality based on the feedback
+                    3. Ensure the animation aligns with the narrative and is visually engaging
+                    4. Aim to achieve a much higher score in the next review (more than 90/100)
+                    5. Ensure the Manim code generated ONLY refers to the MANIM CODE GUIDE REFERENCE
+                    
+                    NARRATIVE TO VISUALIZE:
+                    {narrative}
+
+                    # MANIM CODE GUIDE REFERENCE:
+                    {manim_code_guide}
+                    """
+            },
+            {
                 "role": "user",
-                "content": feedback_prompt
+                "content": f"""
+                    REVIEW FEEDBACK (Score: {score}/100):
+                    {review_text}
+            """
             }],
-            temperature=0.2,
+            temperature=0.4,
             max_tokens=8192,
         )
         

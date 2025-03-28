@@ -24,7 +24,7 @@ manim_image = (
         "sox",
     )
     .pip_install(
-        "manim",
+        "manim==0.17.0",
         "supabase",
         "python-dotenv",
         "fastapi[standard]",  # Required for fastapi_endpoint
