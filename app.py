@@ -154,10 +154,11 @@ def process_image():
                         narrative=narrative,
                         code_path=code_path
                     )
-                    video_url = render_result.get("video_url")
+                    imporoved_video_url = render_result.get("video_url")
 
-                    if video_url:
+                    if imporoved_video_url:
                         # Use the improved video URL for the response
+                        video_url = imporoved_video_url
                         response = {
                             "session_id": session_id,
                             "narrative_url": narrative_url,
@@ -166,6 +167,18 @@ def process_image():
                             "image_url": image_url,
                             "status": "improved_render_complete",
                             "message": f"Processing complete - video has been improved based on feedback. Original score: {score}/100."
+                        }
+                    else:
+                        # Improvement attempt failed, use the original video
+                        error = improved_result.get("error", "Unknown error")
+                        response = {
+                            "session_id": session_id,
+                            "narrative_url": narrative_url,
+                            "video_url": video_url,
+                            "code_url": code_url,
+                            "image_url": image_url,
+                            "status": "review_complete",
+                            "message": f"Processing complete - video has been reviewed (score: {score}/100). Improvement attempt failed: {error}"
                         }
                 else:
                     # Improvement attempt failed, use the original video

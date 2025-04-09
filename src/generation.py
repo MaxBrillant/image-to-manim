@@ -7,6 +7,7 @@ import base64
 from io import BytesIO
 from PIL import Image
 from litellm import completion
+import litellm
 
 from src.config import (
     AWS_ACCESS_KEY_ID, 
@@ -15,6 +16,8 @@ from src.config import (
     MANIM_PROMPT_TEMPLATE
 )
 from src.storage import update_code_in_storage
+
+# litellm._turn_on_debug()
 
 def generate_narrative(image, session_id):
     """Generate narrative script from image using liteLLM with AWS Bedrock"""
@@ -33,15 +36,16 @@ def generate_narrative(image, session_id):
     os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
     os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
     os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
-
     
     try:
+        
         # Use liteLLM's completion method with AWS Bedrock
-        response = completion(
+        response = litellm.completion(
             model = "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             messages=[{
                 "role": "system",
-                "content": NARRATIVE_PROMPT_TEMPLATE
+                "content": NARRATIVE_PROMPT_TEMPLATE,
+                "cache_control": {"type": "ephemeral"},
             },
             {
                 "role": "user",
@@ -52,7 +56,8 @@ def generate_narrative(image, session_id):
                         "url": f"data:{mime_type};base64," + img_str,
                     },
                 }
-                ]
+                ],
+                "cache_control": {"type": "ephemeral"},
             }],
             max_tokens=8192,
             thinking={"type": "enabled", "budget_tokens": 1024},
@@ -83,7 +88,7 @@ def generate_manim_code(narrative, session_id):
         enhanced_prompt = MANIM_PROMPT_TEMPLATE + "\n\n# MANIM CODE GUIDE REFERENCE\n" + manim_code_guide
         
         # Use liteLLM's completion method with AWS Bedrock
-        response = completion(
+        response = litellm.completion(
             model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
                 "role": "system",
@@ -138,7 +143,7 @@ def regenerate_manim_code(narrative, previous_code, error_message, session_id):
             manim_code_guide = guide_file.read()
 
         # Use liteLLM's completion method with AWS Bedrock
-        response = completion(
+        response = litellm.completion(
             model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
                 "role": "system",
@@ -211,7 +216,7 @@ def improve_video_from_feedback(session_id, current_code, review_text, narrative
             manim_code_guide = guide_file.read()
         
         # Generate improved code using feedback
-        response = completion(
+        response = litellm.completion(
             model="bedrock/converse/us.deepseek.r1-v1:0",
             messages=[{
                 "role": "system",
