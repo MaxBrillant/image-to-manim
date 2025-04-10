@@ -28,7 +28,7 @@
         border-radius: 0.5rem;
         box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.1);
         text-align: center;
-        max-width: 50rem;
+        max-width: 30rem;
         width: 90%;
       }
       h1 {
@@ -57,7 +57,7 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: 7.5rem;
+        aspect-ratio: 2/1;
         border: 0.125rem dashed #ccc;
         border-radius: 0.5rem;
         background-color: #f8f8f8;
@@ -129,23 +129,6 @@
       button:hover {
         background-color: #0056b3;
       }
-      #message {
-        margin-top: 1.25rem;
-      }
-      #message.error {
-        color: red;
-      }
-      #loading {
-        display: none;
-        margin-top: 1.25rem;
-        color: #007bff;
-      }
-      #timer {
-        display: none;
-        margin-top: 0.625rem;
-        color: #007bff;
-        font-size: 0.875rem;
-      }
 
       /* Step processing styles */
       .process-steps {
@@ -158,17 +141,19 @@
         border: 1px solid #e0e0e0;
         border-radius: 0.5rem;
         padding: 1rem;
-        margin-bottom: 1rem;
         display: flex;
         flex-direction: column;
         text-align: left;
         position: relative;
       }
+      .step.pending {
+        display: none;
+      }
       .step-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.2rem;
       }
       .step-title {
         font-weight: bold;
@@ -206,6 +191,11 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
+      .step-timer {
+        color: #666;
+        margin-top: 0.5rem;
+        display: none;
+      }
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -229,8 +219,6 @@
         margin-top: 0.75rem;
       }
       .try-again-button {
-        background-color: #dc3545;
-        color: white;
         border: none;
         border-radius: 0.25rem;
         padding: 0.5rem 1rem;
@@ -239,14 +227,20 @@
         display: none;
       }
       .try-again-button:hover {
-        background-color: #c82333;
+        background-color: transparent;
       }
       .video-container {
         margin-top: 1rem;
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       .video-player {
-        max-width: 100%;
+        width: 100%;
         border-radius: 0.25rem;
+        object-fit: contain;
       }
 
       .footer {
@@ -264,8 +258,6 @@
       }
     </style>
     <script>
-      let timerInterval;
-      let startTime;
       let currentSessionId = null;
       let apiUrl = "https://image-to-manim.onrender.com"; // Replace with your API URL
       // For local development, uncomment this line:
@@ -274,7 +266,7 @@
       // Track the state of each step
       const stepsState = {
         processImage: { status: "pending", data: null },
-        generateNarrative: { status: "pending", data: null },
+        generateScript: { status: "pending", data: null },
         generateVideo: { status: "pending", data: null },
         improveVideo: { status: "pending", data: null },
       };
@@ -282,31 +274,61 @@
       // Step sequence for automatic progression and retry functionality
       const stepSequence = [
         "processImage",
-        "generateNarrative",
+        "generateScript",
         "generateVideo",
         "improveVideo",
       ];
 
-      function updateTimer() {
-        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      // Timer handlers for each step
+      const stepTimers = {
+        processImage: { startTime: null, interval: null },
+        generateScript: { startTime: null, interval: null },
+        generateVideo: { startTime: null, interval: null },
+        improveVideo: { startTime: null, interval: null },
+      };
+
+      function startStepTimer(stepKey) {
+        const stepId = `step-${stepKey}`;
+        const timerElem = document.getElementById(`${stepId}-timer`);
+        if (!timerElem) return;
+
+        // Reset and start timer
+        stepTimers[stepKey].startTime = Date.now();
+        timerElem.style.display = "block";
+
+        // Clear any existing interval
+        if (stepTimers[stepKey].interval) {
+          clearInterval(stepTimers[stepKey].interval);
+        }
+
+        // Update immediately and then start interval
+        updateStepTimer(stepKey);
+        stepTimers[stepKey].interval = setInterval(
+          () => updateStepTimer(stepKey),
+          1000
+        );
+      }
+
+      function updateStepTimer(stepKey) {
+        const stepId = `step-${stepKey}`;
+        const timerElem = document.getElementById(`${stepId}-timer`);
+        if (!timerElem || !stepTimers[stepKey].startTime) return;
+
+        const elapsedTime = Math.floor(
+          (Date.now() - stepTimers[stepKey].startTime) / 1000
+        );
         const minutes = Math.floor(elapsedTime / 60);
         const seconds = elapsedTime % 60;
-        document.getElementById(
-          "timer"
-        ).textContent = `Time elapsed: ${minutes}:${
+        timerElem.textContent = `Time: ${minutes}:${
           seconds < 10 ? "0" + seconds : seconds
         }`;
       }
 
-      function startTimer() {
-        startTime = Date.now();
-        document.getElementById("timer").style.display = "block";
-        timerInterval = setInterval(updateTimer, 1000);
-        updateTimer(); // Update immediately to show 0:00
-      }
-
-      function stopTimer() {
-        clearInterval(timerInterval);
+      function stopStepTimer(stepKey) {
+        if (stepTimers[stepKey].interval) {
+          clearInterval(stepTimers[stepKey].interval);
+          stepTimers[stepKey].interval = null;
+        }
       }
 
       function updateStepStatus(stepId, status, message = null) {
@@ -314,13 +336,19 @@
         const statusElem = step.querySelector(".step-status");
         const spinner = step.querySelector(".step-spinner");
         const tryAgainBtn = step.querySelector(".try-again-button");
+        const stepKey = stepId.replace("step-", "");
 
+        // Update CSS classes based on status
+        step.className = `step ${status}`;
         statusElem.textContent = message || status.toUpperCase();
         statusElem.className = "step-status " + status;
 
         if (status === "processing") {
           spinner.style.display = "inline-block";
           if (tryAgainBtn) tryAgainBtn.style.display = "none";
+
+          // Start timer for this step
+          startStepTimer(stepKey);
         } else {
           spinner.style.display = "none";
 
@@ -328,10 +356,12 @@
           if ((status === "completed" || status === "error") && tryAgainBtn) {
             tryAgainBtn.style.display = "inline-block";
           }
+
+          // Stop the timer but keep it visible
+          stopStepTimer(stepKey);
         }
 
         // Update our state object
-        const stepKey = stepId.replace("step-", "");
         stepsState[stepKey].status = status;
 
         // If completed, automatically trigger the next step
@@ -370,7 +400,7 @@
         } else if (contentType === "video") {
           contentElem.innerHTML = `
             <div class="video-container">
-              <video class="video-player" controls>
+              <video class="video-player" controls autoplay>
                 <source src="${content}" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
@@ -425,7 +455,7 @@
       function executeStep(stepKey) {
         const stepMap = {
           processImage: processImage,
-          generateNarrative: generateNarrative,
+          generateScript: generateScript,
           generateVideo: generateVideo,
           improveVideo: improveVideo,
         };
@@ -468,17 +498,12 @@
         }
 
         const formData = new FormData(document.getElementById("imageForm"));
-        const loadingDiv = document.getElementById("loading");
-        const messageDiv = document.getElementById("message");
         const submitButton = document.querySelector(".submit-button");
         const changeImageButton = document.querySelector(".change-image-btn");
 
         // Update UI
-        loadingDiv.style.display = "block";
-        messageDiv.innerHTML = "";
         submitButton.style.display = "none";
         changeImageButton.style.display = "none";
-        startTimer();
 
         // Update step status
         updateStepStatus("step-processImage", "processing", "PROCESSING");
@@ -494,7 +519,6 @@
           }
 
           const result = await response.json();
-          loadingDiv.style.display = "none";
 
           if (result.session_id) {
             // Save session ID for subsequent steps
@@ -511,15 +535,10 @@
 
             // Store data in our state
             stepsState.processImage.data = result;
-
-            messageDiv.innerHTML =
-              "Image processed successfully! Generating narrative...";
-            messageDiv.classList.remove("error");
           } else {
             throw new Error(result.error || "Unknown error occurred");
           }
         } catch (error) {
-          loadingDiv.style.display = "none";
           updateStepStatus("step-processImage", "error", "ERROR");
           setStepContent(
             "step-processImage",
@@ -527,28 +546,23 @@
             "text"
           );
 
-          messageDiv.textContent = "Error: " + error.message;
-          messageDiv.classList.add("error");
-          submitButton.style.display = "inline-block";
-          changeImageButton.style.display = "inline-block";
+          // submitButton.style.display = "inline-block";
+          // changeImageButton.style.display = "inline-block";
         }
       }
 
-      // Step 2: Generate Narrative
-      async function generateNarrative() {
+      // Step 2: Generate Script
+      async function generateScript() {
         if (!currentSessionId) {
           console.error("No session ID available");
           return;
         }
 
-        const messageDiv = document.getElementById("message");
-
         // Update step status
-        updateStepStatus("step-generateNarrative", "processing", "PROCESSING");
-        messageDiv.innerHTML = "Generating narrative...";
+        updateStepStatus("step-generateScript", "processing", "PROCESSING");
 
         try {
-          const response = await fetch(`${apiUrl}/generate-narrative`, {
+          const response = await fetch(`${apiUrl}/generate-script`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -564,37 +578,23 @@
 
           const result = await response.json();
 
-          if (result.narrative_text) {
+          if (result.script_text) {
             // Update step status and content
-            updateStepStatus(
-              "step-generateNarrative",
-              "completed",
-              "COMPLETED"
-            );
-            setStepContent(
-              "step-generateNarrative",
-              result.narrative_text,
-              "text"
-            );
+            updateStepStatus("step-generateScript", "completed", "COMPLETED");
+            setStepContent("step-generateScript", result.script_text, "text");
 
             // Store data in our state
-            stepsState.generateNarrative.data = result;
-
-            messageDiv.innerHTML =
-              "Narrative generated successfully! Generating video...";
+            stepsState.generateScript.data = result;
           } else {
-            throw new Error(result.error || "Failed to generate narrative");
+            throw new Error(result.error || "Failed to generate script");
           }
         } catch (error) {
-          updateStepStatus("step-generateNarrative", "error", "ERROR");
+          updateStepStatus("step-generateScript", "error", "ERROR");
           setStepContent(
-            "step-generateNarrative",
+            "step-generateScript",
             `Error: ${error.message}`,
             "text"
           );
-
-          messageDiv.textContent = "Error: " + error.message;
-          messageDiv.classList.add("error");
         }
       }
 
@@ -605,13 +605,8 @@
           return;
         }
 
-        const messageDiv = document.getElementById("message");
-        const qualitySelect = document.getElementById("video-quality-select");
-        const quality = qualitySelect ? qualitySelect.value : "medium";
-
         // Update step status
         updateStepStatus("step-generateVideo", "processing", "PROCESSING");
-        messageDiv.innerHTML = "Generating video...";
 
         try {
           const response = await fetch(`${apiUrl}/generate-video`, {
@@ -621,7 +616,7 @@
             },
             body: JSON.stringify({
               session_id: currentSessionId,
-              video_quality: quality,
+              video_quality: "medium", // Default to medium quality
             }),
           });
 
@@ -638,9 +633,6 @@
 
             // Store data in our state
             stepsState.generateVideo.data = result;
-
-            messageDiv.innerHTML =
-              "Video generated successfully! Improving video...";
           } else {
             throw new Error(result.error || "Failed to generate video");
           }
@@ -651,9 +643,6 @@
             `Error: ${error.message}`,
             "text"
           );
-
-          messageDiv.textContent = "Error: " + error.message;
-          messageDiv.classList.add("error");
         }
       }
 
@@ -664,13 +653,8 @@
           return;
         }
 
-        const messageDiv = document.getElementById("message");
-        const qualitySelect = document.getElementById("improve-quality-select");
-        const quality = qualitySelect ? qualitySelect.value : "medium";
-
         // Update step status
         updateStepStatus("step-improveVideo", "processing", "PROCESSING");
-        messageDiv.innerHTML = "Improving video...";
 
         try {
           const response = await fetch(`${apiUrl}/improve-video`, {
@@ -680,7 +664,7 @@
             },
             body: JSON.stringify({
               session_id: currentSessionId,
-              video_quality: quality,
+              video_quality: "medium", // Default to medium quality
             }),
           });
 
@@ -697,7 +681,7 @@
             let videoHtml = `
               <div class="video-container">
                 <h4>Final Video</h4>
-                <video class="video-player" controls>
+                <video class="video-player" controls autoplay>
                   <source src="${
                     result.improved_video_url || result.video_url
                   }" type="video/mp4">
@@ -706,10 +690,6 @@
                 <p><a href="${
                   result.improved_video_url || result.video_url
                 }" target="_blank">Open video in new tab</a></p>
-                <p><strong>Review Score:</strong> ${result.review_score}/100</p>
-                <p><strong>Review:</strong> ${
-                  result.review_text || "No review provided"
-                }</p>
               </div>
             `;
 
@@ -717,11 +697,6 @@
 
             // Store data in our state
             stepsState.improveVideo.data = result;
-
-            messageDiv.innerHTML = "Video improvement process completed!";
-
-            // Process is complete
-            stopTimer();
           } else {
             throw new Error(result.error || "Failed to improve video");
           }
@@ -732,9 +707,6 @@
             `Error: ${error.message}`,
             "text"
           );
-
-          messageDiv.textContent = "Error: " + error.message;
-          messageDiv.classList.add("error");
         }
       }
 
@@ -829,19 +801,17 @@
         </div>
         <button type="submit" class="submit-button">Upload Image</button>
       </form>
-      <div id="loading">Processing... This may take some time.</div>
-      <div id="timer"></div>
-      <div id="message"></div>
 
       <!-- Process Steps Container -->
       <div class="process-steps">
         <!-- Step 1: Process Image -->
-        <div id="step-processImage" class="step">
+        <div id="step-processImage" class="step pending">
           <div class="step-header">
             <div class="step-title">Step 1: Process Image</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
+          <div id="step-processImage-timer" class="step-timer"></div>
           <div id="step-processImage-content" class="step-content"></div>
           <div class="step-buttons">
             <button
@@ -854,17 +824,18 @@
           </div>
         </div>
 
-        <!-- Step 2: Generate Narrative -->
-        <div id="step-generateNarrative" class="step">
+        <!-- Step 2: Generate Script -->
+        <div id="step-generateScript" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 2: Generate Narrative</div>
+            <div class="step-title">Step 2: Generate Script</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
-          <div id="step-generateNarrative-content" class="step-content"></div>
+          <div id="step-generateScript-timer" class="step-timer"></div>
+          <div id="step-generateScript-content" class="step-content"></div>
           <div class="step-buttons">
             <button
-              onclick="tryAgainFromStep('generateNarrative')"
+              onclick="tryAgainFromStep('generateScript')"
               class="try-again-button"
               style="display: none"
             >
@@ -874,20 +845,13 @@
         </div>
 
         <!-- Step 3: Generate Video -->
-        <div id="step-generateVideo" class="step">
+        <div id="step-generateVideo" class="step pending">
           <div class="step-header">
             <div class="step-title">Step 3: Generate Video</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
-          <div class="step-quality-selection">
-            <label for="video-quality-select">Video Quality:</label>
-            <select id="video-quality-select">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
+          <div id="step-generateVideo-timer" class="step-timer"></div>
           <div id="step-generateVideo-content" class="step-content"></div>
           <div class="step-buttons">
             <button
@@ -901,20 +865,13 @@
         </div>
 
         <!-- Step 4: Improve Video -->
-        <div id="step-improveVideo" class="step">
+        <div id="step-improveVideo" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 4: Improve Video (Optional)</div>
+            <div class="step-title">Step 4: Improve Video</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
-          <div class="step-quality-selection">
-            <label for="improve-quality-select">Video Quality:</label>
-            <select id="improve-quality-select">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
+          <div id="step-improveVideo-timer" class="step-timer"></div>
           <div id="step-improveVideo-content" class="step-content"></div>
           <div class="step-buttons">
             <button

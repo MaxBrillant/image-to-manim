@@ -21,13 +21,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Load prompt templates
 def load_prompt_templates():
     """Load prompt templates from resources directory"""
-    with open("resources/narrative-prompt.txt", "r") as f:
-        narrative_prompt_template = f.read()
+    with open("resources/script-prompt.txt", "r") as f:
+        script_prompt_template = f.read()
     
-    with open("resources/manim-prompt.txt", "r") as f:
-        manim_prompt_template = f.read()
-    
-    return narrative_prompt_template, manim_prompt_template
+    return script_prompt_template
 
 # Initialize on import
-NARRATIVE_PROMPT_TEMPLATE, MANIM_PROMPT_TEMPLATE = load_prompt_templates()
+SCRIPT_PROMPT_TEMPLATE = load_prompt_templates()

@@ -5,14 +5,14 @@ import time
 from src.config import supabase
 from src.storage import update_code_in_storage
 
-def queue_manim_rendering(session_id, manim_code, narrative, code_path, quality):
+def queue_manim_rendering(session_id, manim_code, script, code_path, quality):
     """
     Queue Manim rendering job and handle rendering process with retries.
     
     Args:
         session_id (str): Unique session identifier
         manim_code (str): Generated Manim code to render
-        narrative (str): Narrative script for the animation
+        script (str): Script for the animation
         code_path (str): Path to the stored Manim code in Supabase
         
     Returns:
@@ -48,7 +48,7 @@ def queue_manim_rendering(session_id, manim_code, narrative, code_path, quality)
                 from src.generation import regenerate_manim_code
                 
                 # Regenerate the Manim code based on the error
-                current_code = regenerate_manim_code(narrative, current_code, error_message, session_id)
+                current_code = regenerate_manim_code(script, current_code, error_message, session_id)
                 
                 # Update code in storage (with error handling)
                 update_code_in_storage(code_path, current_code)

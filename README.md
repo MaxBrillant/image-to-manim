@@ -1,13 +1,13 @@
 # Image to Manim - Educational Video Generator
 
-Transforms images of problems or questions into educational animations using the Manim library.
+Transforms images of math problems into educational animations using the Manim library.
 
 ## Overview
 
-1. **Generate narrative** from image (AWS Bedrock/Claude)
-2. **Generate code** from narrative (AWS Bedrock/Deepseek)
-3. **Render** animation using Modal cloud computing
-4. **Review** video quality and improve if needed (Google Gemini)
+1. **Process image** to analyze the math problem (AWS Bedrock/Claude)
+2. **Generate animation script** for the educational explanation (AWS Bedrock/Claude)
+3. **Generate video** with Manim animations (AWS Bedrock/Deepseek + Modal)
+4. **Improve video** quality with automated feedback (Google Gemini)
 
 ## Requirements
 
@@ -55,8 +55,8 @@ Transforms images of problems or questions into educational animations using the
    create table manim_projects (
      id uuid primary key,
      status text,
-     narrative text,
-     narrative_url text,
+     script text,
+     script_url text,
      code_url text,
      image_url text,
      video_url text,
@@ -71,21 +71,23 @@ Transforms images of problems or questions into educational animations using the
 # Process an image
 curl -X POST -F "image=@/path/to/image.jpg" http://localhost:5000/process-image
 
+# Generate script
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"session_id": "your-session-id"}' \
+  http://localhost:5000/generate-script
+
+# Generate video (optional quality parameter: low, medium, high)
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"session_id": "your-session-id", "video_quality": "medium"}' \
+  http://localhost:5000/generate-video
+
+# Improve video
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"session_id": "your-session-id"}' \
+  http://localhost:5000/improve-video
+
 # Health check
 curl http://localhost:5000/health
-```
-
-### Response Format
-
-```json
-{
-  "session_id": "uuid",
-  "video_url": "https://...",
-  "status": "review_complete",
-  "review": {
-    "score": 95
-  }
-}
 ```
 
 ## Docker
@@ -97,7 +99,8 @@ docker run -p 8000:8000 --env-file .env image-to-manim
 
 ## Key Components
 
-- `app.py`: Main Flask API
+- `app.py`: Main Flask API with modular endpoints
 - `src/modal_renderer.py`: Modal-based GPU rendering
-- `src/generation.py`: Narrative and code generation
-- `src/review.py`: Video quality analysis
+- `src/generation.py`: Problem analysis, script and code generation
+- `src/review.py`: Video quality analysis and improvement
+- `frontend/index.html`: Interactive UI with step-by-step processing
