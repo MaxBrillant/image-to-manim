@@ -80,7 +80,8 @@ def process_image():
         logger.info(f"Storing image at path: {image_path}")
         supabase.storage.from_("manim-generator").upload(
             image_path,
-            img_bytes
+            img_bytes,
+            {    "cacheControl": '3600',    "upsert": "true"  }
         )
         
         # Get public URL
@@ -162,7 +163,8 @@ def generate_narrative_endpoint():
         logger.info(f"Storing narrative at path: {narrative_path}")
         supabase.storage.from_("manim-generator").upload(
             narrative_path,
-            narrative.encode('utf-8')
+            narrative.encode('utf-8'),
+            {    "cacheControl": '3600',    "upsert": "true"  }
         )
         narrative_url = supabase.storage.from_("manim-generator").get_public_url(narrative_path)
         logger.info(f"Narrative accessible at URL: {narrative_url}")
