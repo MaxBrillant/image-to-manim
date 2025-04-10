@@ -3,6 +3,9 @@ Main application file for the image-to-manim service
 """
 import os
 import uuid
+import requests
+import logging
+import time
 from io import BytesIO
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -10,9 +13,21 @@ from PIL import Image
 
 # Import from our modules
 from src.config import supabase
-from src.generation import generate_narrative, generate_manim_code, improve_video_from_feedback
+from src.generation import generate_problem_analysis, generate_narrative, generate_manim_code, improve_video_from_feedback
 from src.render import queue_manim_rendering
 from src.review import review_video
+from src.storage import update_code_in_storage
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
+logger = logging.getLogger('image-to-manim')
 
 app = Flask(__name__)
 CORS(app)
@@ -20,26 +35,32 @@ CORS(app)
 @app.route('/health', methods=['GET'])
 def health_check():
     """Simple health check endpoint"""
+    logger.info("Health check endpoint accessed")
     return jsonify({"status": "ok", "message": "Server is running"})
 
 @app.route('/process-image', methods=['POST'])
 def process_image():
-    """Main endpoint to process an image through the entire pipeline"""
-    print("Processing image...")
+    """Endpoint to process an image of a math problem and return a detailed description and solution"""
+    start_time = time.time()
+    logger.info("Starting image processing")
+    
     # Check if image is provided
     if 'image' not in request.files:
+        logger.error("No image provided in request")
         return jsonify({"error": "No image provided"}), 400
     
     try:
         # Get image from request
         image_file = request.files['image']
+        logger.info(f"Image received: {image_file.filename} ({image_file.content_type})")
         img = Image.open(image_file)
         
         # Create a unique session ID for this request
         session_id = str(uuid.uuid4())
+        logger.info(f"Generated session ID: {session_id}")
         
-        # Step 1: Upload the original image to Supabase
-        print("Uploading image to Supabase...")
+        # Upload the original image to Supabase
+        logger.info("Uploading image to Supabase storage")
         # Detect original format or use JPEG as fallback
         img_format = image_file.content_type.split('/')[-1] if image_file.content_type else 'jpeg'
         if img_format.lower() not in ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'tiff', 'webp']:
@@ -56,6 +77,7 @@ def process_image():
         
         # Upload to Supabase storage with correct extension
         image_path = f"{session_id}/original.{file_ext}"
+        logger.info(f"Storing image at path: {image_path}")
         supabase.storage.from_("manim-generator").upload(
             image_path,
             img_bytes
@@ -63,166 +85,428 @@ def process_image():
         
         # Get public URL
         image_url = supabase.storage.from_("manim-generator").get_public_url(image_path)
+        logger.info(f"Image accessible at URL: {image_url}")
         
-        # Step 2: Generate narrative script
-        print("Generating narrative script...")
-        narrative = generate_narrative(img, session_id)
+        # Analyze the math problem from the image
+        logger.info("Starting math problem analysis")
+        problem_analysis = generate_problem_analysis(img)
+        logger.info("Math problem analysis completed")
         
-        # Store narrative in Supabase
-        narrative_path = f"{session_id}/narrative.txt"
-        supabase.storage.from_("manim-generator").upload(
-            narrative_path,
-            narrative.encode('utf-8')
-        )
-        narrative_url = supabase.storage.from_("manim-generator").get_public_url(narrative_path)
-        
-        # Step 3: Generate Manim code
-        print("Generating Manim code...")
-        manim_code = generate_manim_code(narrative, session_id)
-        
-        # Store Manim code in Supabase
-        code_path = f"{session_id}/scene.py"
-        supabase.storage.from_("manim-generator").upload(
-            code_path,
-            manim_code.encode('utf-8')
-        )
-        code_url = supabase.storage.from_("manim-generator").get_public_url(code_path)
-        
-        # Step 4: Store the project metadata in Supabase database
+        # Store the project metadata in Supabase database
         project_data = {
             "id": session_id,
-            "status": "code_generated",
-            "narrative_url": narrative_url,
-            "code_url": code_url,
+            "problem_analysis": problem_analysis,
+            "status": "image_processed",
             "image_url": image_url,
             "created_at": "now()"
         }
         
         # Insert into database
+        logger.info(f"Inserting project data into database with ID: {session_id}")
         supabase.table("manim_projects").insert(project_data).execute()
         
-        # Step 5: Queue the Manim rendering job on Modal
-        print("Queuing Manim rendering job...")
+        response = {
+            "session_id": session_id,
+            "problem_analysis": problem_analysis,
+            "image_url": image_url,
+            "status": "image_processed",
+            "message": "Image processed successfully. Use the session_id to generate a narrative."
+        }
         
-        # Call the function to queue the rendering job
+        process_time = round(time.time() - start_time, 2)
+        logger.info(f"Image processing completed in {process_time}s")
+        return jsonify(response)
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error in process_image: {str(e)}\n{error_trace}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/generate-narrative', methods=['POST'])
+def generate_narrative_endpoint():
+    """Endpoint to generate a narrative based on a problem analysis"""
+    start_time = time.time()
+    logger.info("Starting narrative generation")
+    data = request.json
+    
+    if not data or 'session_id' not in data:
+        logger.error("No session_id provided in request")
+        return jsonify({"error": "No session_id provided"}), 400
+    
+    try:
+        session_id = data['session_id']
+        logger.info(f"Processing narrative generation for session: {session_id}")
+        
+        # Get the project data from Supabase
+        logger.info(f"Fetching project data for session: {session_id}")
+        response = supabase.table("manim_projects").select("*").eq("id", session_id).execute()
+        if not response.data:
+            logger.error(f"No project found with session_id: {session_id}")
+            return jsonify({"error": f"No project found with session_id: {session_id}"}), 404
+        
+        project_data = response.data[0]
+        
+        # Check if the project has been processed
+        if not project_data.get('problem_analysis'):
+            logger.error(f"Problem analysis not found for session: {session_id}")
+            return jsonify({"error": "Problem analysis has not been generated yet"}), 400
+        
+        # Generate narrative
+        logger.info("Generating narrative script from problem analysis")
+        narrative = generate_narrative(project_data['problem_analysis'])
+        logger.info("Narrative generation completed")
+        
+        # Store narrative in Supabase
+        narrative_path = f"{session_id}/narrative.txt"
+        logger.info(f"Storing narrative at path: {narrative_path}")
+        supabase.storage.from_("manim-generator").upload(
+            narrative_path,
+            narrative.encode('utf-8')
+        )
+        narrative_url = supabase.storage.from_("manim-generator").get_public_url(narrative_path)
+        logger.info(f"Narrative accessible at URL: {narrative_url}")
+        
+        # Update the project status
+        logger.info(f"Updating project status to 'narrative_generated' for session: {session_id}")
+        supabase.table("manim_projects").update({
+            "status": "narrative_generated",
+            "narrative_url": narrative_url
+        }).eq("id", session_id).execute()
+        
+        response = {
+            "session_id": session_id,
+            "narrative_url": narrative_url,
+            "narrative_text": narrative,
+            "status": "narrative_generated",
+            "message": "Narrative generated successfully. Use the session_id to generate a video."
+        }
+        
+        process_time = round(time.time() - start_time, 2)
+        logger.info(f"Narrative generation completed in {process_time}s")
+        return jsonify(response)
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error in generate_narrative: {str(e)}\n{error_trace}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/generate-video', methods=['POST'])
+def generate_video():
+    """Endpoint to generate a video from a narrative"""
+    start_time = time.time()
+    logger.info("Starting video generation")
+    data = request.json
+    
+    if not data or 'session_id' not in data:
+        logger.error("No session_id provided in request")
+        return jsonify({"error": "No session_id provided"}), 400
+    
+    # Optional video quality parameter with default value
+    video_quality = data.get('video_quality', 'medium')
+    if video_quality not in ['low', 'medium', 'high']:
+        logger.warning(f"Invalid video quality '{video_quality}' requested, defaulting to 'medium'")
+        video_quality = 'medium'  # Default to medium if invalid quality is provided
+    
+    try:
+        session_id = data['session_id']
+        
+        # Get the project data from Supabase
+        logger.info(f"Fetching project data for session: {session_id}")
+        response = supabase.table("manim_projects").select("*").eq("id", session_id).execute()
+        if not response.data:
+            logger.error(f"No project found with session_id: {session_id}")
+            return jsonify({"error": f"No project found with session_id: {session_id}"}), 404
+        
+        project_data = response.data[0]
+        
+        # Check if we have a narrative
+        if not project_data.get('narrative_url'):
+            logger.error(f"Narrative URL not found for session: {session_id}")
+            return jsonify({"error": "Narrative has not been generated yet"}), 400
+        
+        # Get the narrative from the stored URL
+        narrative_url = project_data.get('narrative_url')
+        logger.info(f"Retrieving narrative from URL: {narrative_url}")
+        
+        try:
+            # Download the narrative content from the URL
+            response = requests.get(narrative_url)
+            if response.status_code == 200:
+                narrative = response.text
+                logger.info("Successfully retrieved narrative content")
+            else:
+                logger.error(f"Failed to retrieve narrative. Status code: {response.status_code}")
+                return jsonify({"error": f"Failed to retrieve narrative. Status code: {response.status_code}"}), 500
+        except Exception as e:
+            logger.error(f"Exception while retrieving narrative: {str(e)}")
+            return jsonify({"error": f"Failed to retrieve narrative: {str(e)}"}), 500
+        
+        # Generate Manim code
+        logger.info("Generating Manim code from narrative")
+        manim_code = generate_manim_code(narrative, session_id)
+        logger.info("Manim code generation completed")
+        
+        # Store Manim code in Supabase
+        code_path = f"{session_id}/scene.py"
+        logger.info(f"Storing Manim code at path: {code_path}")
+        update_code_in_storage(code_path, manim_code)
+        code_url = supabase.storage.from_("manim-generator").get_public_url(code_path)
+        logger.info(f"Manim code accessible at URL: {code_url}")
+        
+        # Update the project data
+        logger.info(f"Updating project with code URL for session: {session_id}")
+        supabase.table("manim_projects").update({
+            "code_url": code_url
+        }).eq("id", session_id).execute()
+        
+        # Queue the Manim rendering job on Modal
+        logger.info(f"Queuing Manim rendering job with quality: {video_quality}")
+        
+        # Add video quality to the rendering parameters
         render_result = queue_manim_rendering(
             session_id=session_id,
             manim_code=manim_code,
             narrative=narrative,
-            code_path=code_path
+            code_path=f"{session_id}/scene.py",
+            quality=video_quality
         )
         
         video_url = render_result.get("video_url")
         error_message = render_result.get("error")
         
         if video_url:
-            # Review the video quality and gather feedback
-            print("Reviewing video quality...")
-            review_result = review_video(video_url)
+            logger.info(f"Rendering completed successfully, video URL: {video_url}")
+            # Update the project status
+            logger.info(f"Updating project status to 'video_generated' for session: {session_id}")
+            supabase.table("manim_projects").update({
+                "status": "video_generated",
+                "video_url": video_url
+            }).eq("id", session_id).execute()
             
-            score = review_result["score"]
-            review_text = review_result["review"]
-            needs_improvement = review_result["needs_improvement"]
-            
-            # If score is low, regenerate the Manim code and re-render
-            feedback_retry_count = 0
-            max_feedback_retries = 1  # Limit to one feedback-based retry
-            
-            if needs_improvement and feedback_retry_count < max_feedback_retries:
-                print(f"Video quality score is low ({score}/100). Regenerating based on feedback...")
-                feedback_retry_count += 1
-                
-                # Attempt to improve the video based on feedback
-                improved_result = improve_video_from_feedback(
-                    session_id,
-                    manim_code,
-                    review_text,
-                    narrative,  
-                    score, 
-                    code_path
-                )
-                
-                if improved_result.get("success", False):
-                    # Video was successfully improved
-                    improved_code = improved_result.get("improved_code")
-                    
-                    print("Queuing improved Manim rendering job...")
-                    # Call the function to queue the rendering job
-                    render_result = queue_manim_rendering(
-                        session_id=session_id,
-                        manim_code=improved_code,
-                        narrative=narrative,
-                        code_path=code_path
-                    )
-                    imporoved_video_url = render_result.get("video_url")
-
-                    if imporoved_video_url:
-                        # Use the improved video URL for the response
-                        video_url = imporoved_video_url
-                        response = {
-                            "session_id": session_id,
-                            "narrative_url": narrative_url,
-                            "video_url": video_url,  # This is the improved video URL
-                            "code_url": code_url,
-                            "image_url": image_url,
-                            "status": "improved_render_complete",
-                            "message": f"Processing complete - video has been improved based on feedback. Original score: {score}/100."
-                        }
-                    else:
-                        # Improvement attempt failed, use the original video
-                        error = improved_result.get("error", "Unknown error")
-                        response = {
-                            "session_id": session_id,
-                            "narrative_url": narrative_url,
-                            "video_url": video_url,
-                            "code_url": code_url,
-                            "image_url": image_url,
-                            "status": "review_complete",
-                            "message": f"Processing complete - video has been reviewed (score: {score}/100). Improvement attempt failed: {error}"
-                        }
-                else:
-                    # Improvement attempt failed, use the original video
-                    error = improved_result.get("error", "Unknown error")
-                    response = {
-                        "session_id": session_id,
-                        "narrative_url": narrative_url,
-                        "video_url": video_url,
-                        "code_url": code_url,
-                        "image_url": image_url,
-                        "status": "review_complete",
-                        "message": f"Processing complete - video has been reviewed (score: {score}/100). Improvement attempt failed: {error}"
-                    }
-            else:
-                # No improvement needed or already at max retries, return with review information
-                response = {
-                    "session_id": session_id,
-                    "narrative_url": narrative_url,
-                    "video_url": video_url,
-                    "code_url": code_url,
-                    "image_url": image_url,
-                    "status": "review_complete",
-                    "message": f"Processing complete - video has been rendered and reviewed. Score: {score}/100."
-                }
-        else:
-            # Rendering failed
             response = {
                 "session_id": session_id,
                 "narrative_url": narrative_url,
                 "code_url": code_url,
-                "image_url": image_url,
+                "video_url": video_url,
+                "status": "video_generated",
+                "message": "Video generated successfully."
+            }
+        else:
+            # Rendering failed
+            logger.error(f"Video rendering failed: {error_message}")
+            response = {
+                "session_id": session_id,
+                "narrative_url": narrative_url,
+                "code_url": code_url,
                 "status": "code_generated",
                 "message": "Code generation complete, but video rendering failed.",
                 "error": error_message
             }
         
+        process_time = round(time.time() - start_time, 2)
+        logger.info(f"Video generation process completed in {process_time}s")
         return jsonify(response)
     
     except Exception as e:
         import traceback
-        print(traceback.format_exc())
+        error_trace = traceback.format_exc()
+        logger.error(f"Error in generate_video: {str(e)}\n{error_trace}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/improve-video', methods=['POST'])
+def improve_video():
+    """Endpoint to review and improve a generated video"""
+    start_time = time.time()
+    logger.info("Starting video improvement process")
+    data = request.json
+    
+    if not data or 'session_id' not in data:
+        logger.error("No session_id provided in request")
+        return jsonify({"error": "No session_id provided"}), 400
+    
+    # Optional video quality parameter with default value
+    video_quality = data.get('video_quality', 'medium')
+    if video_quality not in ['low', 'medium', 'high']:
+        logger.warning(f"Invalid video quality '{video_quality}' requested, defaulting to 'medium'")
+        video_quality = 'medium'  # Default to medium if invalid quality is provided
+    
+    try:
+        session_id = data['session_id']
+        
+        # Get the project data from Supabase
+        logger.info(f"Fetching project data for session: {session_id}")
+        response = supabase.table("manim_projects").select("*").eq("id", session_id).execute()
+        if not response.data:
+            logger.error(f"No project found with session_id: {session_id}")
+            return jsonify({"error": f"No project found with session_id: {session_id}"}), 404
+        
+        project_data = response.data[0]
+        
+        # Check if we have a video to improve
+        if not project_data.get('video_url'):
+            logger.error(f"Video URL not found for session: {session_id}")
+            return jsonify({"error": "Video has not been generated yet"}), 400
+        
+        video_url = project_data.get('video_url')
+        code_url = project_data.get('code_url')
+        narrative_url = project_data.get('narrative_url')
+        
+        # Review the video
+        logger.info(f"Reviewing video quality at URL: {video_url}")
+        review_result = review_video(video_url)
+        
+        score = review_result["score"]
+        review_text = review_result["review"]
+        needs_improvement = review_result["needs_improvement"]
+        logger.info(f"Video review completed. Score: {score}/100. Needs improvement: {needs_improvement}")
+        
+        # Update the database with review results
+        logger.info(f"Updating project status to 'review_complete' for session: {session_id}")
+        supabase.table("manim_projects").update({
+            "status": "review_complete",
+        }).eq("id", session_id).execute()
+        
+        # If the video needs improvement
+        if needs_improvement:
+            logger.info(f"Video quality score is low ({score}/100). Regenerating based on feedback")
+            
+            # Get the narrative from the stored URL
+            logger.info(f"Retrieving narrative from URL: {narrative_url}")
+            
+            try:
+                # Download the narrative content from the URL
+                response = requests.get(narrative_url)
+                if response.status_code == 200:
+                    narrative = response.text
+                    logger.info("Successfully retrieved narrative content")
+                else:
+                    logger.error(f"Failed to retrieve narrative. Status code: {response.status_code}")
+                    return jsonify({"error": f"Failed to retrieve narrative. Status code: {response.status_code}"}), 500
+            except Exception as e:
+                logger.error(f"Exception while retrieving narrative: {str(e)}")
+                return jsonify({"error": f"Failed to retrieve narrative: {str(e)}"}), 500
+            
+            # Get the manim code from the stored URL
+            logger.info(f"Retrieving manim code from URL: {code_url}")
+            
+            try:
+                # Download the manim code content from the URL
+                response = requests.get(code_url)
+                if response.status_code == 200:
+                    manim_code = response.text
+                    logger.info("Successfully retrieved manim code content")
+                else:
+                    logger.error(f"Failed to retrieve manim code. Status code: {response.status_code}")
+                    return jsonify({"error": f"Failed to retrieve manim code. Status code: {response.status_code}"}), 500
+            except Exception as e:
+                logger.error(f"Exception while retrieving manim code: {str(e)}")
+                return jsonify({"error": f"Failed to retrieve manim code: {str(e)}"}), 500
+            
+            # Attempt to improve the video based on feedback
+            logger.info("Attempting to improve video based on feedback")
+            improved_result = improve_video_from_feedback(
+                session_id,
+                manim_code,
+                review_text,
+                narrative,
+                score,
+                f"{session_id}/scene.py"  # code path
+            )
+            
+            if improved_result.get("success", False):
+                # Video was successfully improved
+                logger.info("Successfully generated improved manim code")
+                improved_code = improved_result.get("improved_code")
+                
+                # Store the improved code
+                logger.info(f"Storing improved manim code")
+                update_code_in_storage(f"{session_id}/scene.py", improved_code)
+                
+                logger.info(f"Queuing improved Manim rendering job with quality: {video_quality}")
+                # Call the function to queue the rendering job with quality parameter
+                render_result = queue_manim_rendering(
+                    session_id=session_id,
+                    manim_code=improved_code,
+                    narrative=narrative,
+                    code_path=f"{session_id}/scene.py",
+                    quality=video_quality
+                )
+                
+                improved_video_url = render_result.get("video_url")
+                
+                if improved_video_url:
+                    # Update the database with the improved video
+                    logger.info(f"Rendering of improved video completed successfully, URL: {improved_video_url}")
+                    logger.info(f"Updating project status to 'improved_render_complete' for session: {session_id}")
+                    supabase.table("manim_projects").update({
+                        "status": "improved_render_complete",
+                        "video_url": improved_video_url,
+                    }).eq("id", session_id).execute()
+                    
+                    response = {
+                        "session_id": session_id,
+                        "improved_video_url": improved_video_url,
+                        "code_url": code_url,
+                        "narrative_url": narrative_url,
+                        "status": "improved_render_complete",
+                        "review_score": score,
+                        "review_text": review_text,
+                        "message": f"Video has been improved based on feedback. Original score: {score}/100."
+                    }
+                else:
+                    # Improvement rendering failed
+                    error = render_result.get("error", "Unknown error during rendering")
+                    logger.error(f"Improved video rendering failed: {error}")
+                    response = {
+                        "session_id": session_id,
+                        "code_url": code_url,
+                        "narrative_url": narrative_url,
+                        "status": "review_complete",
+                        "review_score": score,
+                        "review_text": review_text,
+                        "message": f"Video was reviewed (score: {score}/100), but improvement rendering failed: {error}"
+                    }
+            else:
+                # Improvement attempt failed
+                error = improved_result.get("error", "Unknown error during improvement")
+                logger.error(f"Failed to improve video: {error}")
+                response = {
+                    "session_id": session_id,
+                    "code_url": code_url,
+                    "narrative_url": narrative_url,
+                    "status": "review_complete",
+                    "review_score": score,
+                    "review_text": review_text,
+                    "message": f"Video was reviewed (score: {score}/100), but improvement failed: {error}"
+                }
+        else:
+            # No improvement needed
+            logger.info(f"Video doesn't need improvement (score: {score}/100)")
+            response = {
+                "session_id": session_id,
+                "improved_video_url": video_url,
+                "code_url": code_url,
+                "narrative_url": narrative_url,
+                "status": "review_complete",
+                "review_score": score,
+                "review_text": review_text,
+                "message": f"Video was reviewed. Score: {score}/100. No improvement needed."
+            }
+        
+        process_time = round(time.time() - start_time, 2)
+        logger.info(f"Video improvement process completed in {process_time}s")
+        return jsonify(response)
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error in improve_video: {str(e)}\n{error_trace}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Run the Flask app
     port = int(os.environ.get("PORT", 5000))
+    logger.info(f"Starting Flask app on port {port}")
     app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False)

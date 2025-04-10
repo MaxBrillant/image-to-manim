@@ -1,4 +1,5 @@
 import os
+import random
 import tempfile
 import re
 import subprocess
@@ -47,7 +48,7 @@ class ManimRenderer:
         
         
     @method()
-    def render_video(self, session_id, manim_code):
+    def render_video(self, session_id, manim_code, quality):
         """Render a Manim video based on provided code"""
         try:
             # Ensure supabase is initialized
@@ -74,7 +75,7 @@ class ManimRenderer:
                 # Run Manim command
                 cmd = [
                     "python3", "-m", "manim",
-                    "-qm",  # Medium quality
+                    "-qm" if quality == "medium" else "-ql" if quality == "low" else "-qh",
                     "--media_dir", temp_dir,
                     local_code_path,
                     scene_class
@@ -87,7 +88,6 @@ class ManimRenderer:
                     # Update project status to failed
                     self.supabase.table("manim_projects").update({
                         "status": "render_failed",
-                        "render_error": process.stderr
                     }).eq("id", session_id).execute()
                     
                     return {
@@ -101,7 +101,6 @@ class ManimRenderer:
                 if not os.path.exists(videos_dir):
                     self.supabase.table("manim_projects").update({
                         "status": "render_failed",
-                        "render_error": "No video directory created"
                     }).eq("id", session_id).execute()
                     
                     return {
@@ -119,7 +118,6 @@ class ManimRenderer:
                 if not mp4_files:
                     self.supabase.table("manim_projects").update({
                         "status": "render_failed",
-                        "render_error": "No video file was generated"
                     }).eq("id", session_id).execute()
                     
                     return {
@@ -134,7 +132,7 @@ class ManimRenderer:
                     video_bytes = video_file.read()
                     
                     # Define path in Supabase storage
-                    storage_video_path = f"{session_id}/video.mp4"
+                    storage_video_path = f"{session_id}/{random.randint(100000, 999999)}.mp4"
                     
                     # Upload
                     self.supabase.storage.from_("manim-generator").upload(
@@ -171,7 +169,6 @@ class ManimRenderer:
             try:
                 self.supabase.table("manim_projects").update({
                     "status": "render_failed",
-                    "render_error": str(e)
                 }).eq("id", session_id).execute()
             except:
                 pass

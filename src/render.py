@@ -5,7 +5,7 @@ import time
 from src.config import supabase
 from src.storage import update_code_in_storage
 
-def queue_manim_rendering(session_id, manim_code, narrative, code_path):
+def queue_manim_rendering(session_id, manim_code, narrative, code_path, quality):
     """
     Queue Manim rendering job and handle rendering process with retries.
     
@@ -28,7 +28,7 @@ def queue_manim_rendering(session_id, manim_code, narrative, code_path):
         
         # Call the Modal function asynchronously
         with app.run():
-            result_future = renderer.render_video.remote(session_id, manim_code)
+            result_future = renderer.render_video.remote(session_id, manim_code, quality)
         
             print(result_future)
             # Check if rendering was successful
@@ -58,7 +58,7 @@ def queue_manim_rendering(session_id, manim_code, narrative, code_path):
                 
                 print(f"Retrying rendering job ({retry_count}/{max_retries})...")
                 # Make a new render request with the regenerated code
-                result_future = renderer.render_video.remote(session_id, current_code)
+                result_future = renderer.render_video.remote(session_id, current_code, quality)
                 print(f"Retry {retry_count} result: {result_future}")
                 video_url = result_future.get("video_url")
                 error_message = result_future.get("error")
