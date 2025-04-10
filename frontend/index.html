@@ -138,9 +138,10 @@
         margin-top: 1.25rem;
       }
       .step {
-        border: 1px solid #e0e0e0;
+        border: 1px solid #a0a0a0;
         border-radius: 0.5rem;
         padding: 1rem;
+        margin-bottom: 1rem;
         display: flex;
         flex-direction: column;
         text-align: left;
@@ -177,9 +178,6 @@
       }
       .step-content {
         display: none;
-        margin-top: 0.5rem;
-        overflow: auto;
-        max-height: 15rem;
       }
       .step-spinner {
         display: none;
@@ -216,7 +214,6 @@
       .step-buttons {
         display: flex;
         justify-content: flex-end;
-        margin-top: 0.75rem;
       }
       .try-again-button {
         border: none;
@@ -232,13 +229,15 @@
       .video-container {
         margin-top: 1rem;
         width: 100%;
-        height: auto;
+        height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
+        object-fit: contain;
       }
       .video-player {
         width: 100%;
+        height: auto;
         border-radius: 0.25rem;
         object-fit: contain;
       }
@@ -331,11 +330,38 @@
         }
       }
 
+      // Helper function to check if any step is currently processing
+      function isAnyStepProcessing() {
+        return Object.values(stepsState).some(
+          (step) => step.status === "processing"
+        );
+      }
+
+      // Function to update all try-again buttons based on processing state
+      function updateAllTryAgainButtons() {
+        const isProcessing = isAnyStepProcessing();
+
+        // Hide all try-again buttons if any step is processing
+        stepSequence.forEach((stepKey) => {
+          const stepId = `step-${stepKey}`;
+          const step = document.getElementById(stepId);
+          const tryAgainBtn = step.querySelector(".try-again-button");
+
+          if (tryAgainBtn) {
+            // Only show button if the step is completed/error AND no step is processing
+            const shouldShow =
+              (stepsState[stepKey].status === "completed" ||
+                stepsState[stepKey].status === "error") &&
+              !isProcessing;
+            tryAgainBtn.style.display = shouldShow ? "inline-block" : "none";
+          }
+        });
+      }
+
       function updateStepStatus(stepId, status, message = null) {
         const step = document.getElementById(stepId);
         const statusElem = step.querySelector(".step-status");
         const spinner = step.querySelector(".step-spinner");
-        const tryAgainBtn = step.querySelector(".try-again-button");
         const stepKey = stepId.replace("step-", "");
 
         // Update CSS classes based on status
@@ -343,26 +369,26 @@
         statusElem.textContent = message || status.toUpperCase();
         statusElem.className = "step-status " + status;
 
+        // Previous status before update
+        const previousStatus = stepsState[stepKey].status;
+
+        // Update our state object
+        stepsState[stepKey].status = status;
+
         if (status === "processing") {
           spinner.style.display = "inline-block";
-          if (tryAgainBtn) tryAgainBtn.style.display = "none";
 
           // Start timer for this step
           startStepTimer(stepKey);
         } else {
           spinner.style.display = "none";
 
-          // Show try again button on completion or error
-          if ((status === "completed" || status === "error") && tryAgainBtn) {
-            tryAgainBtn.style.display = "inline-block";
-          }
-
           // Stop the timer but keep it visible
           stopStepTimer(stepKey);
         }
 
-        // Update our state object
-        stepsState[stepKey].status = status;
+        // Update all try-again buttons visibility
+        updateAllTryAgainButtons();
 
         // If completed, automatically trigger the next step
         if (status === "completed") {
@@ -390,13 +416,13 @@
         const contentElem = document.getElementById(`${stepId}-content`);
 
         if (contentType === "json") {
-          contentElem.innerHTML = `<pre>${JSON.stringify(
+          contentElem.innerHTML = `<pre style="max-height: 15rem; overflow: auto">${JSON.stringify(
             content,
             null,
             2
           )}</pre>`;
         } else if (contentType === "text") {
-          contentElem.innerHTML = `<pre>${content}</pre>`;
+          contentElem.innerHTML = `<pre style="max-height: 15rem; overflow: auto">${content}</pre>`;
         } else if (contentType === "video") {
           contentElem.innerHTML = `
             <div class="video-container">
@@ -680,7 +706,6 @@
 
             let videoHtml = `
               <div class="video-container">
-                <h4>Final Video</h4>
                 <video class="video-player" controls autoplay>
                   <source src="${
                     result.improved_video_url || result.video_url
@@ -827,7 +852,7 @@
         <!-- Step 2: Generate Script -->
         <div id="step-generateScript" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 2: Generate Script</div>
+            <div class="step-title">Step 2: Generate Animation Script</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
