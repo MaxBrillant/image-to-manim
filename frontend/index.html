@@ -28,7 +28,7 @@
         border-radius: 0.5rem;
         box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.1);
         text-align: center;
-        max-width: 30rem;
+        max-width: 50rem;
         width: 90%;
       }
       h1 {
@@ -147,6 +147,108 @@
         font-size: 0.875rem;
       }
 
+      /* Step processing styles */
+      .process-steps {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 1.25rem;
+      }
+      .step {
+        border: 1px solid #e0e0e0;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        position: relative;
+      }
+      .step-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .step-title {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #333;
+      }
+      .step-status {
+        font-size: 0.9rem;
+      }
+      .step-status.pending {
+        color: #888;
+      }
+      .step-status.processing {
+        color: #007bff;
+      }
+      .step-status.completed {
+        color: #28a745;
+      }
+      .step-status.error {
+        color: #dc3545;
+      }
+      .step-content {
+        display: none;
+        margin-top: 0.5rem;
+        overflow: auto;
+        max-height: 15rem;
+      }
+      .step-spinner {
+        display: none;
+        margin-left: 0.5rem;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .step-content pre {
+        background-color: #f5f5f5;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+        color: #333;
+      }
+      .step-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.75rem;
+      }
+      .try-again-button {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: none;
+      }
+      .try-again-button:hover {
+        background-color: #c82333;
+      }
+      .video-container {
+        margin-top: 1rem;
+      }
+      .video-player {
+        max-width: 100%;
+        border-radius: 0.25rem;
+      }
+
       .footer {
         text-align: center;
         padding: 0.625rem 0;
@@ -164,6 +266,26 @@
     <script>
       let timerInterval;
       let startTime;
+      let currentSessionId = null;
+      let apiUrl = "https://image-to-manim.onrender.com"; // Replace with your API URL
+      // For local development, uncomment this line:
+      // let apiUrl = "http://localhost:5000";
+
+      // Track the state of each step
+      const stepsState = {
+        processImage: { status: "pending", data: null },
+        generateNarrative: { status: "pending", data: null },
+        generateVideo: { status: "pending", data: null },
+        improveVideo: { status: "pending", data: null },
+      };
+
+      // Step sequence for automatic progression and retry functionality
+      const stepSequence = [
+        "processImage",
+        "generateNarrative",
+        "generateVideo",
+        "improveVideo",
+      ];
 
       function updateTimer() {
         const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
@@ -185,6 +307,81 @@
 
       function stopTimer() {
         clearInterval(timerInterval);
+      }
+
+      function updateStepStatus(stepId, status, message = null) {
+        const step = document.getElementById(stepId);
+        const statusElem = step.querySelector(".step-status");
+        const spinner = step.querySelector(".step-spinner");
+        const tryAgainBtn = step.querySelector(".try-again-button");
+
+        statusElem.textContent = message || status.toUpperCase();
+        statusElem.className = "step-status " + status;
+
+        if (status === "processing") {
+          spinner.style.display = "inline-block";
+          if (tryAgainBtn) tryAgainBtn.style.display = "none";
+        } else {
+          spinner.style.display = "none";
+
+          // Show try again button on completion or error
+          if ((status === "completed" || status === "error") && tryAgainBtn) {
+            tryAgainBtn.style.display = "inline-block";
+          }
+        }
+
+        // Update our state object
+        const stepKey = stepId.replace("step-", "");
+        stepsState[stepKey].status = status;
+
+        // If completed, automatically trigger the next step
+        if (status === "completed") {
+          const currentStepIndex = stepSequence.indexOf(stepKey);
+          if (
+            currentStepIndex >= 0 &&
+            currentStepIndex < stepSequence.length - 1
+          ) {
+            const nextStepKey = stepSequence[currentStepIndex + 1];
+            setTimeout(() => {
+              executeStep(nextStepKey);
+            }, 1000); // Small delay before starting next step
+          }
+        }
+      }
+
+      function showStepContent(stepId, show = true) {
+        const content = document.getElementById(`${stepId}-content`);
+        if (content) {
+          content.style.display = show ? "block" : "none";
+        }
+      }
+
+      function setStepContent(stepId, content, contentType = "text") {
+        const contentElem = document.getElementById(`${stepId}-content`);
+
+        if (contentType === "json") {
+          contentElem.innerHTML = `<pre>${JSON.stringify(
+            content,
+            null,
+            2
+          )}</pre>`;
+        } else if (contentType === "text") {
+          contentElem.innerHTML = `<pre>${content}</pre>`;
+        } else if (contentType === "video") {
+          contentElem.innerHTML = `
+            <div class="video-container">
+              <video class="video-player" controls>
+                <source src="${content}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+              <p><a href="${content}" target="_blank">Open video in new tab</a></p>
+            </div>
+          `;
+        } else if (contentType === "html") {
+          contentElem.innerHTML = content;
+        }
+
+        showStepContent(stepId, true);
       }
 
       function handleImageSelection(event) {
@@ -224,48 +421,320 @@
         }
       }
 
-      async function uploadImage(event) {
-        event.preventDefault();
+      // Function to execute a specific step
+      function executeStep(stepKey) {
+        const stepMap = {
+          processImage: processImage,
+          generateNarrative: generateNarrative,
+          generateVideo: generateVideo,
+          improveVideo: improveVideo,
+        };
+
+        if (stepMap[stepKey]) {
+          stepMap[stepKey]();
+        }
+      }
+
+      // Function to try again from a specific step
+      function tryAgainFromStep(stepKey) {
+        // Reset current and all following steps
+        const startIndex = stepSequence.indexOf(stepKey);
+        if (startIndex >= 0) {
+          for (let i = startIndex; i < stepSequence.length; i++) {
+            const resetStepKey = stepSequence[i];
+            stepsState[resetStepKey].status = "pending";
+            stepsState[resetStepKey].data = null;
+            updateStepStatus(`step-${resetStepKey}`, "pending", "PENDING");
+            showStepContent(`step-${resetStepKey}`, false);
+          }
+
+          // Start execution from the selected step
+          executeStep(stepKey);
+        }
+      }
+
+      // Step 1: Process Image
+      async function processImage(event) {
+        if (event) event.preventDefault();
+
+        // Reset all steps if starting a new process
+        if (currentSessionId === null) {
+          for (const step in stepsState) {
+            stepsState[step].status = "pending";
+            stepsState[step].data = null;
+            updateStepStatus(`step-${step}`, "pending", "PENDING");
+            showStepContent(`step-${step}`, false);
+          }
+        }
+
         const formData = new FormData(document.getElementById("imageForm"));
         const loadingDiv = document.getElementById("loading");
         const messageDiv = document.getElementById("message");
         const submitButton = document.querySelector(".submit-button");
         const changeImageButton = document.querySelector(".change-image-btn");
+
+        // Update UI
         loadingDiv.style.display = "block";
         messageDiv.innerHTML = "";
         submitButton.style.display = "none";
         changeImageButton.style.display = "none";
         startTimer();
+
+        // Update step status
+        updateStepStatus("step-processImage", "processing", "PROCESSING");
+
         try {
-          const response = await fetch(
-            "https://image-to-manim.onrender.com/process-image",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          const response = await fetch(`${apiUrl}/process-image`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+
           const result = await response.json();
           loadingDiv.style.display = "none";
-          stopTimer();
-          if (result.video_url) {
-            // Open the video URL in a new window instead of displaying it inline
-            window.open(result.video_url, "_blank");
-            messageDiv.innerHTML = `<p>Video opened in a new window. <a href="${result.video_url}" target="_blank">Click here</a> if it didn't open automatically.</p>`;
+
+          if (result.session_id) {
+            // Save session ID for subsequent steps
+            currentSessionId = result.session_id;
+
+            // Update step status and content
+            updateStepStatus("step-processImage", "completed", "COMPLETED");
+            setStepContent(
+              "step-processImage",
+              result.problem_analysis ||
+                "Problem analysis completed successfully.",
+              "text"
+            );
+
+            // Store data in our state
+            stepsState.processImage.data = result;
+
+            messageDiv.innerHTML =
+              "Image processed successfully! Generating narrative...";
             messageDiv.classList.remove("error");
           } else {
-            messageDiv.textContent =
-              "Error: Something went wrong while rendering your video :( Please try again after some time.";
-            messageDiv.classList.add("error");
-            submitButton.style.display = "inline-block";
-            changeImageButton.style.display = "inline-block";
+            throw new Error(result.error || "Unknown error occurred");
           }
         } catch (error) {
           loadingDiv.style.display = "none";
-          stopTimer();
+          updateStepStatus("step-processImage", "error", "ERROR");
+          setStepContent(
+            "step-processImage",
+            `Error: ${error.message}`,
+            "text"
+          );
+
           messageDiv.textContent = "Error: " + error.message;
           messageDiv.classList.add("error");
           submitButton.style.display = "inline-block";
           changeImageButton.style.display = "inline-block";
+        }
+      }
+
+      // Step 2: Generate Narrative
+      async function generateNarrative() {
+        if (!currentSessionId) {
+          console.error("No session ID available");
+          return;
+        }
+
+        const messageDiv = document.getElementById("message");
+
+        // Update step status
+        updateStepStatus("step-generateNarrative", "processing", "PROCESSING");
+        messageDiv.innerHTML = "Generating narrative...";
+
+        try {
+          const response = await fetch(`${apiUrl}/generate-narrative`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              session_id: currentSessionId,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.narrative_text) {
+            // Update step status and content
+            updateStepStatus(
+              "step-generateNarrative",
+              "completed",
+              "COMPLETED"
+            );
+            setStepContent(
+              "step-generateNarrative",
+              result.narrative_text,
+              "text"
+            );
+
+            // Store data in our state
+            stepsState.generateNarrative.data = result;
+
+            messageDiv.innerHTML =
+              "Narrative generated successfully! Generating video...";
+          } else {
+            throw new Error(result.error || "Failed to generate narrative");
+          }
+        } catch (error) {
+          updateStepStatus("step-generateNarrative", "error", "ERROR");
+          setStepContent(
+            "step-generateNarrative",
+            `Error: ${error.message}`,
+            "text"
+          );
+
+          messageDiv.textContent = "Error: " + error.message;
+          messageDiv.classList.add("error");
+        }
+      }
+
+      // Step 3: Generate Video
+      async function generateVideo() {
+        if (!currentSessionId) {
+          console.error("No session ID available");
+          return;
+        }
+
+        const messageDiv = document.getElementById("message");
+        const qualitySelect = document.getElementById("video-quality-select");
+        const quality = qualitySelect ? qualitySelect.value : "medium";
+
+        // Update step status
+        updateStepStatus("step-generateVideo", "processing", "PROCESSING");
+        messageDiv.innerHTML = "Generating video...";
+
+        try {
+          const response = await fetch(`${apiUrl}/generate-video`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              session_id: currentSessionId,
+              video_quality: quality,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.video_url) {
+            // Update step status and content
+            updateStepStatus("step-generateVideo", "completed", "COMPLETED");
+            setStepContent("step-generateVideo", result.video_url, "video");
+
+            // Store data in our state
+            stepsState.generateVideo.data = result;
+
+            messageDiv.innerHTML =
+              "Video generated successfully! Improving video...";
+          } else {
+            throw new Error(result.error || "Failed to generate video");
+          }
+        } catch (error) {
+          updateStepStatus("step-generateVideo", "error", "ERROR");
+          setStepContent(
+            "step-generateVideo",
+            `Error: ${error.message}`,
+            "text"
+          );
+
+          messageDiv.textContent = "Error: " + error.message;
+          messageDiv.classList.add("error");
+        }
+      }
+
+      // Step 4: Improve Video
+      async function improveVideo() {
+        if (!currentSessionId) {
+          console.error("No session ID available");
+          return;
+        }
+
+        const messageDiv = document.getElementById("message");
+        const qualitySelect = document.getElementById("improve-quality-select");
+        const quality = qualitySelect ? qualitySelect.value : "medium";
+
+        // Update step status
+        updateStepStatus("step-improveVideo", "processing", "PROCESSING");
+        messageDiv.innerHTML = "Improving video...";
+
+        try {
+          const response = await fetch(`${apiUrl}/improve-video`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              session_id: currentSessionId,
+              video_quality: quality,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.improved_video_url || result.video_url) {
+            // Update step status and content
+            updateStepStatus("step-improveVideo", "completed", "COMPLETED");
+
+            let videoHtml = `
+              <div class="video-container">
+                <h4>Final Video</h4>
+                <video class="video-player" controls>
+                  <source src="${
+                    result.improved_video_url || result.video_url
+                  }" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+                <p><a href="${
+                  result.improved_video_url || result.video_url
+                }" target="_blank">Open video in new tab</a></p>
+                <p><strong>Review Score:</strong> ${result.review_score}/100</p>
+                <p><strong>Review:</strong> ${
+                  result.review_text || "No review provided"
+                }</p>
+              </div>
+            `;
+
+            setStepContent("step-improveVideo", videoHtml, "html");
+
+            // Store data in our state
+            stepsState.improveVideo.data = result;
+
+            messageDiv.innerHTML = "Video improvement process completed!";
+
+            // Process is complete
+            stopTimer();
+          } else {
+            throw new Error(result.error || "Failed to improve video");
+          }
+        } catch (error) {
+          updateStepStatus("step-improveVideo", "error", "ERROR");
+          setStepContent(
+            "step-improveVideo",
+            `Error: ${error.message}`,
+            "text"
+          );
+
+          messageDiv.textContent = "Error: " + error.message;
+          messageDiv.classList.add("error");
         }
       }
 
@@ -333,7 +802,7 @@
         <a href="https://www.youtube.com/@3Blue1Brown">3Blue1Brown</a>, using
         the <a href="https://github.com/3b1b/manim">Manim library</a>.
       </p>
-      <form id="imageForm" onsubmit="uploadImage(event)">
+      <form id="imageForm" onsubmit="processImage(event)">
         <div class="file-upload">
           <label for="imageInput" class="file-upload-label">
             <span class="file-upload-label-text">
@@ -360,11 +829,104 @@
         </div>
         <button type="submit" class="submit-button">Upload Image</button>
       </form>
-      <div id="loading">
-        Processing... (Rendering your video will take some time)
-      </div>
+      <div id="loading">Processing... This may take some time.</div>
       <div id="timer"></div>
       <div id="message"></div>
+
+      <!-- Process Steps Container -->
+      <div class="process-steps">
+        <!-- Step 1: Process Image -->
+        <div id="step-processImage" class="step">
+          <div class="step-header">
+            <div class="step-title">Step 1: Process Image</div>
+            <div class="step-status pending">PENDING</div>
+            <div class="step-spinner"></div>
+          </div>
+          <div id="step-processImage-content" class="step-content"></div>
+          <div class="step-buttons">
+            <button
+              onclick="tryAgainFromStep('processImage')"
+              class="try-again-button"
+              style="display: none"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Generate Narrative -->
+        <div id="step-generateNarrative" class="step">
+          <div class="step-header">
+            <div class="step-title">Step 2: Generate Narrative</div>
+            <div class="step-status pending">PENDING</div>
+            <div class="step-spinner"></div>
+          </div>
+          <div id="step-generateNarrative-content" class="step-content"></div>
+          <div class="step-buttons">
+            <button
+              onclick="tryAgainFromStep('generateNarrative')"
+              class="try-again-button"
+              style="display: none"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Generate Video -->
+        <div id="step-generateVideo" class="step">
+          <div class="step-header">
+            <div class="step-title">Step 3: Generate Video</div>
+            <div class="step-status pending">PENDING</div>
+            <div class="step-spinner"></div>
+          </div>
+          <div class="step-quality-selection">
+            <label for="video-quality-select">Video Quality:</label>
+            <select id="video-quality-select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div id="step-generateVideo-content" class="step-content"></div>
+          <div class="step-buttons">
+            <button
+              onclick="tryAgainFromStep('generateVideo')"
+              class="try-again-button"
+              style="display: none"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Improve Video -->
+        <div id="step-improveVideo" class="step">
+          <div class="step-header">
+            <div class="step-title">Step 4: Improve Video (Optional)</div>
+            <div class="step-status pending">PENDING</div>
+            <div class="step-spinner"></div>
+          </div>
+          <div class="step-quality-selection">
+            <label for="improve-quality-select">Video Quality:</label>
+            <select id="improve-quality-select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div id="step-improveVideo-content" class="step-content"></div>
+          <div class="step-buttons">
+            <button
+              onclick="tryAgainFromStep('improveVideo')"
+              class="try-again-button"
+              style="display: none"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="footer">
       made with ❤️ by <a href="https://x.com/max_brillant">Max Brillant</a>
