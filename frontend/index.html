@@ -299,10 +299,16 @@
 
       // Track the state of each step
       const stepsState = {
-        processImage: { status: "pending", data: null },
-        generateScript: { status: "pending", data: null },
-        generateVideo: { status: "pending", data: null },
-        improveVideo: { status: "pending", data: null },
+        processImage: { status: "pending", data: null, retryCount: 0 },
+        generateScript: { status: "pending", data: null, retryCount: 0 },
+        generateVideo: { status: "pending", data: null, retryCount: 0 },
+        improveVideo: { status: "pending", data: null, retryCount: 0 },
+      };
+
+      // Retry configuration
+      const retryConfig = {
+        maxRetries: 5,
+        retryDelay: 3000, // 5 seconds between retries
       };
 
       // Step sequence for automatic progression and retry functionality
@@ -552,6 +558,7 @@
             const resetStepKey = stepSequence[i];
             stepsState[resetStepKey].status = "pending";
             stepsState[resetStepKey].data = null;
+            stepsState[resetStepKey].retryCount = 0; // Reset retry counter
             updateStepStatus(`step-${resetStepKey}`, "pending", "PENDING");
             showStepContent(`step-${resetStepKey}`, false);
           }
@@ -570,6 +577,7 @@
           for (const step in stepsState) {
             stepsState[step].status = "pending";
             stepsState[step].data = null;
+            stepsState[step].retryCount = 0; // Reset retry counter
             updateStepStatus(`step-${step}`, "pending", "PENDING");
             showStepContent(`step-${step}`, false);
           }
@@ -617,15 +625,42 @@
             throw new Error(result.error || "Unknown error occurred");
           }
         } catch (error) {
-          updateStepStatus("step-processImage", "error", "ERROR");
-          setStepContent(
-            "step-processImage",
-            `Error: ${error.message}`,
-            "text"
-          );
+          if (stepsState.processImage.retryCount < retryConfig.maxRetries) {
+            // Increment retry count
+            stepsState.processImage.retryCount++;
 
-          // submitButton.style.display = "inline-block";
-          // changeImageButton.style.display = "inline-block";
+            // Update status with retry attempt
+            updateStepStatus(
+              "step-processImage",
+              "processing",
+              `RETRYING (${stepsState.processImage.retryCount}/${retryConfig.maxRetries})`
+            );
+
+            // Show retry message
+            setStepContent(
+              "step-processImage",
+              `Error encountered: ${error.message}\nRetrying in ${
+                retryConfig.retryDelay / 1000
+              } seconds... (Attempt ${stepsState.processImage.retryCount}/${
+                retryConfig.maxRetries
+              })`,
+              "text"
+            );
+
+            // Retry after delay
+            setTimeout(() => processImage(), retryConfig.retryDelay);
+          } else {
+            // Max retries reached, show error
+            updateStepStatus("step-processImage", "error", "ERROR");
+            setStepContent(
+              "step-processImage",
+              `Error: ${error.message}\nMax retry attempts (${retryConfig.maxRetries}) reached.`,
+              "text"
+            );
+
+            // submitButton.style.display = "inline-block";
+            // changeImageButton.style.display = "inline-block";
+          }
         }
       }
 
@@ -667,12 +702,39 @@
             throw new Error(result.error || "Failed to generate script");
           }
         } catch (error) {
-          updateStepStatus("step-generateScript", "error", "ERROR");
-          setStepContent(
-            "step-generateScript",
-            `Error: ${error.message}`,
-            "text"
-          );
+          if (stepsState.generateScript.retryCount < retryConfig.maxRetries) {
+            // Increment retry count
+            stepsState.generateScript.retryCount++;
+
+            // Update status with retry attempt
+            updateStepStatus(
+              "step-generateScript",
+              "processing",
+              `RETRYING (${stepsState.generateScript.retryCount}/${retryConfig.maxRetries})`
+            );
+
+            // Show retry message
+            setStepContent(
+              "step-generateScript",
+              `Error encountered: ${error.message}\nRetrying in ${
+                retryConfig.retryDelay / 1000
+              } seconds... (Attempt ${stepsState.generateScript.retryCount}/${
+                retryConfig.maxRetries
+              })`,
+              "text"
+            );
+
+            // Retry after delay
+            setTimeout(() => generateScript(), retryConfig.retryDelay);
+          } else {
+            // Max retries reached, show error
+            updateStepStatus("step-generateScript", "error", "ERROR");
+            setStepContent(
+              "step-generateScript",
+              `Error: ${error.message}\nMax retry attempts (${retryConfig.maxRetries}) reached.`,
+              "text"
+            );
+          }
         }
       }
 
@@ -715,12 +777,39 @@
             throw new Error(result.error || "Failed to generate video");
           }
         } catch (error) {
-          updateStepStatus("step-generateVideo", "error", "ERROR");
-          setStepContent(
-            "step-generateVideo",
-            `Error: ${error.message}`,
-            "text"
-          );
+          if (stepsState.generateVideo.retryCount < retryConfig.maxRetries) {
+            // Increment retry count
+            stepsState.generateVideo.retryCount++;
+
+            // Update status with retry attempt
+            updateStepStatus(
+              "step-generateVideo",
+              "processing",
+              `RETRYING (${stepsState.generateVideo.retryCount}/${retryConfig.maxRetries})`
+            );
+
+            // Show retry message
+            setStepContent(
+              "step-generateVideo",
+              `Error encountered: ${error.message}\nRetrying in ${
+                retryConfig.retryDelay / 1000
+              } seconds... (Attempt ${stepsState.generateVideo.retryCount}/${
+                retryConfig.maxRetries
+              })`,
+              "text"
+            );
+
+            // Retry after delay
+            setTimeout(() => generateVideo(), retryConfig.retryDelay);
+          } else {
+            // Max retries reached, show error
+            updateStepStatus("step-generateVideo", "error", "ERROR");
+            setStepContent(
+              "step-generateVideo",
+              `Error: ${error.message}\nMax retry attempts (${retryConfig.maxRetries}) reached.`,
+              "text"
+            );
+          }
         }
       }
 
@@ -778,12 +867,39 @@
             throw new Error(result.error || "Failed to improve video");
           }
         } catch (error) {
-          updateStepStatus("step-improveVideo", "error", "ERROR");
-          setStepContent(
-            "step-improveVideo",
-            `Error: ${error.message}`,
-            "text"
-          );
+          if (stepsState.improveVideo.retryCount < retryConfig.maxRetries) {
+            // Increment retry count
+            stepsState.improveVideo.retryCount++;
+
+            // Update status with retry attempt
+            updateStepStatus(
+              "step-improveVideo",
+              "processing",
+              `RETRYING (${stepsState.improveVideo.retryCount}/${retryConfig.maxRetries})`
+            );
+
+            // Show retry message
+            setStepContent(
+              "step-improveVideo",
+              `Error encountered: ${error.message}\nRetrying in ${
+                retryConfig.retryDelay / 1000
+              } seconds... (Attempt ${stepsState.improveVideo.retryCount}/${
+                retryConfig.maxRetries
+              })`,
+              "text"
+            );
+
+            // Retry after delay
+            setTimeout(() => improveVideo(), retryConfig.retryDelay);
+          } else {
+            // Max retries reached, show error
+            updateStepStatus("step-improveVideo", "error", "ERROR");
+            setStepContent(
+              "step-improveVideo",
+              `Error: ${error.message}\nMax retry attempts (${retryConfig.maxRetries}) reached.`,
+              "text"
+            );
+          }
         }
       }
 
