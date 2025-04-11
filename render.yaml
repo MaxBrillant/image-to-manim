@@ -6,13 +6,9 @@ services:
     plan: standard
     healthCheckPath: /health
     envVars:
-      - key: AWS_ACCESS_KEY_ID
-        sync: false
-      - key: AWS_SECRET_ACCESS_KEY
+      - key: DEEPINFRA_API_KEY
         sync: false
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
         sync: false
-      - key: AWS_REGION_NAME
-        value: us-west-2

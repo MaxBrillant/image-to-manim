@@ -10,15 +10,14 @@ from litellm import completion
 import litellm
 
 from src.config import (
-    AWS_ACCESS_KEY_ID, 
-    AWS_SECRET_ACCESS_KEY, 
+    DEEPINFRA_API_KEY,
     SCRIPT_PROMPT_TEMPLATE
 )
 
 # litellm._turn_on_debug()
 
 def generate_problem_analysis(image):
-    """Generate animation script from image using liteLLM with AWS Bedrock"""
+    """Generate animation script from image"""
     # Convert image to base64 preserving its format
     buffered = BytesIO()
     img_format = image.format if image.format else "JPEG"
@@ -30,16 +29,12 @@ def generate_problem_analysis(image):
     if mime_type == "image/jpg":
         mime_type = "image/jpeg"
     
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-west-2"  # Set your AWS region
+    os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
         
-        # Use liteLLM's completion method with AWS Bedrock
         response = litellm.completion(
-            model = "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+            model = "deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
                 "content": f"""
@@ -78,11 +73,10 @@ def generate_problem_analysis(image):
                         "url": f"data:{mime_type};base64," + img_str,
                     },
                 }
-                ],
-                "cache_control": {"type": "ephemeral"},
+                ]
             }],
+            temperature=0.4,
             max_tokens=8192,
-            thinking={"type": "enabled", "budget_tokens": 1024},
         )
         
         # Extract the content from the response
@@ -95,18 +89,15 @@ def generate_problem_analysis(image):
     
 
 def generate_script(problem_analysis):
-    """Generate script script from problem analysis using liteLLM with AWS Bedrock"""
+    """Generate script script from problem analysis"""
     
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
+
+    os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
         
-        # Use liteLLM's completion method with AWS Bedrock
         response = litellm.completion(
-            model = "bedrock/converse/us.deepseek.r1-v1:0",
+            model = "deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
                 "content": SCRIPT_PROMPT_TEMPLATE,
@@ -128,11 +119,9 @@ def generate_script(problem_analysis):
         raise Exception(f"Failed to generate script: {str(e)}")
 
 def generate_manim_code(script, session_id):
-    """Generate Manim code from script using liteLLM with AWS Bedrock"""
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
+    """Generate Manim code from script"""
+
+    os.environ["DEEPINFRA_API_KEY"] = "WfUmeoWPncZzGC2MY8oGfTEmT9RqfMjG"
     
     try:
         # Load the manim code guide
@@ -140,9 +129,8 @@ def generate_manim_code(script, session_id):
         with open(manim_guide_path, "r") as guide_file:
             manim_code_guide = guide_file.read()
         
-        # Use liteLLM's completion method with AWS Bedrock
         response = litellm.completion(
-            model="bedrock/converse/us.deepseek.r1-v1:0",
+            model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
                 "content": f"""
@@ -184,10 +172,8 @@ def generate_manim_code(script, session_id):
 
 def regenerate_manim_code(script, previous_code, error_message, session_id):
     """Regenerate Manim code based on previous code and error message"""
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-east-1"  # Set your AWS region
+
+    os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
         # Load the manim code guide
@@ -195,9 +181,8 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
         with open(manim_guide_path, "r") as guide_file:
             manim_code_guide = guide_file.read()
 
-        # Use liteLLM's completion method with AWS Bedrock
         response = litellm.completion(
-            model="bedrock/converse/us.deepseek.r1-v1:0",
+            model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
                 "content": f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
@@ -257,10 +242,7 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
 def improve_video_from_feedback(session_id, current_code, review_text, script, score, code_path):
     """Function to improve video based on feedback reviews"""
     
-    # Set up environment for liteLLM with AWS Bedrock
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_REGION_NAME"] = "us-east-1"
+    os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
         # Load the manim code guide
@@ -270,7 +252,7 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
         
         # Generate improved code using feedback
         response = litellm.completion(
-            model="bedrock/converse/us.deepseek.r1-v1:0",
+            model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
                 "content": f"""You are an expert Manim developer tasked with improving the Manim code based on user feedback.

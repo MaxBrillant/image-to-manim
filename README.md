@@ -4,15 +4,15 @@ Transforms images of math problems into educational animations using the Manim l
 
 ## Overview
 
-1. **Process image** to analyze the math problem (AWS Bedrock/Claude)
-2. **Generate animation script** for the educational explanation (AWS Bedrock/Claude)
-3. **Generate video** with Manim animations (AWS Bedrock/Deepseek + Modal)
+1. **Process image** to analyze the math problem (deepinfra/llama-4)
+2. **Generate animation script** for the educational explanation (deepinfra/llama-4)
+3. **Generate video** with Manim animations (deepinfra/llama-4)
 4. **Improve video** quality with automated feedback (Google Gemini)
 
 ## Requirements
 
 - Python 3.8+
-- AWS Bedrock API access
+- deepinfra API access
 - Google Gemini API access
 - Supabase account
 - Modal account
@@ -29,8 +29,7 @@ Transforms images of math problems into educational animations using the Manim l
 2. Set up environment variables in `.env`:
 
    ```
-   AWS_ACCESS_KEY_ID=your_aws_key
-   AWS_SECRET_ACCESS_KEY=your_aws_secret
+   DEEPINFRA_API_KEY=your_deepinfra_key
    SUPABASE_URL=your_supabase_url
    SUPABASE_KEY=your_supabase_key
    GEMINI_API_KEY=your_gemini_key
@@ -55,12 +54,11 @@ Transforms images of math problems into educational animations using the Manim l
    create table manim_projects (
      id uuid primary key,
      status text,
-     script text,
+     problem_analysis text,
      script_url text,
      code_url text,
      image_url text,
      video_url text,
-     render_error text,
      created_at timestamp with time zone default now()
    );
    ```
