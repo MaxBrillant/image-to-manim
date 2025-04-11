@@ -8,6 +8,13 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Add Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Add GitHub-like markdown CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.2.0/github-markdown-light.css"
+    />
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -203,13 +210,41 @@
         }
       }
       .step-content pre {
-        background-color: #f5f5f5;
+        background-color: #f0f0f0;
         padding: 0.75rem;
         border-radius: 0.25rem;
         overflow-x: auto;
         white-space: pre-wrap;
         font-size: 0.85rem;
         color: #333;
+      }
+
+      .markdown-content {
+        max-height: 15rem;
+        background-color: #f0f0f0;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        overflow-x: auto;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #333;
+      }
+
+      .markdown-content pre {
+        background-color: #f5f5f5;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+      }
+
+      .markdown-content code {
+        background-color: #f0f0f0;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
       }
       .step-buttons {
         display: flex;
@@ -416,13 +451,30 @@
         const contentElem = document.getElementById(`${stepId}-content`);
 
         if (contentType === "json") {
-          contentElem.innerHTML = `<pre style="max-height: 15rem; overflow: auto">${JSON.stringify(
+          contentElem.innerHTML = `<pre>${JSON.stringify(
             content,
             null,
             2
           )}</pre>`;
         } else if (contentType === "text") {
-          contentElem.innerHTML = `<pre style="max-height: 15rem; overflow: auto">${content}</pre>`;
+          // Check if this is a step that should render markdown
+          if (
+            stepId === "step-processImage" ||
+            stepId === "step-generateScript"
+          ) {
+            try {
+              // Use marked.js to parse markdown
+              const htmlContent = marked.parse(content);
+              contentElem.innerHTML = `<div class="markdown-content">${htmlContent}</div>`;
+            } catch (err) {
+              // Fallback to regular text if markdown parsing fails
+              contentElem.innerHTML = `<pre>${content}</pre>`;
+              console.error("Failed to parse markdown:", err);
+            }
+          } else {
+            // Other content displayed as regular text
+            contentElem.innerHTML = `<pre>${content}</pre>`;
+          }
         } else if (contentType === "video") {
           contentElem.innerHTML = `
             <div class="video-container">
