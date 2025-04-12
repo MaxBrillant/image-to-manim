@@ -5,6 +5,7 @@ import os
 import re
 import base64
 from io import BytesIO
+from datetime import datetime
 from PIL import Image
 from litellm import completion
 import litellm
@@ -80,7 +81,6 @@ def generate_problem_analysis(image):
 
                     ## 7. Insight Communication
                     - Explain key insights that led to the solution
-                    - Highlight any clever techniques or shortcuts used
                     - Connect the solution to broader mathematical concepts
                     - Present the final answer clearly and concisely
 
@@ -155,10 +155,10 @@ def generate_script(problem_analysis):
 def generate_manim_code(script, session_id):
     """Generate Manim code from script"""
 
-    os.environ["DEEPINFRA_API_KEY"] = "WfUmeoWPncZzGC2MY8oGfTEmT9RqfMjG"
+    os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
-        # Load the manim code guide
+        # Load the manim code guide (do this once per function call)
         manim_guide_path = os.path.join("resources", "manim_code_guide.txt")
         with open(manim_guide_path, "r") as guide_file:
             manim_code_guide = guide_file.read()
@@ -167,20 +167,102 @@ def generate_manim_code(script, session_id):
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""
-                    You are an expert Manim developer. You need to create a Manim animation that visualizes the provided script.
+                "content": f"""You are a specialized Manim expert whose sole focus is translating mathematical animation scripts into reliable, visually impressive Manim code. Your expertise in mathematics visualization and Manim implementation allows you to create code that is both efficient and precisely aligned with the script description.
 
-                    Ensure the Manim code generated ONLY refers to the MANIM CODE GUIDE REFERENCE
+            ## STRUCTURED CODE GENERATION PROCESS
 
-                    MANIM CODE GUIDE REFERENCE:
-                    {manim_code_guide}
-                    """
+            Follow this systematic approach to generate high-quality Manim code:
+
+            1. **SCRIPT ANALYSIS PHASE**
+            - Carefully analyze the script to identify:
+                - Core mathematical concepts that need visualization
+                - Key animations and transitions described
+                - Visual elements requiring implementation
+                - Mathematical formulas and equations to render
+                - Camera movements and perspective changes
+            - Extract the narrative flow and timing considerations
+
+            2. **SCENE PLANNING PHASE**
+            - Determine the appropriate scene type (Scene, ThreeDScene, etc.)
+            - Plan the sequence of animations to match the script flow
+            - Identify opportunities for modular code organization
+            - Decide on appropriate object creation and transformation techniques
+            - Choose appropriate visualization methods for mathematical concepts
+
+            3. **IMPLEMENTATION PHASE**
+            - Strictly follow the standard Scene structure from the MANIM CODE GUIDE
+            - Implement the semantic color system exactly as specified
+            - Ensure all animations are properly sequenced with appropriate timing
+            - Create clearly named variables that reflect their mathematical meaning
+            - Add comments explaining complex parts of the implementation
+            - Focus on reliability first, visual complexity second
+
+            4. **VALIDATION PHASE**
+            - Verify all mathematics is accurately represented
+            - Ensure code matches the script's description and intent
+            - Check that all animations have valid mobjects
+            - Verify all references are properly defined before use
+            - Confirm the scene progresses through all key points in the script
+
+            ## CRITICAL RELIABILITY PRIORITIES
+
+            1. **CODE STRUCTURE INTEGRITY**
+            - Always include the complete semantic color system as provided
+            - Follow the exact Scene structure from the guide
+            - Ensure proper class definition with correct inheritance
+            - Implement construct() method properly
+            - Use appropriate imports (from manim import *)
+
+            2. **ANIMATION RELIABILITY**
+            - Ensure every animated object exists before being referenced
+            - Keep animations simple and separate for better reliability
+            - Maintain appropriate wait times between significant steps
+            - Use appropriate run_times for complex animations
+            - Create objects with proper parameters and configurations
+
+            3. **ERROR PREVENTION**
+            - Avoid common Manim errors:
+                - Never reference objects before they're created
+                - Ensure all AnimationGroups contain valid mobjects
+                - Verify all VMobjects have points defined
+                - Use appropriate coordinate systems
+                - Ensure latex expressions are properly formatted
+
+            4. **SIMPLICITY OVER COMPLEXITY**
+            - When in doubt, choose simpler implementations that are more reliable
+            - Split complex animations into sequences of simpler animations
+            - Use built-in Manim objects and methods when available
+            - Limit the number of mobjects in a scene to ensure performance
+            - Use deliberate pacing with wait() calls to improve comprehension
+
+            ## MATHEMATICAL ACCURACY IS NON-NEGOTIABLE
+
+            - Verify all formulas and equations match the script exactly
+            - Ensure visual representations accurately reflect mathematical concepts
+            - Use appropriate mathematical notation and symbolic representation
+            - Maintain consistency in variable naming and mathematical conventions
+            - Verify all calculations and transformations for accuracy
+
+            ## OUTPUT REQUIREMENTS
+
+            1. Generate ONLY the complete Python code for the Manim animation
+            2. Do NOT include explanations, discussions, or descriptions outside the code
+            3. Include all necessary imports at the top of the file
+            4. Implement exactly ONE Scene class that visualizes the entire script
+            5. Define the semantic color system exactly as shown in the MANIM CODE GUIDE
+            6. Add helpful comments explaining complex parts of the implementation
+            7. Ensure the code is complete, runnable, and error-free
+
+            ## MANIM CODE GUIDE REFERENCE:
+
+            {manim_code_guide}
+            """
             },
             {
                 "role": "user",
                 "content": "SCRIPT: \n" + script
             }],
-            temperature=0.4,
+            temperature=0.2,  # Lower temperature for more reliable output
             max_tokens=8192,
         )
         
@@ -192,11 +274,14 @@ def generate_manim_code(script, session_id):
             import re
             code_blocks = re.findall(r'```python\n(.*?)```', manim_code, re.DOTALL)
             if code_blocks:
-                manim_code = code_blocks[0]
+                manim_code = '\n'.join(code_blocks)  # Join multiple code blocks if present
+        
+        # Remove any remaining markdown formatting
+        manim_code = re.sub(r'```\s*$', '', manim_code)  # Remove trailing markdown markers
         
         # Add comment with session id
         manim_code = f"# Generated Manim code for session: {session_id}\n\n{manim_code}"
-        
+            
         return manim_code
         
     except Exception as e:
