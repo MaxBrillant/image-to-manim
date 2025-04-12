@@ -40,16 +40,6 @@ def generate_problem_analysis(image):
                 "content": f"""
                     You are a world-class mathematical educator with expertise in analysing math problems. 
                     
-                    ## CRITICAL PRIORITY: MATHEMATICAL CORRECTNESS
-
-                    MATHEMATICAL ACCURACY IS THE ABSOLUTE HIGHEST PRIORITY. Never sacrifice correctness for any reason.
-
-                    1. **Verify every mathematical statement** before including it in your analysis
-                    2. **Double-check all solutions** using first principles and standard mathematical techniques
-                    3. **Do not hallucinate solutions** - if you're uncertain about any step, omit it entirely
-                    4. **Only include mathematically proven facts** - no approximations or simplifications that compromise accuracy
-                    5. **When analyzing the problem image**, ensure your solution matches exactly what's shown, without adding assumptions
-                    
                     Analyze the mathematical problem in the provided image using the following structured approach:
 
                     ## 1. Initial Observation
@@ -93,6 +83,16 @@ def generate_problem_analysis(image):
                     - Highlight any clever techniques or shortcuts used
                     - Connect the solution to broader mathematical concepts
                     - Present the final answer clearly and concisely
+
+                    ## CRITICAL PRIORITY: MATHEMATICAL CORRECTNESS
+
+                    MATHEMATICAL ACCURACY IS THE ABSOLUTE HIGHEST PRIORITY. Never sacrifice correctness for any reason.
+
+                    1. **Verify every mathematical statement** before including it in your analysis
+                    2. **Double-check all solutions** using first principles and standard mathematical techniques
+                    3. **Do not hallucinate solutions** - if you're uncertain about any step, omit it entirely
+                    4. **Only include mathematically proven facts** - no approximations or simplifications that compromise accuracy
+                    5. **When analyzing the problem image**, ensure your solution matches exactly what's shown, without adding assumptions
 
                     Respond with a complete analysis following this structure, making your reasoning transparent at each step.
                     """
@@ -219,31 +219,94 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""You are an expert Manim developer. You need to fix the following Manim code that failed to render.
+                "content": f"""You are a world-class Manim debugging specialist with extensive experience fixing rendering errors in mathematical animations. Your task is to repair the broken Manim code provided, ensuring it renders correctly while preserving the intended educational content.
 
-                    Please analyze the error message carefully and fix the Manim code to create a working animation that visualizes the script. 
-                    Make sure to:
-                    1. Fix any syntax errors or bugs in the code
-                    2. Simplify complex animations that might be causing rendering issues
-                    3. Ensure the Manim code generated ONLY refers to the MANIM CODE GUIDE REFERENCE
+                    ## ERROR ANALYSIS PROTOCOL
 
+                    1. **Identify Error Pattern**:
+                    - Parse the exact error message and line number
+                    - Determine if the error is: syntax error, object reference issue, animation conflict, memory/performance issue, or mathematical incorrectness
+
+                    2. **Root Cause Assessment**:
+                    - Examine the surrounding code context of the error location
+                    - Check for incorrect object references or undefined variables
+                    - Identify any animations that might be conflicting or improperly sequenced
+                    - Look for memory-intensive operations that could be causing performance issues
+
+                    ## SYSTEMATIC REPAIR STRATEGY
+
+                    1. **Fix Critical Errors First**:
+                    - Address syntax errors and undefined references immediately
+                    - Ensure all required imports are present
+                    - Verify class structure and method implementation follow Manim v0.17.0 conventions
+
+                    2. **Simplification Hierarchy** (implement in this order):
+                    - Reduce number of simultaneous animations without losing conceptual clarity
+                    - Replace complex custom objects with simpler built-in alternatives
+                    - Decrease resolution or detail of mathematical objects where appropriate
+                    - Optimize animation transitions and timing to reduce computational load
+
+                    3. **Animation Sequence Optimization**:
+                    - Ensure each object is created before being animated
+                    - Verify all animations have valid mobjects
+                    - Separate complex animation sequences into simpler steps
+                    - Add appropriate wait times between critical steps (0.5-1s)
+                    - Fade out elements that are no longer needed
+
+                    4. **Common Manim Error Solutions**:
+                    - For "No mobjects found in AnimationGroup": Ensure all animation methods have valid mobjects
+                    - For "AttributeError: 'NoneType' object has no attribute": Check if objects exist before referencing
+                    - For "ValueError: need at least one array to concatenate": Verify VMobjects have points defined
+                    - For memory issues: Reduce object count, simplify geometries, or split into multiple scenes
+                    - For LaTeX errors: Simplify mathematical expressions and verify syntax
+
+                    5. **Code Structure Verification**:
+                    - Ensure proper class definition and inheritance
+                    - Verify construct method implementation
+                    - Check for proper scene setup with appropriate background color
+                    - Validate all color definitions match the provided semantic color system
+
+                    ## VISUALIZATION INTEGRITY PRINCIPLES
+
+                    1. **Mathematical Accuracy Is Non-Negotiable**:
+                    - Any simplification must preserve mathematical correctness
+                    - Maintain proper mathematical notation and symbolic representation
+                    - Ensure calculations and visualizations remain precise
+
+                    2. **Visual Clarity Is Essential**:
+                    - Limit on-screen elements (max 2-3 major elements at once)
+                    - Maintain proper spacing between elements (min 1.0 units)
+                    - Use consistent and clear visual hierarchy with the provided color system
+
+                    ## IMPLEMENTATION REQUIREMENTS
+
+                    1. **ONLY use elements defined in the MANIM CODE GUIDE REFERENCE**
+                    2. **Always include the complete semantic color system code**
+                    3. **Follow the exact Scene structure from the guide**
+                    4. **Create a simpler alternative if a complex animation fails repeatedly**
+                    5. **If previous fixes failed, take a significantly different approach**
+
+                    ## YOUR TASK
+
+                    Analyze the provided error message carefully and rewrite the Manim code to create a working animation that visualizes the script. Focus on stability and reliability - an elegant working animation is better than a complex broken one.
+
+                    
                     SCRIPT TO VISUALIZE:
                     {script}
+                    
+                    PREVIOUS CODE THAT FAILED TO RENDER:
+                    ```python
+                    {previous_code}
+                    ```
 
                     # MANIM CODE GUIDE REFERENCE:
                     {manim_code_guide}
                     """
-            },
-                      {
+            }, {
                 "role": "user",
                 "content": f"""
                     ERROR MESSAGE:
-                    {error_message[-5000:]}
-
-                    PREVIOUS CODE:
-                    ```python
-                    {previous_code}
-                    ```
+                    {error_message[:5000]}
                     """
             }],
             temperature=0.2,
@@ -289,34 +352,55 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""You are an expert Manim developer tasked with improving the Manim code based on user feedback.
+                "content": f"""You are a Manim expert whose singular focus is to analyze feedback on mathematical animations and rewrite code to address the specific issues mentioned. Your goal is to generate completely new code that directly solves all problems identified in the feedback.
 
-                    Please carefully analyze both the feedback to create an improved animation:
-                    1. Address each specific issue mentioned in the feedback directly
-                    2. Optimize performance and visual quality based on the feedback
-                    3. Ensure the animation aligns with the script and is visually engaging
-                    4. Aim to achieve a much higher score in the next review (more than 90/100)
-                    5. Improve the code based on the feedback provided.
-                    6. Ensure the Manim code generated ONLY refers to the MANIM CODE GUIDE REFERENCE
-                    
+                    ## FEEDBACK UNDERSTANDING PROCESS
+
+                    1. READ THE FEEDBACK CAREFULLY, identifying each specific issue mentioned:
+                       - Extract every concrete problem mentioned in the feedback
+                       - Note exactly what aspects of the animation were criticized
+                       - Pay special attention to mathematical accuracy issues
+                       
+                    2. For each specific issue identified:
+                       - Determine precisely what code changes would fix this issue
+                       - Prioritize issues affecting mathematical correctness or rendering
+
+                    ## CODE REWRITING APPROACH
+
+                    1. COMPLETELY REWRITE THE CODE from scratch to address the feedback
+                       - Do not simply make minor adjustments to the original code
+                       - Create new implementation that solves all identified issues
+                       - Ensure the new code follows the MANIM CODE GUIDE REFERENCE exactly
+
+                    2. For each specific feedback point:
+                       - Implement a direct solution to that exact problem
+                       - Write a brief comment explaining how your code addresses this feedback point
+                       - Verify your solution fully resolves the issue
+
+                    ## VERIFICATION
+
+                    Before submitting the new code, verify:
+                    - Each specific piece of feedback has been directly addressed
+                    - The code fully implements the script while fixing all issues
+                    - All mathematical concepts are accurately represented
+                    - The code strictly follows the MANIM CODE GUIDE REFERENCE
+
                     SCRIPT TO VISUALIZE:
                     {script}
+                    
+                    PREVIOUS CODE THAT NEEDS IMPROVEMENT:
+                    ```python
+                    {current_code}
+                    ```
 
                     # MANIM CODE GUIDE REFERENCE:
                     {manim_code_guide}
                     """
-            },
-            {
+            }, {
                 "role": "user",
                 "content": f"""
                     REVIEW FEEDBACK (Score: {score}/100):
-                    {review_text}
-
-                    CURRENT CODE:
-                    ```python
-                    {current_code}
-                    ```
-            """
+                    {review_text}"""
             }],
             temperature=0.4,
             max_tokens=8192,
