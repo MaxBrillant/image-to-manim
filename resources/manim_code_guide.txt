@@ -1,1641 +1,1802 @@
-# MANIM CODE GENERATION SPECIALIST PROMPT
+# Manim Community Edition Code Guide
 
-You are a specialized Manim expert whose task is to generate mathematically accurate, visually clear animations from script descriptions. Your code must follow best practices for Manim Community version 0.17.0 and create animations that match the storytelling style described in the script prompt.
+This guide provides a comprehensive reference for Manim Community Edition, a mathematical animation engine for creating precise programmatic animations. It is designed to serve as a reference for generating Manim code, with a focus on clear patterns, examples, and best practices.
 
-## CORE PRINCIPLES
+## Table of Contents
 
-1. **MATHEMATICAL ACCURACY IS NON-NEGOTIABLE**:
-   - Verify every formula, concept, and visualization for accuracy
-   - Implement proper mathematical notation and symbolic representation
-   - Ensure calculations, transformations, and visualizations are precise
+1. [Introduction and Basic Structure](#1-introduction-and-basic-structure)
+2. [Core Concepts](#2-core-concepts)
+3. [Basic Shapes and Transformations](#3-basic-shapes-and-transformations)
+4. [Text and Mathematical Expressions](#4-text-and-mathematical-expressions)
+5. [Graphing and Coordinate Systems](#5-graphing-and-coordinate-systems)
+6. [Advanced Animation Techniques](#6-advanced-animation-techniques)
+7. [3D Visualizations](#7-3d-visualizations)
+8. [Special Effects and Techniques](#8-special-effects-and-techniques)
+9. [Best Practices and Optimization](#9-best-practices-and-optimization)
+10. [Common Examples and Templates](#10-common-examples-and-templates)
+11. [Reference Tables](#11-reference-tables)
 
-2. **VISUAL CLARITY IS ESSENTIAL**:
-   - Limit scene elements to avoid visual crowding (max 2-3 major elements on screen)
-   - Fade out previous elements before introducing new ones
-   - Maintain proper spacing between elements (min 1.0 units)
-   - Implement clean transitions between scenes
-   - Use camera movements strategically to focus attention
+## 1. Introduction and Basic Structure
 
-3. **CODE QUALITY**:
-   - Write well-structured, clearly organized code following PEP 8
-   - Use descriptive variable names and add meaningful comments
-   - Create modular, reusable components where appropriate
-   - Implement robust error handling for potential issues
-   - Follow Manim's built-in conventions and design patterns
+### Overview of Manim
 
-4. **NARRATIVE STRUCTURE**:
-   - Structure animations with clear storytelling flow:
-      1. **Introduction** (10-15% of runtime): Title and concept overview
-      2. **Development** (50-60% of runtime): Step-by-step explanation with gradual complexity
-      3. **Key Insight** (20-25% of runtime): Highlight main concept or transformation
-      4. **Conclusion** (10-15% of runtime): Summarize and reinforce key points
+Manim is a Python library for creating mathematical animations. It was originally created by Grant Sanderson (3Blue1Brown) and has been further developed by the Manim Community. The library is designed to create precise, programmatic animations for explaining mathematical concepts.
 
-## SEMANTIC COLOR SYSTEM IMPLEMENTATION
+### Basic Structure of a Manim Script
 
-Use this exact color system to maintain visual consistency and semantic meaning:
-
-```python
-# PRIMARY SEMANTIC COLORS
-AZURE_BLUE = "#0096C7"  # For main mathematical elements and central concepts
-PURE_WHITE = "#FFFFFF"  # For critical formulas, final solutions, and key text
-SAFFRON_GOLD = "#E9C46A"  # For highlighting important steps and focal points
-SAGE_GREEN = "#84A98C"  # For correct results and successful transformations
-RUBY_RED = "#C1121F"  # For warnings, constraints, or critical conditions
-
-# SECONDARY SEMANTIC COLORS
-AMETHYST = "#9370DB"  # For supporting concepts and alternative approaches
-TEAL = "#40A6A6"  # For variables and parameters that transform
-AMBER = "#D4A373"  # For intermediate steps and transitions
-MINT = "#95D5B2"  # For vector fields and directional elements
-MAGENTA = "#B15FA8"  # For special functions and operators
-
-# BACKGROUND
-PURE_BLACK = "#000000"  # Background color for maximum contrast
-```
-
-Ensure that this color system(the variables) is introduced and instanciated before writing the rest of the code.
-
-## ESSENTIAL SCENE STRUCTURE
+Every Manim script follows a similar structure:
 
 ```python
 from manim import *
 
-class MathematicalConcept(Scene):  # Choose appropriate scene type (Scene, ThreeDScene, etc.)
+class MyAnimation(Scene):
     def construct(self):
-        # 1. Scene setup
-        self.camera.background_color = PURE_BLACK
-        
-        # 2. Introduction with title
-        title = Tex("Concept Title", color=PURE_WHITE).scale(1.5)
-        self.play(Write(title), run_time=1.5)
-        self.wait(0.5)
-        self.play(title.animate.scale(0.6).to_corner(UL))
-        
-        # 3. Main content with appropriate pacing
-        
-        # First element - introduce core concept
-        equation = MathTex(r"f(x) = x^2", color=AZURE_BLUE)
-        self.play(Write(equation))
-        self.wait(1)
-        
-        # Second element - transformation or development
-        transformed_eq = MathTex(r"\frac{d}{dx}f(x) = 2x", color=TEAL)
-        self.play(TransformMatchingTex(equation, transformed_eq))
-        self.wait(1)
-        
-        # Visual representation - always tie visuals to equations
-        axes = Axes(
-            x_range=[-3, 3],
-            y_range=[0, 9],
-            axis_config={"include_tip": True}
-        )
-        labels = axes.get_axis_labels()
-        
-        graph = axes.plot(lambda x: x**2, color=AZURE_BLUE)
-        derivative = axes.plot(lambda x: 2*x, color=TEAL)
-        
-        self.play(
-            Create(axes),
-            Write(labels)
-        )
-        self.play(Create(graph))
-        self.play(Create(derivative))
-        
-        # 4. Conclusion and clean-up
-        self.play(
-            FadeOut(transformed_eq),
-            FadeOut(axes),
-            FadeOut(graph),
-            FadeOut(derivative)
-        )
-        
-        conclusion = Tex("Key insight or result", color=SAGE_GREEN).scale(1.2)
-        self.play(Write(conclusion))
+        # Create objects
+        circle = Circle()
+
+        # Customize objects
+        circle.set_fill(BLUE, opacity=0.5)
+
+        # Display animations
+        self.play(Create(circle))
         self.wait(1)
 ```
 
-## CAMERA MOVEMENT BEST PRACTICES
+#### Key Components:
 
-When using camera movements, particularly in 3D scenes, follow these guidelines:
+1. **Import Statement**: Import all classes and functions from Manim
+2. **Scene Class**: Define a class that inherits from `Scene` (or other scene types)
+3. **Construct Method**: Define the `construct()` method where all animation logic goes
+4. **Creating Objects**: Create mathematical objects (mobjects)
+5. **Customizing Objects**: Modify properties of the objects
+6. **Displaying Animations**: Use `self.play()` to animate objects and `self.wait()` to pause
 
-1. **Smooth Transitions**:
-   - Use gradual camera movements (typically 2-3 seconds) to avoid disorienting viewers
-   - Apply easing functions for natural movement: `rate_func=smooth` or `rate_func=ease_in_out`
+### Running Manim Scripts
 
-2. **Focused Movements**:
-   - Move camera to highlight specific elements when they are discussed
-   - Return to overview positions after detailed examination
-   - Use `self.move_camera()` for deliberate perspective changes
+Manim scripts are run from the command line with various options:
 
-3. **3D Camera Techniques**:
-   - Use `self.set_camera_orientation()` to establish clear viewpoints
-   - Apply `self.begin_ambient_camera_rotation()` sparingly for 3D exploration 
-   - Choose informative `phi` and `theta` values to show the most informative angle
-   - Consider using multiple viewpoints for complex 3D objects
-
-Example of effective camera movement:
-
-```python
-# In a ThreeDScene class
-def construct(self):
-    # Initial camera setup
-    self.set_camera_orientation(
-        phi=75 * DEGREES,    # Camera polar angle (vertical position)
-        theta=30 * DEGREES,  # Camera azimuthal angle (horizontal rotation)
-        distance=10          # Distance from origin
-    )
-    
-    # Create your 3D objects...
-    
-    # Move camera to focus on a specific feature
-    self.move_camera(
-        phi=45 * DEGREES,
-        theta=60 * DEGREES,
-        distance=6,
-        run_time=2,
-        rate_func=smooth
-    )
-    
-    # For continuous rotation
-    self.begin_ambient_camera_rotation(rate=0.1)
-    self.wait(5)  # Let it rotate while showing important details
-    self.stop_ambient_camera_rotation()
-    
-    # Return to overview perspective
-    self.move_camera(
-        phi=75 * DEGREES,
-        theta=30 * DEGREES,
-        distance=10,
-        run_time=2,
-        rate_func=smooth
-    )
+```bash
+manim -pql file_name.py ClassName
 ```
 
-## ADVANCED ANIMATION TECHNIQUES
+Common command-line arguments:
 
-### 1. Multiple Simultaneous Animations with Different Timing
+- `-p`: Preview the animation once it's rendered
+- `-l`: Use low quality (faster rendering)
+- `-m`: Use medium quality
+- `-h`: Use high quality (slower rendering)
+- `-q`: Quiet mode (less output)
+- `-s`: Skip to the end and show the last frame
+- `-k`: Keep the animation playing in a loop
+
+## 2. Core Concepts
+
+### Mobjects (Mathematical Objects)
+
+Mobjects are the fundamental building blocks in Manim. Everything that appears on screen is a mobject.
+
+#### Common Properties of Mobjects:
+
+- **Position**: Coordinates in 3D space (though usually only x and y are used)
+- **Color**: Fill and stroke colors
+- **Opacity**: Fill and stroke opacity
+- **Size**: Width, height, and depth
+- **Stroke width**: Width of the outline
+
+#### Common Mobject Methods:
 
 ```python
-# Animate multiple elements with different timing and easing
-self.play(
-    Write(equation, run_time=2),
-    FadeIn(diagram, rate_func=smooth, run_time=3),
-    Transform(shape1, shape2, rate_func=there_and_back, run_time=4)
+# Creation and basic properties
+circle = Circle(radius=1.0)
+square = Square(side_length=2.0)
+
+# Positioning
+circle.move_to([1, 2, 0])  # Move to absolute position
+square.next_to(circle, RIGHT)  # Position relative to another mobject
+square.shift(UP)  # Move relative to current position
+circle.to_edge(LEFT)  # Move to the edge of the screen
+square.to_corner(UR)  # Move to a corner of the screen
+
+# Styling
+circle.set_fill(RED, opacity=0.5)  # Set fill color and opacity
+square.set_stroke(BLUE, width=10)  # Set stroke color and width
+circle.set_color(GREEN)  # Set both fill and stroke color
+
+# Transformations
+circle.scale(2)  # Scale by a factor
+square.rotate(PI/4)  # Rotate by an angle
+circle.flip()  # Flip the mobject
+```
+
+#### Coordinate System:
+
+Manim uses a 3D coordinate system where:
+
+- The origin (0, 0, 0) is at the center of the screen
+- The x-axis goes from left to right
+- The y-axis goes from bottom to top
+- The z-axis goes from the screen towards the viewer
+
+Common position constants:
+
+- `ORIGIN`: The center of the screen (0, 0, 0)
+- `LEFT`, `RIGHT`, `UP`, `DOWN`: Unit vectors in each direction
+- `UR`, `UL`, `DR`, `DL`: Diagonal unit vectors (Up-Right, Up-Left, etc.)
+
+### Animations
+
+Animations define how mobjects change over time.
+
+#### Basic Animation Structure:
+
+```python
+self.play(Animation(mobject), run_time=1)
+```
+
+#### Common Animation Types:
+
+```python
+# Creation and removal
+self.play(Create(circle))  # Create the circle
+self.play(FadeIn(square))  # Fade in the square
+self.play(FadeOut(circle))  # Fade out the circle
+self.play(Uncreate(square))  # Uncreate the square
+
+# Transformations
+self.play(Transform(circle, square))  # Transform circle into square
+self.play(ReplacementTransform(circle, square))  # Replace circle with square
+
+# Movement
+self.play(circle.animate.move_to([1, 2, 0]))  # Move to position
+self.play(square.animate.shift(RIGHT))  # Shift right
+self.play(MoveAlongPath(dot, circle))  # Move along a path
+
+# Indication
+self.play(Indicate(circle))  # Briefly highlight the circle
+self.play(Flash(point))  # Flash at a point
+self.play(CircleIndicate(square))  # Circle around the square
+```
+
+#### Animation Timing and Rate Functions:
+
+```python
+# Customize animation timing
+self.play(Create(circle), run_time=2)  # Animation takes 2 seconds
+
+# Customize animation pacing with rate functions
+self.play(Create(circle), rate_func=linear)  # Constant speed
+self.play(Create(square), rate_func=smooth)  # Ease in and out (default)
+self.play(Create(triangle), rate_func=rush_into)  # Start slow, end fast
+self.play(Create(pentagon), rate_func=rush_from)  # Start fast, end slow
+```
+
+Common rate functions:
+
+- `linear`: Constant speed
+- `smooth`: Ease in and out (default)
+- `rush_into`: Start slow, end fast
+- `rush_from`: Start fast, end slow
+- `there_and_back`: Go to the end state and return to the start
+
+### Scenes
+
+Scenes are the containers for all animations.
+
+#### Scene Lifecycle:
+
+1. Scene is created
+2. `construct()` method is called
+3. Animations are played in sequence
+4. Scene is rendered to video
+
+#### Common Scene Methods:
+
+```python
+# Adding and removing objects
+self.add(circle)  # Add object without animation
+self.remove(circle)  # Remove object without animation
+
+# Playing animations
+self.play(Create(circle))  # Play a single animation
+self.play(Create(circle), FadeIn(square))  # Play multiple animations simultaneously
+
+# Waiting
+self.wait(1)  # Wait for 1 second
+
+# Clearing the screen
+self.clear()  # Remove all objects from the scene
+```
+
+## 3. Basic Shapes and Transformations
+
+### Creating Geometric Shapes
+
+Manim provides a variety of built-in shapes:
+
+```python
+# Basic shapes
+circle = Circle(radius=1.0)
+square = Square(side_length=2.0)
+rectangle = Rectangle(width=3.0, height=2.0)
+triangle = Triangle()
+polygon = RegularPolygon(n=6)  # Hexagon
+ellipse = Ellipse(width=3.0, height=2.0)
+arc = Arc(radius=1.0, start_angle=0, angle=PI)
+
+# Lines and arrows
+line = Line(start=LEFT, end=RIGHT)
+arrow = Arrow(start=LEFT, end=RIGHT)
+double_arrow = DoubleArrow(start=LEFT, end=RIGHT)
+vector = Vector([1, 1, 0])
+
+# Dots and points
+dot = Dot(point=ORIGIN)
+small_dot = Dot(point=ORIGIN, radius=0.05)
+
+# Special shapes
+annulus = Annulus(inner_radius=0.5, outer_radius=1.0)
+star = Star(outer_radius=1.0, inner_radius=0.5)
+```
+
+### Customizing Shapes
+
+```python
+# Colors
+circle.set_fill(RED, opacity=0.5)  # Fill with red at 50% opacity
+square.set_stroke(BLUE, width=10)  # Blue outline with width 10
+triangle.set_color(GREEN)  # Set both fill and stroke to green
+
+# Gradients
+rectangle.set_color_by_gradient(RED, BLUE)  # Gradient from red to blue
+polygon.set_sheen_direction(UP)  # Direction of the sheen
+polygon.set_sheen(0.5)  # Amount of sheen
+
+# Dashed lines
+line.set_stroke(width=3, color=YELLOW)
+dashed_line = DashedLine(start=LEFT, end=RIGHT)
+```
+
+### Positioning and Arranging Shapes
+
+```python
+# Absolute positioning
+circle.move_to([1, 2, 0])  # Move to coordinates
+square.move_to(ORIGIN)  # Move to origin
+
+# Relative positioning
+square.next_to(circle, RIGHT)  # Place square to the right of circle
+triangle.next_to(square, DOWN, buff=0.5)  # Add buffer space
+
+# Edge alignment
+rectangle.align_to(circle, LEFT)  # Align left edges
+square.align_to(circle, UP)  # Align top edges
+
+# Screen positioning
+circle.to_edge(LEFT)  # Move to left edge of screen
+square.to_corner(UR)  # Move to upper right corner
+
+# Grouping objects
+group = VGroup(circle, square, triangle)
+group.arrange(DOWN)  # Arrange objects vertically
+group.arrange_in_grid(rows=2, cols=2)  # Arrange in a grid
+```
+
+### Basic Transformations
+
+```python
+# Scaling
+circle.scale(2)  # Scale by factor of 2
+square.scale(0.5)  # Scale by factor of 0.5
+
+# Rotation
+triangle.rotate(PI/4)  # Rotate by 45 degrees
+rectangle.rotate(PI, axis=RIGHT)  # Rotate around the x-axis
+
+# Flipping
+square.flip(axis=UP)  # Flip vertically
+circle.flip(axis=RIGHT)  # Flip horizontally
+
+# Stretching
+rectangle.stretch(factor=2, dim=0)  # Stretch horizontally
+rectangle.stretch(factor=0.5, dim=1)  # Compress vertically
+```
+
+### Complex Transformations
+
+```python
+# Transform one shape into another
+self.play(Transform(circle, square))
+
+# Replace one shape with another
+self.play(ReplacementTransform(circle, square))
+
+# Transform specific parts
+self.play(TransformMatchingShapes(text1, text2))
+
+# Morph between shapes
+self.play(circle.animate.become(square))
+```
+
+## 4. Text and Mathematical Expressions
+
+### Text Rendering with `Text` and `MarkupText`
+
+```python
+# Basic text
+text = Text("Hello, Manim!")
+
+# Font customization
+text = Text("Custom Font", font="Arial")
+text = Text("Bold Text", weight=BOLD)
+text = Text("Italic Text", slant=ITALIC)
+
+# Text styling
+text = Text("Colored Text", color=BLUE)
+text = Text("Gradient Text", gradient=(RED, BLUE))
+text = Text("Large Text", font_size=72)
+
+# Text with specific colors for parts
+text = Text("Red and Blue", t2c={"Red": RED, "Blue": BLUE})
+
+# Text with markup
+markup_text = MarkupText("<b>Bold</b> and <i>Italic</i>")
+markup_text = MarkupText("Colors: <span fgcolor='#ff0000'>Red</span> and <span fgcolor='#0000ff'>Blue</span>")
+```
+
+### LaTeX Rendering with `Tex` and `MathTex`
+
+```python
+# Basic LaTeX
+tex = Tex(r"This is \LaTeX")
+
+# Mathematical expressions
+math_tex = MathTex(r"e^{i\pi} + 1 = 0")
+
+# Multi-part expressions
+eq = MathTex(r"f(x) = \frac{1}{1 + e^{-x}}")
+
+# Breaking expressions into parts
+eq_parts = MathTex(
+    r"f(x)",
+    r"=",
+    r"\frac{1}{1 + e^{-x}}"
+)
+eq_parts[0].set_color(RED)  # Color the first part
+
+# Aligning equations
+aligned_eq = MathTex(r"""
+    \begin{align}
+    f(x) &= x^2 + 2x + 1 \\
+    &= (x + 1)^2
+    \end{align}
+""")
+
+# Using substrings_to_isolate for coloring specific parts
+eq = MathTex(r"e^x = x^0 + x^1 + \frac{1}{2} x^2 + \cdots", substrings_to_isolate="x")
+eq.set_color_by_tex("x", YELLOW)
+```
+
+### Equation Formatting and Styling
+
+```python
+# Size and positioning
+eq = MathTex(r"E = mc^2", font_size=96)
+eq.to_edge(UP)
+
+# Colors
+eq = MathTex(r"E = mc^2", color=BLUE)
+eq = MathTex(r"E = mc^2", tex_to_color_map={"E": RED, "m": GREEN, "c": BLUE})
+
+# Background
+eq_with_bg = VGroup(
+    BackgroundRectangle(eq, color=BLACK, fill_opacity=0.5),
+    eq
+)
+
+# Braces and annotations
+eq = MathTex(r"x^2 + y^2 = z^2")
+brace = Brace(eq, direction=DOWN)
+brace_text = brace.get_text("Pythagorean theorem")
+```
+
+### Animating Equation Transformations
+
+```python
+# Writing equations
+self.play(Write(eq))
+
+# Transform between equations
+eq1 = MathTex(r"e^x = 1 + x + \frac{x^2}{2} + \cdots")
+eq2 = MathTex(r"e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!}")
+self.play(TransformMatchingTex(eq1, eq2))
+
+# Highlighting parts of equations
+self.play(eq[0].animate.set_color(YELLOW))
+self.play(Indicate(eq[1]))
+
+# Revealing parts of equations
+self.play(FadeIn(eq[0]))
+self.play(FadeIn(eq[1]))
+self.play(FadeIn(eq[2]))
+```
+
+## 5. Graphing and Coordinate Systems
+
+### Creating Coordinate Systems
+
+```python
+# Number plane (2D coordinate system)
+plane = NumberPlane(
+    x_range=[-10, 10, 1],  # x_min, x_max, step
+    y_range=[-5, 5, 1],    # y_min, y_max, step
+    x_length=10,           # width
+    y_length=6,            # height
+    axis_config={"color": BLUE},
+)
+
+# Axes (without grid lines)
+axes = Axes(
+    x_range=[-10, 10, 1],
+    y_range=[-5, 5, 1],
+    x_length=10,
+    y_length=6,
+    axis_config={"include_tip": True}
+)
+
+# 3D axes
+axes_3d = ThreeDAxes()
+
+# Adding labels
+x_label = axes.get_x_axis_label(r"x")
+y_label = axes.get_y_axis_label(r"f(x)")
+labels = VGroup(x_label, y_label)
+```
+
+### Plotting Functions
+
+```python
+# Basic function plot
+def func(x):
+    return x**2
+
+graph = axes.plot(func, color=RED)
+
+# Parametric function
+parametric_curve = ParametricFunction(
+    lambda t: np.array([np.cos(t), np.sin(t), 0]),
+    t_range=[0, TAU],
+    color=GREEN
+)
+
+# Multiple functions
+sin_graph = axes.plot(lambda x: np.sin(x), color=BLUE)
+cos_graph = axes.plot(lambda x: np.cos(x), color=RED)
+
+# Function with limited domain
+sqrt_graph = axes.plot(
+    lambda x: np.sqrt(x),
+    x_range=[0, 10],  # Only plot for x >= 0
+    color=YELLOW
 )
 ```
 
-### 2. Animated Value Changes with UpdaterFunctions
+### Customizing Graphs
 
 ```python
-# Create a ValueTracker to control animations
-parameter = ValueTracker(0)
-
-# Create objects that update based on the parameter
-dot = always_redraw(
-    lambda: Dot(
-        point=np.array([
-            np.cos(parameter.get_value()), 
-            np.sin(parameter.get_value()), 
-            0
-        ])
-    )
+# Graph styling
+graph = axes.plot(
+    func,
+    color=BLUE,
+    stroke_width=4,
+    use_smoothing=True
 )
 
-# Add the objects to the scene
+# Adding graph labels
+graph_label = axes.get_graph_label(
+    graph,
+    label=r"f(x) = x^2",
+    x_val=5,
+    direction=UR
+)
+
+# Highlighting points
+dot = Dot().move_to(axes.c2p(2, func(2)))  # c2p = coords_to_point
+point_label = MathTex(r"(2, 4)").next_to(dot, UP)
+
+# Vertical and horizontal lines
+v_line = axes.get_vertical_line(axes.c2p(2, func(2)))
+h_line = axes.get_horizontal_line(axes.c2p(2, func(2)))
+```
+
+### Adding Points, Lines, and Areas to Graphs
+
+```python
+# Adding points
+point = Dot(axes.c2p(2, func(2)), color=YELLOW)
+
+# Adding lines
+tangent_line = axes.get_secant_slope_group(
+    x=2,
+    graph=graph,
+    dx=0.01,
+    secant_line_color=GREEN,
+    secant_line_length=4
+)
+
+# Adding areas
+area = axes.get_area(
+    graph,
+    x_range=[0, 2],
+    color=BLUE,
+    opacity=0.5
+)
+
+# Riemann sums
+riemann_rectangles = axes.get_riemann_rectangles(
+    graph,
+    x_range=[0, 5],
+    dx=0.5,
+    fill_opacity=0.5,
+    colors=[BLUE, GREEN]
+)
+```
+
+### Animating Graphs and Function Transformations
+
+```python
+# Creating a graph
+self.play(Create(axes))
+self.play(Create(graph), run_time=2)
+
+# Transforming between functions
+graph1 = axes.plot(lambda x: x**2, color=BLUE)
+graph2 = axes.plot(lambda x: x**3, color=RED)
+self.play(Transform(graph1, graph2))
+
+# Tracing a point along a graph
+dot = Dot(color=YELLOW)
+dot.move_to(axes.c2p(0, 0))
 self.add(dot)
 
-# Animate the parameter changing
-self.play(parameter.animate.set_value(2*PI), run_time=5)
+x_tracker = ValueTracker(0)
+dot.add_updater(
+    lambda d: d.move_to(axes.c2p(x_tracker.get_value(), func(x_tracker.get_value())))
+)
+self.play(x_tracker.animate.set_value(5), run_time=3)
 ```
 
-### 3. Motion Paths and Tracing
+## 6. Advanced Animation Techniques
+
+### Using `.animate` Syntax
+
+The `.animate` syntax provides a convenient way to animate changes to mobjects:
 
 ```python
-# Create a path to follow
-path = ParametricFunction(
-    lambda t: np.array([2*np.cos(t), np.sin(2*t), 0]),
-    t_range=[0, TAU]
+# Without .animate (static change)
+circle.set_fill(RED)
+self.add(circle)
+
+# With .animate (animated change)
+self.play(circle.animate.set_fill(RED))
+
+# Chaining multiple animations
+self.play(
+    circle.animate.set_fill(RED).scale(2).shift(UP)
 )
 
-# Create a dot that will move along the path
-dot = Dot(path.point_from_proportion(0), color=SAFFRON_GOLD)
-
-# Create a trace of the path
-path_trace = TracingPath(dot.get_center, stroke_width=3, stroke_color=TEAL)
-
-# Add to scene and animate
-self.add(path_trace, dot)
-self.play(MoveAlongPath(dot, path, rate_func=linear), run_time=8)
+# Customizing animation parameters
+self.play(
+    circle.animate.set_fill(RED),
+    run_time=2,
+    rate_func=there_and_back
+)
 ```
 
-### 4. Complex Transitions and Morphing
+### Creating Custom Animations
 
 ```python
-# Transform between complex mathematical expressions with matching
-equation1 = MathTex(r"\frac{d}{dx}[f(x)g(x)] = f'(x)g(x) + f(x)g'(x)")
-equation2 = MathTex(r"\frac{d}{dx}[f(x)g(x)]", r"=", r"f'(x)g(x)", r"+", r"f(x)g'(x)")
+# Custom animation class
+class CircleToSquare(Animation):
+    def __init__(self, mobject, **kwargs):
+        super().__init__(mobject, **kwargs)
+        self.square = Square().match_width(mobject)
 
-# Create a color-coded transformation
-colors = [AZURE_BLUE, PURE_WHITE, TEAL, PURE_WHITE, SAFFRON_GOLD]
-for i, part in enumerate(equation2):
-    part.set_color(colors[i])
+    def interpolate_mobject(self, alpha):
+        # alpha goes from 0 to 1 during the animation
+        self.mobject.become(
+            VMobject().interpolate(
+                self.mobject.copy(), self.square, alpha
+            )
+        )
 
-self.play(TransformMatchingTex(equation1, equation2))
+# Using the custom animation
+circle = Circle()
+self.add(circle)
+self.play(CircleToSquare(circle))
 ```
 
-## DOMAIN-SPECIFIC IMPLEMENTATIONS
+### Animation Composition
 
-### 1. ALGEBRA VISUALIZATIONS
-
-#### Example 1: Quadratic Equation Solving
 ```python
-class QuadraticEquationSolving(Scene):
+# AnimationGroup plays animations in parallel
+animations = AnimationGroup(
+    Create(circle),
+    FadeIn(square),
+    run_time=2
+)
+self.play(animations)
+
+# Succession plays animations sequentially
+sequence = Succession(
+    Create(circle),
+    Wait(1),
+    FadeIn(square),
+    Wait(1)
+)
+self.play(sequence)
+
+# LaggedStart plays animations with a delay between each
+staggered = LaggedStart(
+    *[FadeIn(dot) for dot in dots],
+    lag_ratio=0.2,
+    run_time=3
+)
+self.play(staggered)
+```
+
+### Using Updaters for Dynamic Animations
+
+Updaters allow mobjects to change continuously based on other mobjects or time:
+
+```python
+# Simple updater that rotates a mobject over time
+def rotate_updater(mobject, dt):
+    mobject.rotate(dt)  # dt is the time since last frame
+
+square = Square()
+self.add(square)
+square.add_updater(rotate_updater)
+self.wait(2)  # Square will rotate for 2 seconds
+square.remove_updater(rotate_updater)
+
+# Updater that keeps one object next to another
+dot = Dot()
+text = Text("Follow me!").next_to(dot, RIGHT)
+text.add_updater(lambda m: m.next_to(dot, RIGHT))
+self.add(dot, text)
+self.play(dot.animate.shift(UP + RIGHT))  # Text follows the dot
+
+# Using always_redraw for continuous updates
+always_changing = always_redraw(
+    lambda: Circle(radius=np.sin(time.time()) + 1)
+)
+self.add(always_changing)
+self.wait(5)  # Circle will pulsate for 5 seconds
+```
+
+### Value Trackers for Parametric Animations
+
+Value trackers store values that can be animated and used to control other properties:
+
+```python
+# Create a value tracker
+x = ValueTracker(0)
+
+# Create a dot that follows the value
+dot = Dot().add_updater(
+    lambda d: d.move_to(axes.c2p(x.get_value(), func(x.get_value())))
+)
+
+# Create a label that shows the current value
+label = DecimalNumber().add_updater(
+    lambda d: d.set_value(x.get_value()).next_to(dot, UP)
+)
+
+self.add(dot, label)
+self.play(x.animate.set_value(5), run_time=3)
+```
+
+## 7. 3D Visualizations
+
+### Working with `ThreeDScene`
+
+To create 3D animations, use the `ThreeDScene` class instead of `Scene`:
+
+```python
+from manim import *
+
+class My3DScene(ThreeDScene):
     def construct(self):
-        # Title
-        title = Tex("Solving Quadratic Equations", color=PURE_WHITE).scale(1.2).to_edge(UP)
-        self.play(Write(title))
-        
-        # The general form of quadratic equation
-        general_form = MathTex(
-            "ax^2 + bx + c = 0", 
-            color=AZURE_BLUE
-        ).next_to(title, DOWN, buff=0.5)
-        
-        self.play(Write(general_form))
+        axes = ThreeDAxes()
+        self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+        self.add(axes)
+        self.wait()
+```
+
+### Creating 3D Objects and Surfaces
+
+```python
+# Basic 3D shapes
+cube = Cube(side_length=2, fill_opacity=0.7, color=BLUE)
+sphere = Sphere(radius=1, fill_opacity=0.7, color=RED)
+prism = Prism(dimensions=[1, 2, 3], fill_opacity=0.7, color=GREEN)
+
+# Parametric surfaces
+def param_surface_func(u, v):
+    x = np.cos(u) * np.sin(v)
+    y = np.sin(u) * np.sin(v)
+    z = np.cos(v)
+    return np.array([x, y, z])
+
+param_surface = ParametricSurface(
+    param_surface_func,
+    u_range=[0, TAU],
+    v_range=[0, PI],
+    resolution=(16, 16),
+    color=BLUE
+)
+
+# Function surfaces (z = f(x, y))
+def func_surface(x, y):
+    return np.sin(x) * np.cos(y)
+
+surface = Surface(
+    lambda u, v: np.array([u, v, func_surface(u, v)]),
+    u_range=[-3, 3],
+    v_range=[-3, 3],
+    resolution=(16, 16),
+    color=GREEN
+)
+```
+
+### Camera Control and Orientation
+
+```python
+# Setting camera orientation
+self.set_camera_orientation(
+    phi=75 * DEGREES,    # Polar angle (up-down)
+    theta=30 * DEGREES,  # Azimuthal angle (around)
+    gamma=0 * DEGREES,   # Roll
+    zoom=0.5             # Zoom level
+)
+
+# Moving the camera
+self.move_camera(
+    phi=45 * DEGREES,
+    theta=60 * DEGREES,
+    run_time=2
+)
+
+# Continuous camera rotation
+self.begin_ambient_camera_rotation(rate=0.1)
+self.wait(5)
+self.stop_ambient_camera_rotation()
+
+# 3D illusion effect
+self.begin_3dillusion_camera_rotation(rate=0.2)
+self.wait(5)
+self.stop_3dillusion_camera_rotation()
+```
+
+### Lighting and Rendering Options
+
+```python
+# Changing the light source position
+self.renderer.camera.light_source.move_to(3*IN + 3*LEFT)
+
+# Adding ambient lighting
+self.camera.set_ambient_light(color=BLUE, intensity=0.5)
+
+# Changing the background color
+self.camera.background_color = "#111111"
+```
+
+### Animating in 3D Space
+
+```python
+# Creating and animating 3D objects
+cube = Cube()
+self.play(Create(cube))
+self.play(cube.animate.rotate(PI/2, axis=RIGHT))
+self.play(cube.animate.shift(2*UP))
+
+# Morphing between 3D objects
+self.play(Transform(cube, sphere))
+
+# Moving along a 3D path
+curve = ParametricFunction(
+    lambda t: np.array([np.cos(t), np.sin(t), t/2]),
+    t_range=[0, 4*PI],
+    color=YELLOW
+)
+dot = Dot3D(color=RED)
+self.play(MoveAlongPath(dot, curve), run_time=5)
+```
+
+## 8. Special Effects and Techniques
+
+### Camera Movements and Zooming
+
+```python
+# Using MovingCameraScene for camera control
+class CameraMovementExample(MovingCameraScene):
+    def construct(self):
+        # Save the initial camera state
+        self.camera.frame.save_state()
+
+        # Zoom in
+        self.play(self.camera.frame.animate.scale(0.5))
+
+        # Move camera
+        self.play(self.camera.frame.animate.shift(RIGHT*2))
+
+        # Rotate camera
+        self.play(self.camera.frame.animate.rotate(PI/4))
+
+        # Restore original camera position
+        self.play(Restore(self.camera.frame))
+
+# Using ZoomedScene for magnified views
+class ZoomedSceneExample(ZoomedScene):
+    def construct(self):
+        # Configure the zoomed camera
+        self.camera.frame.move_to(ORIGIN)
+
+        # Activate zooming
+        self.activate_zooming(animate=True)
+
+        # Move the zoomed area
+        self.play(self.zoomed_camera.frame.animate.shift(RIGHT))
+```
+
+### Highlighting and Focusing Techniques
+
+```python
+# Surrounding with shapes
+rect = SurroundingRectangle(text, color=YELLOW, buff=0.1)
+circle = Circle().surround(text, buffer_factor=1.2)
+
+# Indicating objects
+self.play(Indicate(text))
+self.play(Flash(point))
+self.play(Circumscribe(formula))
+self.play(ShowPassingFlash(line))
+
+# Focusing with vignette
+vignette = Rectangle(
+    width=FRAME_WIDTH,
+    height=FRAME_HEIGHT,
+    fill_opacity=0.8,
+    fill_color=BLACK,
+    stroke_width=0
+)
+cutout = Circle(radius=2).move_to(text)
+vignette.punch_out(cutout)
+self.play(FadeIn(vignette))
+```
+
+### Creating Traces and Paths
+
+```python
+# Creating a path trace
+def get_path_trace(mobject, time=1.0, color=YELLOW):
+    path = VMobject()
+    path.set_points_as_corners([mobject.get_center(), mobject.get_center()])
+
+    def update_path(path):
+        previous_path = path.copy()
+        previous_path.add_points_as_corners([mobject.get_center()])
+        path.become(previous_path)
+
+    path.set_color(color)
+    path.add_updater(update_path)
+    return path
+
+# Using the path trace
+dot = Dot()
+path = get_path_trace(dot)
+self.add(dot, path)
+self.play(dot.animate.move_to([3, 2, 0]), run_time=3)
+```
+
+### Using Color Gradients and Opacity
+
+```python
+# Color gradients
+circle.set_color_by_gradient(RED, BLUE, GREEN)
+line.set_color_by_gradient(YELLOW, PURPLE)
+
+# Opacity gradients
+def opacity_gradient(mob, start=0.2, end=1.0):
+    n_submobs = len(mob.submobjects)
+    for i, submob in enumerate(mob.submobjects):
+        opacity = start + (end - start) * i / n_submobs
+        submob.set_opacity(opacity)
+
+dots = VGroup(*[Dot() for _ in range(10)]).arrange(RIGHT)
+opacity_gradient(dots)
+self.add(dots)
+```
+
+### Boolean Operations on Shapes
+
+```python
+# Union of shapes
+union = Union(circle, square, color=GREEN, fill_opacity=0.5)
+
+# Intersection of shapes
+intersection = Intersection(circle, square, color=RED, fill_opacity=0.5)
+
+# Difference of shapes
+difference = Difference(circle, square, color=BLUE, fill_opacity=0.5)
+
+# Exclusion of shapes
+exclusion = Exclusion(circle, square, color=YELLOW, fill_opacity=0.5)
+```
+
+## 9. Best Practices and Optimization
+
+### Code Organization for Complex Animations
+
+```python
+class WellOrganizedScene(Scene):
+    def construct(self):
+        # Setup phase - create all objects
+        self.setup_objects()
+
+        # Animation phase - play animations
+        self.animate_first_part()
+        self.animate_second_part()
+        self.animate_conclusion()
+
+    def setup_objects(self):
+        # Create and configure all objects
+        self.circle = Circle(radius=1.0, color=BLUE)
+        self.square = Square(side_length=2.0, color=RED)
+        self.text = Text("Organized Code", font_size=36)
+
+        # Position objects
+        self.square.next_to(self.circle, RIGHT)
+        self.text.to_edge(UP)
+
+    def animate_first_part(self):
+        # First part of the animation
+        self.play(Create(self.circle))
+        self.play(Write(self.text))
         self.wait(0.5)
-        
-        # Specific example
-        specific = MathTex(
-            "x^2 - 5x + 6 = 0",
-            color=AZURE_BLUE
-        ).next_to(general_form, DOWN, buff=0.5)
-        
-        # Show the specific equation
-        self.play(Write(specific))
-        self.wait()
-        
-        # Identify coefficients
-        coefficients = MathTex(
-            "a = 1, \\quad b = -5, \\quad c = 6",
-            color=TEAL
-        ).next_to(specific, DOWN, buff=0.5)
-        
-        self.play(Write(coefficients))
-        self.wait()
-        
-        # Quadratic formula
-        quadratic_formula = MathTex(
-            "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
-            color=SAFFRON_GOLD
-        ).next_to(coefficients, DOWN, buff=0.5)
-        
-        self.play(Write(quadratic_formula))
-        self.wait()
-        
-        # Substitution step
-        subst_step = MathTex(
-            "x = \\frac{-(-5) \\pm \\sqrt{(-5)^2 - 4 \\cdot 1 \\cdot 6}}{2 \\cdot 1}",
-            color=AMBER
-        ).next_to(quadratic_formula, DOWN, buff=0.5)
-        
-        self.play(Write(subst_step))
-        self.wait()
-        
-        # Simplification
-        simpl_step1 = MathTex(
-            "x = \\frac{5 \\pm \\sqrt{25 - 24}}{2}",
-            color=AMBER
-        ).next_to(subst_step, DOWN, buff=0.5)
-        
-        self.play(ReplacementTransform(subst_step, simpl_step1))
-        self.wait()
-        
-        simpl_step2 = MathTex(
-            "x = \\frac{5 \\pm \\sqrt{1}}{2}",
-            color=AMBER
-        ).next_to(subst_step, DOWN, buff=0.5)
-        
-        self.play(ReplacementTransform(simpl_step1, simpl_step2))
-        self.wait()
-        
-        simpl_step3 = MathTex(
-            "x = \\frac{5 \\pm 1}{2}",
-            color=AMBER
-        ).next_to(subst_step, DOWN, buff=0.5)
-        
-        self.play(ReplacementTransform(simpl_step2, simpl_step3))
-        self.wait()
-        
-        # Final answers
-        answer1 = MathTex(
-            "x_1 = \\frac{5 + 1}{2} = 3",
-            color=SAGE_GREEN
-        ).next_to(simpl_step3, DOWN, buff=0.5).shift(LEFT * 2)
-        
-        answer2 = MathTex(
-            "x_2 = \\frac{5 - 1}{2} = 2",
-            color=SAGE_GREEN
-        ).next_to(simpl_step3, DOWN, buff=0.5).shift(RIGHT * 2)
-        
+
+    def animate_second_part(self):
+        # Second part of the animation
+        self.play(Create(self.square))
+        self.play(self.circle.animate.set_color(GREEN))
+        self.wait(0.5)
+
+    def animate_conclusion(self):
+        # Conclusion of the animation
         self.play(
-            Write(answer1),
-            Write(answer2)
+            self.circle.animate.scale(0.5),
+            self.square.animate.scale(0.5),
+            self.text.animate.scale(1.5)
         )
-        self.wait()
-        
-        # Verification
-        verify_text = Tex("Verification:", color=PURE_WHITE).next_to(answer1, DOWN, buff=0.7).shift(LEFT * 3)
-        
-        verify1 = MathTex(
-            "3^2 - 5 \\cdot 3 + 6 = 9 - 15 + 6 = 0 \\checkmark",
-            color=SAGE_GREEN
-        ).next_to(verify_text, RIGHT, buff=0.5)
-        
-        verify2 = MathTex(
-            "2^2 - 5 \\cdot 2 + 6 = 4 - 10 + 6 = 0 \\checkmark",
-            color=SAGE_GREEN
-        ).next_to(verify1, DOWN, buff=0.3)
-        
-        self.play(
-            Write(verify_text),
-            Write(verify1),
-            Write(verify2)
-        )
-        self.wait()
-        
-        # Clean up for visualization
-        self.play(
-            FadeOut(coefficients),
-            FadeOut(quadratic_formula),
-            FadeOut(subst_step),
-            FadeOut(simpl_step3),
-            FadeOut(verify_text),
-            FadeOut(verify1),
-            FadeOut(verify2)
-        )
-        
-        # Create coordinate system to visualize
+        self.wait(1)
+```
+
+### Performance Considerations
+
+1. **Reuse Objects**: Create objects once and reuse them rather than recreating them.
+
+```python
+# Inefficient - creates a new circle each time
+for i in range(10):
+    self.play(Create(Circle()))
+
+# Efficient - reuses the same circle
+circle = Circle()
+for i in range(10):
+    self.play(Create(circle))
+    self.play(FadeOut(circle))
+```
+
+2. **Group Animations**: Use `AnimationGroup` or multiple animations in a single `play` call.
+
+```python
+# Inefficient - separate play calls
+self.play(Create(circle))
+self.play(Create(square))
+self.play(Create(triangle))
+
+# Efficient - group animations
+self.play(
+    Create(circle),
+    Create(square),
+    Create(triangle)
+)
+```
+
+3. **Use Appropriate Quality Settings**: Use lower quality settings during development.
+
+```bash
+# Development
+manim -ql scene.py MyScene
+
+# Final render
+manim -qh scene.py MyScene
+```
+
+4. **Optimize Complex Shapes**: Reduce the number of points in complex shapes.
+
+```python
+# Inefficient - high resolution
+circle = Circle(radius=1.0, n_components=128)
+
+# Efficient - lower resolution for simple shapes
+circle = Circle(radius=1.0, n_components=32)
+```
+
+5. **Cache Calculations**: Cache results of expensive calculations.
+
+```python
+# Inefficient - recalculates each time
+def get_complex_point(t):
+    # Expensive calculation
+    return complex_calculation(t)
+
+# Efficient - cache results
+@functools.lru_cache(maxsize=128)
+def get_complex_point(t):
+    # Expensive calculation
+    return complex_calculation(t)
+```
+
+### Common Patterns and Idioms
+
+1. **Reveal Step by Step**: Gradually reveal complex diagrams or equations.
+
+```python
+equation = MathTex("E", "=", "m", "c^2")
+self.play(Write(equation[0]))  # Show E
+self.wait(0.5)
+self.play(Write(equation[1]))  # Show =
+self.wait(0.5)
+self.play(Write(equation[2]))  # Show m
+self.wait(0.5)
+self.play(Write(equation[3]))  # Show c^2
+```
+
+2. **Highlight and Focus**: Draw attention to specific parts.
+
+```python
+self.play(Write(equation))
+self.wait(1)
+self.play(Indicate(equation[2]))  # Highlight m
+self.wait(0.5)
+self.play(Circumscribe(equation[3]))  # Circle c^2
+```
+
+3. **Transform Between Concepts**: Show relationships through transformations.
+
+```python
+circle = Circle(radius=1.0)
+square = Square(side_length=2.0)
+self.play(Create(circle))
+self.wait(1)
+self.play(Transform(circle, square))
+```
+
+4. **Use Updaters for Dynamic Relationships**: Keep related objects synchronized.
+
+```python
+dot = Dot()
+line = Line(ORIGIN, RIGHT)
+line.add_updater(lambda l: l.put_start_and_end_on(ORIGIN, dot.get_center()))
+self.add(dot, line)
+self.play(dot.animate.shift(2*UP + RIGHT))
+```
+
+5. **Create Reusable Components**: Define custom mobjects for repeated use.
+
+```python
+class LabeledArrow(VGroup):
+    def __init__(self, label_text, **kwargs):
+        super().__init__(**kwargs)
+        self.arrow = Arrow(LEFT, RIGHT)
+        self.label = Text(label_text)
+        self.label.next_to(self.arrow, UP)
+        self.add(self.arrow, self.label)
+
+# Usage
+labeled_arrow = LabeledArrow("Force")
+self.play(Create(labeled_arrow))
+```
+
+### Debugging Techniques
+
+1. **Add Debug Text**: Add temporary text to show variable values.
+
+```python
+def debug_text(label, value):
+    text = Text(f"{label}: {value}", font_size=24)
+    text.to_edge(DOWN)
+    return text
+
+x = 42
+debug = debug_text("x", x)
+self.add(debug)
+```
+
+2. **Use Color Coding**: Use colors to distinguish different parts.
+
+```python
+circle1 = Circle(color=RED)
+circle2 = Circle(color=BLUE).shift(RIGHT)
+self.add(circle1, circle2)
+```
+
+3. **Print to Console**: Use print statements for debugging.
+
+```python
+print(f"Circle position: {circle.get_center()}")
+print(f"Animation duration: {self.renderer.time}")
+```
+
+4. **Isolate Components**: Test complex animations in smaller scenes.
+
+```python
+class DebugScene(Scene):
+    def construct(self):
+        # Test just one component
+        self.test_equation_transform()
+
+    def test_equation_transform(self):
+        eq1 = MathTex("a^2 + b^2 = c^2")
+        eq2 = MathTex("c = \\sqrt{a^2 + b^2}")
+        self.play(Write(eq1))
+        self.play(TransformMatchingTex(eq1, eq2))
+```
+
+5. **Use Sections**: Divide your animation into sections for easier debugging.
+
+```python
+self.next_section("Setup")
+# Setup code here
+
+self.next_section("First Animation")
+# First animation code here
+
+self.next_section("Second Animation")
+# Second animation code here
+```
+
+### Reusing Components and Animations
+
+1. **Create Custom Mobjects**: Extend existing mobjects for reuse.
+
+```python
+class NumberedDot(Dot):
+    def __init__(self, number, **kwargs):
+        super().__init__(**kwargs)
+        self.label = Text(str(number), font_size=24)
+        self.label.next_to(self, UP)
+        self.add(self.label)
+
+# Usage
+dots = VGroup(*[NumberedDot(i) for i in range(1, 6)]).arrange(RIGHT)
+self.play(Create(dots))
+```
+
+2. **Create Animation Templates**: Define functions that return common animations.
+
+```python
+def highlight_and_label(mobject, label_text):
+    label = Text(label_text).next_to(mobject, UP)
+    return Succession(
+        Indicate(mobject),
+        FadeIn(label)
+    )
+
+# Usage
+self.play(highlight_and_label(circle, "Important Circle"))
+```
+
+3. **Use Inheritance for Similar Scenes**: Extend base scenes for similar animations.
+
+```python
+class GraphScene(Scene):
+    def setup(self):
+        self.axes = Axes()
+        self.add(self.axes)
+
+    def plot_function(self, func, color=BLUE):
+        graph = self.axes.plot(func, color=color)
+        self.play(Create(graph))
+        return graph
+
+# Usage
+class ParabolaScene(GraphScene):
+    def construct(self):
+        self.setup()
+        self.plot_function(lambda x: x**2)
+```
+
+4. **Create Animation Libraries**: Store common animations in separate files.
+
+```python
+# animations_lib.py
+def appear_and_highlight(mobject):
+    return Succession(
+        FadeIn(mobject),
+        Indicate(mobject),
+        Flash(mobject.get_center())
+    )
+
+# main_scene.py
+from animations_lib import appear_and_highlight
+
+class MainScene(Scene):
+    def construct(self):
+        circle = Circle()
+        self.play(appear_and_highlight(circle))
+```
+
+## 10. Common Examples and Templates
+
+### Standard Mathematical Animations
+
+#### Function Plotting
+
+```python
+class FunctionPlotExample(Scene):
+    def construct(self):
+        # Create axes
         axes = Axes(
-            x_range=[-1, 6],
-            y_range=[-2, 10],
-            axis_config={"include_tip": True},
+            x_range=[-3, 3, 1],
+            y_range=[-2, 2, 1],
+            axis_config={"include_tip": False}
         )
-        
-        labels = axes.get_axis_labels()
-        
+        axes_labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
+
+        # Plot functions
+        sin_graph = axes.plot(lambda x: np.sin(x), color=BLUE)
+        cos_graph = axes.plot(lambda x: np.cos(x), color=RED)
+
+        # Add labels
+        sin_label = axes.get_graph_label(sin_graph, "\\sin(x)", x_val=2, direction=UP)
+        cos_label = axes.get_graph_label(cos_graph, "\\cos(x)", x_val=2, direction=DOWN)
+
+        # Group elements
+        plots = VGroup(axes, sin_graph, cos_graph, axes_labels, sin_label, cos_label)
+
+        # Display
+        self.play(Create(axes), Create(axes_labels))
+        self.play(Create(sin_graph), Create(sin_label))
+        self.play(Create(cos_graph), Create(cos_label))
+        self.wait()
+```
+
+#### Equation Transformations
+
+```python
+class EquationTransformExample(Scene):
+    def construct(self):
+        # Initial equation
+        eq1 = MathTex("x^2", "+", "y^2", "=", "r^2")
+
+        # Target equation
+        eq2 = MathTex("\\frac{x^2}{a^2}", "+", "\\frac{y^2}{b^2}", "=", "1")
+
+        # Display first equation
+        self.play(Write(eq1))
+        self.wait()
+
+        # Transform to second equation
+        self.play(TransformMatchingTex(eq1, eq2))
+        self.wait()
+
+        # Highlight parts
+        self.play(Indicate(eq2[0]))  # Highlight x^2/a^2
+        self.wait(0.5)
+        self.play(Indicate(eq2[2]))  # Highlight y^2/b^2
+        self.wait()
+```
+
+#### Geometric Transformations
+
+```python
+class GeometricTransformExample(Scene):
+    def construct(self):
+        # Create a square
+        square = Square(side_length=2, color=BLUE)
+
+        # Display the square
+        self.play(Create(square))
+        self.wait()
+
+        # Rotate the square
+        self.play(Rotate(square, PI/4))
+        self.wait()
+
+        # Scale the square
+        self.play(square.animate.scale(0.5))
+        self.wait()
+
+        # Transform to circle
+        circle = Circle(radius=1.5, color=RED)
+        self.play(Transform(square, circle))
+        self.wait()
+```
+
+### Physics Simulations
+
+#### Simple Harmonic Motion
+
+```python
+class SimpleHarmonicMotion(Scene):
+    def construct(self):
+        # Create axes
+        axes = Axes(
+            x_range=[0, 10, 1],
+            y_range=[-1.5, 1.5, 1],
+            axis_config={"include_tip": False}
+        )
+        axes_labels = axes.get_axis_labels(x_label="t", y_label="x(t)")
+
+        # Create the oscillating function
+        def oscillation(t):
+            return np.cos(2 * t) * np.exp(-0.1 * t)
+
         # Plot the function
-        parabola = axes.plot(lambda x: x**2 - 5*x + 6, color=AZURE_BLUE)
-        parabola_label = MathTex("f(x) = x^2 - 5x + 6", color=AZURE_BLUE).next_to(parabola, UP, buff=0.5)
-        
-        x_intercept1 = Dot(axes.c2p(2, 0), color=SAGE_GREEN)
-        x_intercept2 = Dot(axes.c2p(3, 0), color=SAGE_GREEN)
-        
-        x_label1 = MathTex("x = 2", color=SAGE_GREEN).next_to(x_intercept1, DOWN)
-        x_label2 = MathTex("x = 3", color=SAGE_GREEN).next_to(x_intercept2, DOWN)
-        
-        self.play(
-            Create(axes),
-            Write(labels)
+        graph = axes.plot(oscillation, color=BLUE)
+
+        # Create a dot that follows the graph
+        dot = Dot(color=RED)
+        dot.move_to(axes.c2p(0, oscillation(0)))
+
+        # Create a vertical line that follows the dot
+        line = always_redraw(
+            lambda: axes.get_vertical_line(dot.get_center())
         )
-        
+
+        # Add everything to the scene
+        self.play(Create(axes), Create(axes_labels))
+        self.play(Create(graph))
+        self.add(dot, line)
+
+        # Animate the dot moving along the graph
         self.play(
-            Create(parabola),
-            Write(parabola_label)
+            dot.animate.move_to(axes.c2p(10, oscillation(10))),
+            rate_func=linear,
+            run_time=10
         )
-        
+        self.wait()
+```
+
+#### Vector Field
+
+```python
+class VectorFieldExample(Scene):
+    def construct(self):
+        # Define a vector field function
+        def field_func(pos):
+            x, y = pos[:2]
+            return np.array([-y, x, 0]) / (x**2 + y**2)**0.5
+
+        # Create a vector field
+        vector_field = ArrowVectorField(
+            field_func,
+            x_range=[-5, 5, 1],
+            y_range=[-5, 5, 1],
+            length_func=lambda norm: 0.5 * sigmoid(norm)
+        )
+
+        # Create streamlines
+        streamlines = StreamLines(
+            field_func,
+            x_range=[-5, 5, 0.2],
+            y_range=[-5, 5, 0.2],
+            stroke_width=2,
+            color=BLUE
+        )
+
+        # Add animation
+        self.add(vector_field)
+        self.play(Create(streamlines, lag_ratio=0.01, run_time=3))
+        self.wait()
+
+        # Animate a particle moving along a streamline
+        dot = Dot(color=RED)
+        dot.move_to([-3, -3, 0])
+
+        def update_dot(dot, dt):
+            pos = dot.get_center()
+            field_val = field_func(pos)
+            dot.shift(field_val * dt)
+
+        dot.add_updater(update_dot)
+        self.add(dot)
+        self.wait(10)
+```
+
+### Algorithm Visualizations
+
+#### Sorting Algorithm
+
+```python
+class BubbleSortVisualization(Scene):
+    def construct(self):
+        # Create a list of values
+        values = [7, 3, 1, 8, 5, 4, 6, 2]
+
+        # Create bars representing the values
+        bars = VGroup()
+        for val in values:
+            bar = Rectangle(height=val * 0.5, width=0.8, fill_opacity=0.8, color=BLUE)
+            bars.add(bar)
+
+        bars.arrange(RIGHT, buff=0.2)
+        bars.move_to(ORIGIN)
+
+        # Add labels
+        labels = VGroup()
+        for i, bar in enumerate(bars):
+            label = Text(str(values[i]), font_size=24)
+            label.next_to(bar, DOWN)
+            labels.add(label)
+
+        # Display initial state
+        self.play(Create(bars), Write(labels))
+        self.wait()
+
+        # Bubble sort animation
+        def update_bars(bars, values):
+            for i, (bar, val) in enumerate(zip(bars, values)):
+                bar.height = val * 0.5
+                bar.stretch_to_fit_height(val * 0.5)
+                bar.move_to(bars[i].get_center())
+
+        def update_labels(labels, values):
+            for i, (label, val) in enumerate(zip(labels, values)):
+                new_label = Text(str(val), font_size=24)
+                new_label.next_to(bars[i], DOWN)
+                labels[i].become(new_label)
+
+        # Perform bubble sort
+        n = len(values)
+        for i in range(n):
+            for j in range(0, n - i - 1):
+                # Highlight bars being compared
+                self.play(
+                    bars[j].animate.set_color(RED),
+                    bars[j + 1].animate.set_color(RED),
+                    run_time=0.5
+                )
+
+                if values[j] > values[j + 1]:
+                    # Swap values
+                    values[j], values[j + 1] = values[j + 1], values[j]
+
+                    # Animate the swap
+                    self.play(
+                        bars[j].animate.move_to(bars[j + 1].get_center()),
+                        bars[j + 1].animate.move_to(bars[j].get_center()),
+                        labels[j].animate.next_to(bars[j + 1], DOWN),
+                        labels[j + 1].animate.next_to(bars[j], DOWN),
+                        run_time=1
+                    )
+
+                    # Update the bars and labels
+                    bars[j], bars[j + 1] = bars[j + 1], bars[j]
+                    labels[j], labels[j + 1] = labels[j + 1], labels[j]
+
+                # Reset colors
+                self.play(
+                    bars[j].animate.set_color(BLUE),
+                    bars[j + 1].animate.set_color(BLUE),
+                    run_time=0.5
+                )
+
+        # Highlight sorted array
         self.play(
-            Create(x_intercept1),
-            Create(x_intercept2),
-            Write(x_label1),
-            Write(x_label2)
+            bars.animate.set_color(GREEN),
+            run_time=1
         )
-        
+        self.wait()
+```
+
+#### Graph Algorithm
+
+```python
+class GraphTraversalExample(Scene):
+    def construct(self):
+        # Create a graph
+        vertices = [
+            [0, 0, 0],    # 0
+            [-1, 1, 0],   # 1
+            [1, 1, 0],    # 2
+            [-2, 0, 0],   # 3
+            [0, -1, 0],   # 4
+            [2, 0, 0]     # 5
+        ]
+
+        edges = [
+            (0, 1), (0, 2), (0, 4),
+            (1, 3), (2, 5), (4, 5)
+        ]
+
+        # Create the graph visualization
+        g = Graph(
+            vertices=list(range(len(vertices))),
+            edges=edges,
+            layout={i: v for i, v in enumerate(vertices)},
+            vertex_config={"radius": 0.3, "color": BLUE},
+            edge_config={"stroke_width": 2}
+        )
+
+        # Add vertex labels
+        labels = VGroup()
+        for i, v in enumerate(vertices):
+            label = Text(str(i), font_size=24)
+            label.move_to(v)
+            labels.add(label)
+
+        # Display the graph
+        self.play(Create(g))
+        self.play(Write(labels))
+        self.wait()
+
+        # BFS traversal
+        visited = set()
+        queue = [0]  # Start from vertex 0
+
+        while queue:
+            vertex = queue.pop(0)
+
+            if vertex in visited:
+                continue
+
+            # Mark as visited
+            visited.add(vertex)
+            self.play(
+                g.vertices[vertex].animate.set_color(RED),
+                run_time=0.5
+            )
+
+            # Add neighbors to queue
+            for u, v in edges:
+                if u == vertex and v not in visited:
+                    queue.append(v)
+                    self.play(
+                        g.edges[(u, v)].animate.set_color(YELLOW),
+                        run_time=0.5
+                    )
+                elif v == vertex and u not in visited:
+                    queue.append(u)
+                    self.play(
+                        g.edges[(u, v)].animate.set_color(YELLOW),
+                        run_time=0.5
+                    )
+
+        # Highlight all visited vertices
+        self.play(
+            *[g.vertices[v].animate.set_color(GREEN) for v in visited],
+            run_time=1
+        )
+        self.wait()
+```
+
+### Educational Diagram Animations
+
+#### Pythagorean Theorem
+
+```python
+class PythagoreanTheorem(Scene):
+    def construct(self):
+        # Create a right triangle
+        triangle = Polygon(
+            ORIGIN, RIGHT * 3, UP * 4,
+            color=WHITE, fill_opacity=0.2
+        )
+
+        # Label the sides
+        a_label = MathTex("a").next_to(triangle, DOWN)
+        b_label = MathTex("b").next_to(triangle, RIGHT)
+        c_label = MathTex("c").next_to(triangle.get_center(), UL)
+
+        # Create squares on each side
+        a_square = Square(side_length=3, color=RED, fill_opacity=0.3)
+        a_square.next_to(triangle, DOWN, buff=0)
+        a_square.shift(RIGHT * 1.5)
+
+        b_square = Square(side_length=4, color=GREEN, fill_opacity=0.3)
+        b_square.next_to(triangle, RIGHT, buff=0)
+        b_square.shift(UP * 2)
+
+        c_square = Polygon(
+            ORIGIN, RIGHT * 3, RIGHT * 3 + UP * 4, UP * 4,
+            color=BLUE, fill_opacity=0.3
+        )
+        c_square.rotate(PI/4, about_point=ORIGIN)
+        c_square.shift(RIGHT * 1.5 + UP * 2)
+
+        # Label the areas
+        a_area = MathTex("a^2").move_to(a_square)
+        b_area = MathTex("b^2").move_to(b_square)
+        c_area = MathTex("c^2").move_to(c_square)
+
+        # Create the equation
+        equation = MathTex("a^2", "+", "b^2", "=", "c^2")
+        equation.to_edge(UP)
+
+        # Display the triangle
+        self.play(Create(triangle))
+        self.play(Write(a_label), Write(b_label), Write(c_label))
+        self.wait()
+
+        # Show the squares
+        self.play(
+            Create(a_square),
+            Create(b_square),
+            Create(c_square)
+        )
+        self.play(
+            Write(a_area),
+            Write(b_area),
+            Write(c_area)
+        )
+        self.wait()
+
+        # Show the equation
+        self.play(
+            TransformFromCopy(a_area, equation[0]),
+            Write(equation[1]),
+            TransformFromCopy(b_area, equation[2]),
+            Write(equation[3]),
+            TransformFromCopy(c_area, equation[4])
+        )
         self.wait(2)
 ```
 
-#### Example 2: Systems of Linear Equations
+#### Derivative Visualization
+
 ```python
-class LinearSystemSolving(Scene):
+class DerivativeVisualization(Scene):
     def construct(self):
-        # Title
-        title = Tex("Systems of Linear Equations", color=PURE_WHITE).scale(1.2).to_edge(UP)
-        self.play(Write(title))
-        self.wait(0.5)
-        
-        # System of equations
-        system = MathTex(
-            r"\begin{cases} 2x + y = 5 \\ x - y = 1 \end{cases}",
-            color=AZURE_BLUE
-        ).scale(1.2).next_to(title, DOWN, buff=0.7)
-        
-        self.play(Write(system))
-        self.wait()
-        
-        # Solution method: Elimination
-        method_title = Tex("Solution by Elimination Method", color=SAFFRON_GOLD).next_to(system, DOWN, buff=0.5)
-        self.play(Write(method_title))
-        self.wait(0.5)
-        
-        # Step 1: Isolate y in second equation
-        step1 = MathTex(
-            "x - y = 1",
-            r"\Rightarrow y = x - 1",
-            color=TEAL
-        ).next_to(method_title, DOWN, buff=0.5)
-        
-        self.play(Write(step1))
-        self.wait()
-        
-        # Step 2: Substitute into first equation
-        step2 = MathTex(
-            r"2x + (x - 1) = 5",
-            color=TEAL
-        ).next_to(step1, DOWN, buff=0.5)
-        
-        self.play(Write(step2))
-        self.wait()
-        
-        # Step 3: Solve for x
-        step3 = MathTex(
-            r"3x - 1 = 5",
-            r"\Rightarrow 3x = 6",
-            r"\Rightarrow x = 2",
-            color=AMBER
-        ).next_to(step2, DOWN, buff=0.5)
-        
-        self.play(Write(step3))
-        self.wait()
-        
-        # Step 4: Find y by substituting back
-        step4 = MathTex(
-            r"y = x - 1 = 2 - 1 = 1",
-            color=AMBER
-        ).next_to(step3, DOWN, buff=0.5)
-        
-        self.play(Write(step4))
-        self.wait()
-        
-        # Solution
-        solution = MathTex(
-            r"\text{Solution: } (x, y) = (2, 1)",
-            color=SAGE_GREEN
-        ).scale(1.2).next_to(step4, DOWN, buff=0.7)
-        
-        self.play(Write(solution))
-        self.wait()
-        
-        # Clean up for visualization
-        self.play(
-            FadeOut(step1),
-            FadeOut(step2),
-            FadeOut(step3),
-            FadeOut(step4)
-        )
-        
-        # Create coordinate system to visualize
+        # Create axes
         axes = Axes(
             x_range=[-1, 5],
             y_range=[-1, 5],
-            x_length=6,
-            y_length=6,
-            axis_config={"include_tip": True}
+            axis_config={"include_tip": False}
         )
-        labels = axes.get_axis_labels()
-        
-        # Plot the two equations
-        line1 = axes.plot(lambda x: 5 - 2*x, color=AZURE_BLUE, x_range=[0, 2.5])
-        line2 = axes.plot(lambda x: x - 1, color=TEAL, x_range=[0, 4])
-        
-        line1_label = MathTex("2x + y = 5", color=AZURE_BLUE).next_to(line1.point_from_proportion(0.7), UL)
-        line2_label = MathTex("x - y = 1", color=TEAL).next_to(line2.point_from_proportion(0.7), UR)
-        
-        # Intersection point
-        intersection = Dot(axes.c2p(2, 1), color=SAGE_GREEN, radius=0.1)
-        intersection_label = MathTex("(2, 1)", color=SAGE_GREEN).next_to(intersection, DOWN)
-        
-        self.play(
-            Create(axes),
-            Write(labels)
-        )
-        
-        self.play(
-            Create(line1),
-            Write(line1_label)
-        )
-        
-        self.play(
-            Create(line2),
-            Write(line2_label)
-        )
-        
-        self.play(
-            Create(intersection),
-            Write(intersection_label)
-        )
-        
-        # Highlight solution
-        self.play(
-            Flash(intersection, color=SAFFRON_GOLD, flash_radius=0.3),
-            intersection.animate.set_color(SAFFRON_GOLD)
-        )
-        
-        self.wait(2)
-```
+        axes_labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
 
-### 2. TRIGONOMETRY VISUALIZATIONS
+        # Define function
+        def func(x):
+            return x**2 / 4 + 0.5
 
-#### Example 1: Unit Circle and Trigonometric Functions
-```python
-class UnitCircleTrigonometry(Scene):
-    def construct(self):
-        # Title
-        title = Tex("The Unit Circle \& Trigonometric Functions", color=PURE_WHITE).scale(1.2).to_edge(UP)
-        self.play(Write(title))
-        
-        # Create coordinate system
-        axes = Axes(
-            x_range=[-1.5, 1.5],
-            y_range=[-1.5, 1.5],
-            x_length=5,
-            y_length=5,
-            axis_config={"include_tip": True}
-        )
-        
-        labels = axes.get_axis_labels(x_label="x", y_label="y")
-        
-        # Create the unit circle
-        circle = Circle(radius=1, color=AZURE_BLUE)
-        
-        # Create angle tracker
-        angle = ValueTracker(0)
-        
-        # Create the angle
-        angle_arc = always_redraw(
-            lambda: Arc(
-                radius=0.5, 
-                angle=angle.get_value(),
-                color=SAFFRON_GOLD
-            )
-        )
-        
-        # Angle label
-        angle_label = always_redraw(
-            lambda: MathTex(
-                f"\\theta = {round(angle.get_value() * 180 / PI)}°",
-                color=SAFFRON_GOLD
-            ).scale(0.8).next_to(angle_arc, RIGHT, buff=0.1)
-        )
-        
-        # Create the point on the circle
-        point_on_circle = always_redraw(
-            lambda: Dot(
-                circle.point_at_angle(angle.get_value()),
-                color=TEAL
-            )
-        )
-        
-        # Create the lines for sine and cosine visualization
-        cos_line = always_redraw(
-            lambda: Line(
-                axes.c2p(0, 0),
-                axes.c2p(np.cos(angle.get_value()), 0),
-                color=SAGE_GREEN
-            )
-        )
-        
-        sin_line = always_redraw(
-            lambda: Line(
-                axes.c2p(np.cos(angle.get_value()), 0),
-                axes.c2p(np.cos(angle.get_value()), np.sin(angle.get_value())),
-                color=SAGE_GREEN
-            )
-        )
-        
-        # Create radius line
-        radius_line = always_redraw(
-            lambda: Line(
-                axes.c2p(0, 0),
-                axes.c2p(np.cos(angle.get_value()), np.sin(angle.get_value())),
-                color=AZURE_BLUE
-            )
-        )
-        
-        # Labels for sin and cos
-        cos_label = always_redraw(
-            lambda: MathTex(
-                f"\\cos(\\theta) = {np.round(np.cos(angle.get_value()), 3)}",
-                color=SAGE_GREEN
-            ).scale(0.8).to_corner(UR)
-        )
-        
-        sin_label = always_redraw(
-            lambda: MathTex(
-                f"\\sin(\\theta) = {np.round(np.sin(angle.get_value()), 3)}",
-                color=SAGE_GREEN
-            ).scale(0.8).next_to(cos_label, DOWN)
-        )
-        
-        # Animation sequence
-        self.play(Create(axes), Write(labels))
-        self.play(Create(circle))
-        self.play(
-            Create(angle_arc),
-            Write(angle_label)
-        )
-        self.play(
-            Create(point_on_circle),
-            Create(radius_line)
-        )
-        self.play(
-            Create(cos_line),
-            Create(sin_line),
-            Write(cos_label),
-            Write(sin_label)
-        )
-        
-        # Animate the angle changing
-        self.play(
-            angle.animate.set_value(PI/4),
-            run_time=2
-        )
-        self.wait(0.5)
-        
-        self.play(
-            angle.animate.set_value(PI/2),
-            run_time=2
-        )
-        self.wait(0.5)
-        
-        self.play(
-            angle.animate.set_value(3*PI/4),
-            run_time=2
-        )
-        self.wait(0.5)
-        
-        self.play(
-            angle.animate.set_value(PI),
-            run_time=2
-        )
-        self.wait(0.5)
-        
-        self.play(
-            angle.animate.set_value(3*PI/2),
-            run_time=3
-        )
-        self.wait(0.5)
-        
-        self.play(
-            angle.animate.set_value(2*PI),
-            run_time=3
-        )
-        self.wait(0.5)
-        
-        # Add a note about periodicity
-        note = Tex(
-            "Trigonometric functions are periodic with period $2\\pi$",
-            color=PURE_WHITE
-        ).scale(0.8).to_edge(DOWN)
-        
-        self.play(Write(note))
-        self.wait(2)
-```
+        # Create graph
+        graph = axes.plot(func, color=BLUE)
+        graph_label = MathTex("f(x) = \\frac{x^2}{4} + 0.5")
+        graph_label.to_corner(UL)
 
-#### Example 2: Law of Sines and Cosines
-```python
-class LawOfSinesAndCosines(Scene):
-    def construct(self):
-        # Title
-        title = Tex("Law of Sines and Cosines", color=PURE_WHITE).scale(1.2).to_edge(UP)
-        self.play(Write(title))
-        
-        # Create a triangle
-        coords = [[-3, -1, 0], [2, -1, 0], [0, 2, 0]]
-        triangle = Polygon(*coords, color=AZURE_BLUE)
-        
-        # Label the vertices
-        vertices = ["A", "B", "C"]
-        vertex_dots = []
-        vertex_labels = []
-        
-        for i, point in enumerate(coords):
-            dot = Dot(point, color=SAFFRON_GOLD)
-            label = Tex(vertices[i], color=SAFFRON_GOLD).next_to(dot, direction=point/np.linalg.norm(point))
-            vertex_dots.append(dot)
-            vertex_labels.append(label)
-        
-        # Label the sides
-        side_labels = []
-        sides = ["a", "b", "c"]
-        
-        for i in range(3):
-            midpoint = (coords[i] + coords[(i+1)%3])/2
-            label = MathTex(sides[i], color=TEAL).next_to(midpoint, direction=[-1,-1,0] if i == 0 else UP)
-            side_labels.append(label)
-        
-        # Label the angles
-        angle_labels = []
-        angles = [r"\alpha", r"\beta", r"\gamma"]
-        
-        # Calculate side lengths
-        side_lengths = []
-        for i in range(3):
-            length = np.linalg.norm(np.array(coords[i]) - np.array(coords[(i+1)%3]))
-            side_lengths.append(round(length, 2))
-        
-        # Calculate angles using Law of Cosines
-        cos_angles = []
-        for i in range(3):
-            a = side_lengths[i]
-            b = side_lengths[(i+1)%3]
-            c = side_lengths[(i+2)%3]
-            cos_angle = (b**2 + c**2 - a**2)/(2*b*c)
-            angle = np.arccos(cos_angle)
-            cos_angles.append(round(angle * 180/PI, 1))
-            
-            # Create angle arcs
-            angle_pos = coords[i]
-            v1 = np.array(coords[(i+1)%3]) - np.array(angle_pos)
-            v2 = np.array(coords[(i+2)%3]) - np.array(angle_pos)
-            v1 = v1 / np.linalg.norm(v1)
-            v2 = v2 / np.linalg.norm(v2)
-            
-            # Get the angle between the vectors
-            dot_product = np.dot(v1, v2)
-            angle_rad = np.arccos(dot_product)
-            
-            # Create the arc
-            arc = Arc(
-                radius=0.5,
-                start_angle=np.angle(complex(v1[0], v1[1])),
-                angle=angle_rad if cross_product_z(v1, v2) > 0 else -angle_rad,
-                color=TEAL
-            )
-            arc.shift(angle_pos)
-            
-            # Create the angle label
-            angle_label = MathTex(angles[i], color=TEAL).scale(0.8)
-            angle_label.next_to(arc.point_from_proportion(0.5), normalize(v1 + v2) * 0.5)
-            angle_labels.append([arc, angle_label])
-        
-        # Animation sequence
-        self.play(Create(triangle))
-        
-        for dot, label in zip(vertex_dots, vertex_labels):
-            self.play(Create(dot), Write(label))
-        
-        for label in side_labels:
-            self.play(Write(label))
-        
-        for arc, label in angle_labels:
-            self.play(Create(arc), Write(label))
-        
-        # Law of Sines
-        law_of_sines = MathTex(
-            r"\frac{\sin \alpha}{a} = \frac{\sin \beta}{b} = \frac{\sin \gamma}{c}",
-            color=AZURE_BLUE
-        ).scale(0.9).next_to(title, DOWN, buff=0.7)
-        
-        self.play(Write(law_of_sines))
+        # Display axes and graph
+        self.play(Create(axes), Create(axes_labels))
+        self.play(Create(graph), Write(graph_label))
         self.wait()
-        
-        # Law of Cosines
-        law_of_cosines = VGroup(
-            MathTex(r"a^2 = b^2 + c^2 - 2bc\cos \alpha", color=AZURE_BLUE),
-            MathTex(r"b^2 = a^2 + c^2 - 2ac\cos \beta", color=AZURE_BLUE),
-            MathTex(r"c^2 = a^2 + b^2 - 2ab\cos \gamma", color=AZURE_BLUE)
-        ).arrange(DOWN).next_to(law_of_sines, DOWN, buff=0.5)
-        
-        self.play(Write(law_of_cosines))
+
+        # Create a point on the graph
+        x_tracker = ValueTracker(1)
+
+        dot = Dot(color=RED)
+        dot.add_updater(
+            lambda d: d.move_to(axes.c2p(x_tracker.get_value(), func(x_tracker.get_value())))
+        )
+
+        # Create the tangent line
+        tangent = always_redraw(
+            lambda: axes.get_secant_slope_group(
+                x=x_tracker.get_value(),
+                graph=graph,
+                dx=0.01,
+                secant_line_color=GREEN,
+                secant_line_length=4
+            )
+        )
+
+        # Create the derivative label
+        derivative_label = always_redraw(
+            lambda: MathTex(f"f'({x_tracker.get_value():.1f}) = {x_tracker.get_value() / 2:.2f}")
+                .next_to(dot, UR)
+                .scale(0.8)
+        )
+
+        # Add everything to the scene
+        self.play(Create(dot), Create(tangent), Write(derivative_label))
         self.wait()
-        
-        # Create tables for the specific triangle
-        lengths_table = MathTex(
-            r"\begin{array}{c|c|c} a & b & c \\ \hline " + 
-            f"{side_lengths[0]} & {side_lengths[1]} & {side_lengths[2]} \end{array}",
-            color=TEAL
-        ).scale(0.8).next_to(law_of_cosines, DOWN, buff=0.7)
-        
-        angles_table = MathTex(
-            r"\begin{array}{c|c|c} \alpha & \beta & \gamma \\ \hline " + 
-            f"{cos_angles[0]}^\\circ & {cos_angles[1]}^\\circ & {cos_angles[2]}^\\circ \end{array}",
-            color=TEAL
-        ).scale(0.8).next_to(lengths_table, DOWN, buff=0.3)
-        
-        self.play(Write(lengths_table), Write(angles_table))
+
+        # Move the point along the graph
+        self.play(x_tracker.animate.set_value(4), run_time=8)
         self.wait()
-        
-        # Verification that Law of Sines holds
-        sin_values = [np.sin(angle * PI/180)/length for angle, length in zip(cos_angles, side_lengths)]
-        verification = MathTex(
-            r"\frac{\sin \alpha}{a} = " + f"{round(sin_values[0], 4)}", r",\ ",
-            r"\frac{\sin \beta}{b} = " + f"{round(sin_values[1], 4)}", r",\ ",
-            r"\frac{\sin \gamma}{c} = " + f"{round(sin_values[2], 4)}",
-            color=SAGE_GREEN
-        ).scale(0.8).next_to(angles_table, DOWN, buff=0.5)
-        
-        self.play(Write(verification))
-        self.wait(2)
-
-# Helper function for cross product z component
-def cross_product_z(v1, v2):
-    return v1[0] * v2[1] - v1[1] * v2[0]
-
-# Helper function for vector normalization
-def normalize(v):
-    norm = np.linalg.norm(v)
-    if norm == 0:
-        return v
-    return v / norm
 ```
 
-### 3. CALCULUS VISUALIZATIONS
-
-```python
-# Derivative visualization with slope tangent line
-def create_derivative_visualization(self, function, x_range=[-3, 3]):
-    axes = Axes(
-        x_range=x_range + [1], 
-        y_range=[-3, 3],
-        axis_config={"include_tip": True}
-    )
-    labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
-    
-    # Plot the function
-    curve = axes.plot(function, color=AZURE_BLUE)
-    curve_label = MathTex("f(x)", color=AZURE_BLUE).next_to(
-        curve.point_from_proportion(0.9), UR, buff=0.2
-    )
-    
-    # Create tangent line with ValueTracker
-    x_value = ValueTracker(0)
-    
-    def get_tangent():
-        return TangentLine(curve, x_value.get_value(), color=TEAL, length=4)
-    
-    tangent = always_redraw(get_tangent)
-    
-    # Point on curve that follows the tangent
-    def get_dot():
-        return Dot(
-            axes.i2gp(x_value.get_value(), curve),
-            color=SAFFRON_GOLD
-        )
-    
-    dot = always_redraw(get_dot)
-    
-    # Assemble the scene
-    self.play(
-        Create(axes),
-        Write(labels)
-    )
-    self.play(Create(curve), Write(curve_label))
-    self.play(Create(dot), Create(tangent))
-    
-    # Animate the tangent moving along the curve
-    self.play(x_value.animate.set_value(2), run_time=3, rate_func=linear)
-    self.wait(0.5)
-    self.play(x_value.animate.set_value(-2), run_time=4, rate_func=linear)
-    self.wait(0.5)
-    
-    return VGroup(axes, labels, curve, curve_label, dot, tangent)
-
-# Integral visualization with Riemann sums
-def create_integral_visualization(self, function, x_range=[0, 2], dx_values=[0.5, 0.25, 0.1]):
-    axes = Axes(
-        x_range=x_range + [0.5], 
-        y_range=[0, 4],
-        axis_config={"include_tip": True}
-    )
-    labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
-    
-    curve = axes.plot(function, color=AZURE_BLUE)
-    curve_label = MathTex("f(x)", color=AZURE_BLUE).next_to(curve.get_end(), UR)
-    
-    # Create Riemann sum visualizations with different dx values
-    riemann_rects_group = VGroup()
-    
-    for dx in dx_values:
-        rects = axes.get_riemann_rectangles(
-            curve, 
-            x_range=x_range,
-            dx=dx,
-            stroke_width=0.8,
-            stroke_color=PURE_WHITE,
-            fill_opacity=0.6
-        )
-        riemann_rects_group.add(rects)
-    
-    # Show the exact area
-    area = axes.get_area(
-        curve,
-        x_range=x_range,
-        color=SAGE_GREEN,
-        opacity=0.3
-    )
-    
-    # Area calculation - assuming we know the antiderivative
-    lower, upper = x_range
-    area_value = function(upper) - function(lower)  # Example: for f(x) = x
-    
-    area_text = MathTex(
-        r"\int_{" + f"{lower}" + r"}^{" + f"{upper}" + r"} f(x) \, dx = {area_value}",
-        color=SAGE_GREEN
-    ).to_corner(UR)
-    
-    # Animation sequence
-    self.play(Create(axes), Write(labels))
-    self.play(Create(curve), Write(curve_label))
-    
-    # Show progressively finer approximations
-    prev_rects = None
-    for rects in riemann_rects_group:
-        if prev_rects is None:
-            self.play(Create(rects))
-        else:
-            self.play(ReplacementTransform(prev_rects, rects))
-        self.wait(0.5)
-        prev_rects = rects
-    
-    # Show the exact area
-    self.play(
-        FadeOut(prev_rects),
-        FadeIn(area),
-        Write(area_text)
-    )
-    
-    return VGroup(axes, labels, curve, curve_label, area, area_text)
-```
-
-### 4. LINEAR ALGEBRA VISUALIZATIONS
-
-```python
-# Example: Vector transformation visualization
-class VectorTransformation(LinearTransformationScene):
-    def __init__(self):
-        LinearTransformationScene.__init__(
-            self,
-            show_coordinates=True,
-            leave_ghost_vectors=True,
-            include_background_plane=True,
-            show_basis_vectors=True
-        )
-    
-    def construct(self):
-        # Define the matrix for transformation
-        matrix = [[2, 1], [1, 2]]
-        
-        # Display the matrix
-        matrix_tex = MathTex(
-            r"T = \begin{bmatrix} 2 & 1 \\ 1 & 2 \end{bmatrix}",
-            color=AZURE_BLUE
-        ).to_corner(UL)
-        self.add_foreground_mobject(matrix_tex)
-        
-        # Create custom vectors
-        v1 = Vector([1, 1], color=SAFFRON_GOLD)
-        v2 = Vector([-1, 1], color=TEAL)
-        
-        # Add vectors to scene
-        self.add_vector(v1)
-        self.add_vector(v2)
-        
-        # Label vectors
-        v1_label = MathTex(r"\vec{v}_1", color=SAFFRON_GOLD).next_to(v1.get_end(), RIGHT)
-        v2_label = MathTex(r"\vec{v}_2", color=TEAL).next_to(v2.get_end(), LEFT)
-        self.add_foreground_mobject(v1_label)
-        self.add_foreground_mobject(v2_label)
-        self.wait(1)
-        
-        # Apply the transformation
-        self.apply_matrix(matrix)
-        self.wait(1)
-        
-        # Show transformed vector coordinates
-        transformed_v1 = MathTex(
-            r"T\vec{v}_1 = \begin{bmatrix} 3 \\ 3 \end{bmatrix}",
-            color=SAFFRON_GOLD
-        ).to_corner(UR)
-        
-        transformed_v2 = MathTex(
-            r"T\vec{v}_2 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}",
-            color=TEAL
-        ).next_to(transformed_v1, DOWN)
-        
-        self.add_foreground_mobject(transformed_v1)
-        self.add_foreground_mobject(transformed_v2)
-        self.wait(2)
-
-# Example: Eigenvalues and Eigenvectors
-def create_eigenvector_visualization(self, matrix=[[3, 1], [1, 3]]):
-    # Setup the scene
-    plane = NumberPlane()
-    
-    # Compute eigenvalues and eigenvectors
-    eigenvalues, eigenvectors = np.linalg.eig(matrix)
-    
-    # Create original vectors
-    eigen_vectors = []
-    for i, vec in enumerate(eigenvectors.T):
-        v = Vector(vec * 2, color=SAFFRON_GOLD)
-        label = MathTex(f"\\vec{{v}}_{i+1}", color=SAFFRON_GOLD).next_to(v.get_end(), UP)
-        eigen_vectors.append(VGroup(v, label))
-    
-    # Setup animations
-    self.play(Create(plane))
-    self.play(*[Create(v_group[0]) for v_group in eigen_vectors])
-    self.play(*[Write(v_group[1]) for v_group in eigen_vectors])
-    
-    # Show eigenvalues
-    eigenvalue_texts = []
-    for i, val in enumerate(eigenvalues):
-        text = MathTex(
-            f"\\lambda_{i+1} = {val:.1f}",
-            color=SAGE_GREEN
-        ).to_corner(UL).shift(DOWN * i * 0.5)
-        eigenvalue_texts.append(text)
-    
-    self.play(*[Write(text) for text in eigenvalue_texts])
-    
-    # Apply the transformation
-    def mat_mult(vec):
-        x, y, z = vec
-        result = [
-            matrix[0][0] * x + matrix[0][1] * y,
-            matrix[1][0] * x + matrix[1][1] * y,
-            0
-        ]
-        return result
-    
-    # Show the transformation effect
-    for i, v_group in enumerate(eigen_vectors):
-        vector = v_group[0]
-        start_point = vector.get_end()
-        
-        transformed_vector = Arrow(
-            ORIGIN,
-            mat_mult(start_point),
-            buff=0,
-            color=AMBER
-        )
-        
-        self.play(
-            Transform(vector.copy(), transformed_vector)
-        )
-        
-        # Show scaling relationship with eigenvalue
-        scale_text = MathTex(
-            f"T\\vec{{v}}_{i+1} = {eigenvalues[i]:.1f} \\vec{{v}}_{i+1}",
-            color=AMBER
-        ).to_edge(DOWN).shift(UP * i * 0.5)
-        
-        self.play(Write(scale_text))
-    
-    return VGroup(plane, *eigen_vectors, *eigenvalue_texts)
-```
-
-### 5. GEOMETRY VISUALIZATIONS
-
-```python
-# Triangle properties (centroid, incenters, circumcenters)
-def create_triangle_visualization(self):
-    # Create a triangle
-    points = [[-2, -1, 0], [2, -1, 0], [0, 2, 0]]
-    triangle = Polygon(*points, color=AZURE_BLUE)
-    
-    # Calculate centroid
-    centroid = np.mean(points, axis=0)
-    centroid_dot = Dot(centroid, color=SAFFRON_GOLD)
-    centroid_label = Tex("Centroid", color=SAFFRON_GOLD).scale(0.7).next_to(centroid_dot, DOWN)
-    
-    # Calculate circumcenter and circumcircle
-    # This is a simple implementation - in practice, you may want to use more robust methods
-    A, B, C = points
-    D = (A + B) / 2
-    E = (B + C) / 2
-    
-    # Perpendicular bisector of AB
-    perpAB = Line(
-        D + np.array([-(B[1]-A[1]), B[0]-A[0], 0]),
-        D + np.array([B[1]-A[1], -(B[0]-A[0]), 0]),
-        color=TEAL
-    )
-    
-    # Perpendicular bisector of BC
-    perpBC = Line(
-        E + np.array([-(C[1]-B[1]), C[0]-B[0], 0]),
-        E + np.array([C[1]-B[1], -(C[0]-B[0]), 0]),
-        color=TEAL
-    )
-    
-    # For visualization simplicity, we'll just place the circumcenter
-    circumcenter = np.array([0, 0.5, 0])  # Manually placed for this example
-    circumcenter_dot = Dot(circumcenter, color=AMETHYST)
-    circumcenter_label = Tex("Circumcenter", color=AMETHYST).scale(0.7).next_to(circumcenter_dot, UP)
-    
-    # Radius calculation
-    radius = np.linalg.norm(circumcenter - points[0])
-    circumcircle = Circle(radius=radius, color=AMETHYST).move_to(circumcenter)
-    
-    # Animation sequence
-    self.play(Create(triangle))
-    self.wait(0.5)
-    
-    # Show centroid
-    self.play(
-        Create(centroid_dot),
-        Write(centroid_label)
-    )
-    self.wait(0.5)
-    
-    # Show circumcenter and circumcircle
-    self.play(
-        Create(circumcenter_dot),
-        Write(circumcenter_label),
-        Create(circumcircle)
-    )
-    
-    return VGroup(triangle, centroid_dot, centroid_label, circumcenter_dot, circumcenter_label, circumcircle)
-
-# Circle properties and relationships
-def create_circle_properties(self, radius=2):
-    circle = Circle(radius=radius, color=AZURE_BLUE)
-    
-    # Center point
-    center = Dot(ORIGIN, color=AZURE_BLUE)
-    center_label = Tex("O", color=AZURE_BLUE).next_to(center, DR, buff=0.1)
-    
-    # Radius line
-    radius_line = Line(ORIGIN, RIGHT * radius, color=TEAL)
-    radius_label = MathTex("r", color=TEAL).next_to(radius_line.get_center(), UP, buff=0.1)
-    
-    # Diameter line
-    diameter_line = Line(LEFT * radius, RIGHT * radius, color=SAFFRON_GOLD)
-    diameter_label = MathTex("d = 2r", color=SAFFRON_GOLD).next_to(diameter_line, DOWN)
-    
-    # Points on the circle
-    point_A = Dot(circle.point_at_angle(30 * DEGREES), color=SAGE_GREEN)
-    point_B = Dot(circle.point_at_angle(150 * DEGREES), color=SAGE_GREEN)
-    point_A_label = Tex("A", color=SAGE_GREEN).next_to(point_A, UR, buff=0.1)
-    point_B_label = Tex("B", color=SAGE_GREEN).next_to(point_B, UL, buff=0.1)
-    
-    # Chord
-    chord = Line(point_A.get_center(), point_B.get_center(), color=MAGENTA)
-    chord_label = MathTex("c", color=MAGENTA).next_to(chord.get_center(), UP, buff=0.1)
-    
-    # Formulas
-    formula_area = MathTex("A = \\pi r^2", color=AZURE_BLUE).to_corner(UL)
-    formula_circumference = MathTex("C = 2\\pi r", color=AZURE_BLUE).next_to(formula_area, DOWN)
-    
-    # Animation sequence
-    self.play(Create(circle), Create(center), Write(center_label))
-    self.play(Create(radius_line), Write(radius_label))
-    self.play(Create(diameter_line), Write(diameter_label))
-    self.play(Create(point_A), Create(point_B), Write(point_A_label), Write(point_B_label))
-    self.play(Create(chord), Write(chord_label))
-    self.play(Write(formula_area), Write(formula_circumference))
-    
-    return VGroup(
-        circle, center, center_label, radius_line, radius_label, 
-        diameter_line, diameter_label, point_A, point_B, point_A_label, 
-        point_B_label, chord, chord_label, formula_area, formula_circumference
-    )
-```
-
-### 6. COMPLEX ANALYSIS
-
-```python
-# Complex function visualization
-def visualize_complex_function(self, func=lambda z: z**2, domain=3, grid_density=10):
-    # Create the domain grid
-    grid_lines = VGroup()
-    
-    # Create horizontal and vertical grid lines
-    for i in range(-domain * grid_density, domain * grid_density + 1, grid_density):
-        x = i / grid_density
-        
-        # Horizontal line
-        h_line = Line([-domain, x, 0], [domain, x, 0], color=AZURE_BLUE, stroke_width=1)
-        grid_lines.add(h_line)
-        
-        # Vertical line
-        v_line = Line([x, -domain, 0], [x, domain, 0], color=AZURE_BLUE, stroke_width=1)
-        grid_lines.add(v_line)
-    
-    # Create axes
-    axes = Axes(
-        x_range=[-domain, domain],
-        y_range=[-domain, domain],
-        axis_config={"include_tip": True}
-    )
-    labels = axes.get_axis_labels(x_label="Re", y_label="Im")
-    
-    # Grid in the original domain
-    domain_grid = VGroup(grid_lines, axes, labels)
-    
-    # Apply the function to the grid (this is simplified)
-    # For a full implementation, you would use a parametric surface with coloring
-    
-    transformed_grid_lines = VGroup()
-    for line in grid_lines:
-        points = line.get_points()
-        new_points = []
-        
-        for point in points:
-            x, y = point[0], point[1]
-            z = complex(x, y)
-            w = func(z)
-            new_points.append([w.real, w.imag, 0])
-        
-        new_line = VMobject(color=TEAL, stroke_width=1)
-        new_line.set_points_as_corners(new_points)
-        transformed_grid_lines.add(new_line)
-    
-    # Create transformed axes
-    transformed_axes = Axes(
-        x_range=[-domain**2, domain**2],
-        y_range=[-domain**2, domain**2],
-        axis_config={"include_tip": True}
-    )
-    transformed_labels = transformed_axes.get_axis_labels(x_label="Re", y_label="Im")
-    
-    # Grid in the transformed domain
-    transformed_grid = VGroup(transformed_grid_lines, transformed_axes, transformed_labels)
-    
-    # Add function label
-    func_label = MathTex("f(z) = z^2", color=PURE_WHITE).to_corner(UL)
-    
-    # Animation sequence
-    self.play(Create(domain_grid))
-    self.play(Write(func_label))
-    self.wait(1)
-    self.play(
-        ReplacementTransform(domain_grid.copy(), transformed_grid),
-        domain_grid.animate.scale(0.5).to_corner(UL)
-    )
-    
-    return VGroup(domain_grid, transformed_grid, func_label)
-```
-
-### 7. STATISTICS AND PROBABILITY
-
-```python
-# Normal distribution visualization
-def visualize_normal_distribution(self, mean=0, std=1):
-    # Create axes
-    axes = Axes(
-        x_range=[-4, 4],
-        y_range=[0, 0.5, 0.1],
-        axis_config={"include_tip": True}
-    )
-    labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
-    
-    # Normal distribution function
-    def normal_pdf(x):
-        return 1 / (std * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((x - mean) / std)**2)
-    
-    # Create the graph
-    normal_curve = axes.plot(normal_pdf, color=AZURE_BLUE)
-    
-    # Create labels for mean and standard deviations
-    mean_line = DashedLine(
-        axes.c2p(mean, 0),
-        axes.c2p(mean, normal_pdf(mean)),
-        color=SAFFRON_GOLD
-    )
-    
-    mean_label = MathTex("\\mu", color=SAFFRON_GOLD).next_to(mean_line, DOWN)
-    
-    # Standard deviation markers
-    sd_lines = VGroup()
-    sd_labels = VGroup()
-    
-    for i in range(1, 4):
-        # Positive side
-        pos_line = DashedLine(
-            axes.c2p(mean + i*std, 0),
-            axes.c2p(mean + i*std, normal_pdf(mean + i*std)),
-            color=TEAL
-        )
-        
-        # Negative side
-        neg_line = DashedLine(
-            axes.c2p(mean - i*std, 0),
-            axes.c2p(mean - i*std, normal_pdf(mean - i*std)),
-            color=TEAL
-        )
-        
-        sd_lines.add(pos_line, neg_line)
-        
-        pos_label = MathTex(f"+{i}\\sigma", color=TEAL).next_to(pos_line, DOWN)
-        neg_label = MathTex(f"-{i}\\sigma", color=TEAL).next_to(neg_line, DOWN)
-        
-        sd_labels.add(pos_label, neg_label)
-    
-    # Probability areas
-    areas = VGroup()
-    percentages = [0.6827, 0.9545, 0.9973]
-    colors = [SAGE_GREEN, TEAL, AMBER]
-    
-    for i, (percentage, color) in enumerate(zip(percentages, colors)):
-        area = axes.get_area(
-            normal_curve,
-            x_range=[mean - (i+1)*std, mean + (i+1)*std],
-            color=color,
-            opacity=0.2
-        )
-        
-        percentage_label = MathTex(
-            f"{percentage*100:.1f}\\%",
-            color=color
-        ).next_to(area, UP, buff=0.1 * (i+1))
-        
-        areas.add(VGroup(area, percentage_label))
-    
-    # Equation
-    equation = MathTex(
-        r"f(x) = \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}",
-        color=PURE_WHITE
-    ).to_corner(UR)
-    
-    # Animation sequence
-    self.play(Create(axes), Write(labels))
-    self.play(Create(normal_curve))
-    self.play(Write(equation))
-    
-    self.play(
-        Create(mean_line),
-        Write(mean_label)
-    )
-    
-    for i in range(len(sd_lines)//2):
-        self.play(
-            Create(sd_lines[2*i]),
-            Create(sd_lines[2*i+1]),
-            Write(sd_labels[2*i]),
-            Write(sd_labels[2*i+1])
-        )
-    
-    for area_group in areas:
-        self.play(
-            Create(area_group[0]),
-            Write(area_group[1])
-        )
-    
-    return VGroup(axes, labels, normal_curve, mean_line, mean_label, sd_lines, sd_labels, areas, equation)
-```
-
-## ANIMATION BEST PRACTICES
-
-### 1. PROPER ELEMENT SPACING
-
-- Position mathematical elements with sufficient space (at least 1 unit apart)
-- Use `next_to()`, `arrange()`, or `shift()` to control positioning precisely
-- For equation alignments, use proper spacing in LaTeX with `\quad`, `\;`, etc.
-
-### 2. ANIMATION TIMING
-
-- Use appropriate `run_time` parameters for each animation (1-3 seconds typical)
-- Include `wait()` calls after significant steps to give viewers time to process
-- Use `rate_func` to control animation easing (e.g., `linear`, `smooth`, `there_and_back`)
-
-### 3. ELEMENT TRANSITIONS
-
-- Use `ReplacementTransform` for showing steps in a derivation or transformation
-- Use `TransformMatchingTex` for equation transformations with shared elements
-- Fade out elements before introducing new ones to maintain visual clarity
-
-### 4. VISUAL HIERARCHY
-
-- Use size, color, and animation timing to establish visual hierarchy
-- Make key elements larger or brighter to draw attention
-- Use consistent positioning for related elements
-
-### 5. CAMERA TECHNIQUES
-
-- Use `MovingCameraScene` for focusing on specific elements
-- Use `ThreeDScene` for 3D visualizations with appropriate camera control
-- Apply camera movement judiciously to maintain viewer orientation
-
-## ERROR HANDLING AND COMMON ISSUES
-
-### 1. MATHEMATICAL PRECISION
-
-- Always validate mathematical correctness before implementation
-- Double-check formulas, calculations, and visualizations
-- For approximations, indicate the level of precision used
-
-### 2. LAYOUT MANAGEMENT
-
-- Track mobject positions to prevent overlapping
-- Use relative positioning instead of absolute coordinates when possible
-- Group related elements with `VGroup` for easier management
-
-### 3. CODE ORGANIZATION
-
-- Break complex animations into helper methods
-- Use consistent naming conventions for variables
-- Comment complex mathematical operations
-
-### 4. PERFORMANCE CONSIDERATIONS
-
-- Limit the number of mobjects and updaters to maintain performance
-- Use appropriate resolution for complex visualizations
-- Optimize complex calculations where possible
-
-## MANIM VERSION-SPECIFIC CONSIDERATIONS
-
-This prompt is optimized for Manim Community version 0.17.0. Key considerations:
-
-1. Use the correct import: `from manim import *`
-2. Use `Create()` instead of the deprecated `ShowCreation()`
-3. Use `.animate` syntax for animations where appropriate
-4. Use appropriate method names as per v0.17.0 documentation
-
-Always refer to the official documentation at https://docs.manim.community/en/v0.17.0/ for the latest information about specific classes and methods.
-
-## COMMON ERRORS AND REMEDIES
-
-When creating Manim animations, watch out for these common issues and apply the recommended solutions:
-
-### 1. RENDERING ERRORS
-
-#### Problem: `ManimException: No mobjects found in AnimationGroup`
-```python
-self.play(Write())  # Missing the mobject parameter
-```
-
-**Solution**: Ensure all animations contain valid mobjects:
-```python
-text = Tex("Hello World")
-self.play(Write(text))  # Correct - mobject provided
-```
-
-#### Problem: `AttributeError: 'NoneType' object has no attribute 'get_center'`
-```python
-# Trying to use a return value from a method that doesn't return anything
-dot_position = self.play(Create(dot))
-```
-
-**Solution**: Understand which methods return values vs. which have side effects:
-```python
-self.play(Create(dot))  # Animation method - side effect only, no return value
-dot_position = dot.get_center()  # Correct way to get position
-```
-
-### 2. LATEX RENDERING ISSUES
-
-#### Problem: `LatexError: LaTeX Error: File 'some_package.sty' not found`
-
-**Solution**: 
-- Install missing LaTeX packages: `sudo apt-get install texlive-full` (Ubuntu) or equivalent for your OS
-- Use simpler LaTeX expressions when possible
-- Check syntax with careful attention to escaping backslashes in Python strings
-
-#### Problem: Incorrect LaTeX syntax
-```python
-# Missing backslash or incorrect syntax
-eq = MathTex("frac{1}{2}")  # Missing backslash
-```
-
-**Solution**: Double-check LaTeX syntax and escape characters:
-```python
-eq = MathTex(r"\frac{1}{2}")  # Correct syntax with raw string
-```
-
-### 3. OBJECT POSITIONING PROBLEMS
-
-#### Problem: Objects overlapping or positioned incorrectly
-
-**Solution**:
-- Use explicit positioning methods:
-```python
-# Instead of hardcoding coordinates:
-eq2.shift(RIGHT*3)  # Move relative to current position
-eq2.next_to(eq1, DOWN)  # Position relative to another object
-eq2.to_corner(UR)  # Use named screen positions
-```
-
-- Debug positions by adding temporary dots:
-```python
-debug_dot = Dot(eq.get_center(), color=RED)
-self.add(debug_dot)  # Visualize where the center is
-```
-
-### 4. ANIMATION SEQUENCING ISSUES
-
-#### Problem: Objects appear or disappear without animations
-
-**Solution**:
-- Use `self.play()` for animated changes, not `self.add()` or `self.remove()`
-- Ensure all objects are created before being animated
-```python
-# Wrong sequence
-self.play(Create(circle))
-label = Tex("Circle").next_to(circle, DOWN)
-self.play(Write(label))  # Correct
-
-# Correct sequence
-circle = Circle()
-label = Tex("Circle").next_to(circle, DOWN)
-self.play(Create(circle))
-self.play(Write(label))
-```
-
-### 5. TRANSFORMATION ERRORS
-
-#### Problem: `TransformMatchingTex` produces unexpected animations
-
-**Solution**:
-- Ensure LaTeX structures match exactly for proper alignment
-- Use substrings to help Manim identify matched portions:
-```python
-eq1 = MathTex(r"x^2 + y^2 = 1")
-# Split into parts that should transform separately
-eq2 = MathTex(r"x^2 + y^2", r"=", r"r^2")
-self.play(TransformMatchingTex(eq1, eq2))
-```
-
-### 6. UPDATER AND VALUETRACKER ISSUES
-
-#### Problem: Objects with updaters don't change as expected
-
-**Solution**:
-- Ensure updater functions don't have side effects
-- Make sure ValueTracker values are actually changing
-- Use lambda or function references correctly:
-```python
-# Correct usage with lambda
-dot.add_updater(lambda m: m.move_to(some_point))
-
-# Correct usage with named function
-def update_dot(m):
-    m.move_to(some_point)
-    
-dot.add_updater(update_dot)  # Pass function reference, don't call it
-```
-
-### 7. PERFORMANCE ISSUES
-
-#### Problem: Animations are sluggish or take too long to render
-
-**Solution**:
-- Reduce object complexity (fewer points in paths, simpler shapes)
-- Reduce number of mobjects in the scene
-- Use simpler animation types
-- Optimize updater functions
-- Consider using a lower resolution for drafts:
-```bash
-manim -ql scene.py MyScene  # Low quality, faster rendering
-```
-
-### 8. CAMERA FRAME ISSUES
-
-#### Problem: Camera frame doesn't work in regular Scene
-
-**Solution**:
-- Use the appropriate scene class for camera movements:
-```python
-# Instead of:
-class MyScene(Scene):  # Regular scene - no camera frame attribute
-    def construct(self):
-        self.camera.frame.move_to(point)  # Will fail
-
-# Use:
-class MyScene(MovingCameraScene):  # Has camera frame functionality
-    def construct(self):
-        self.camera.frame.move_to(point)  # Works correctly
-```
-
-### 9. PATH-BASED ANIMATION ISSUES
-
-#### Problem: Path animations look broken or discontinuous
-
-**Solution**:
-- Ensure points form a continuous path
-- Use `set_points_smoothly` instead of `set_points_as_corners` for smooth curves
-- Make sure MObjects have all their points initialized properly
-
-```python
-# Create continuous path
-path = VMobject()
-path.set_points_smoothly([LEFT, UP, RIGHT])  # Will create a smooth curve
-
-# For sharp corners use:
-path2 = VMobject()
-path2.set_points_as_corners([LEFT, UP, RIGHT])  # Will create sharp turns
-```
-
-## IMPLEMENTATION CHECKLIST
-
-Before finalizing your code, ensure:
-
-1. All mathematical content is correct and precisely represented
-2. Visual elements are properly spaced and organized
-3. Color scheme follows the semantic color system
-4. Animations have appropriate timing and pacing
-5. Code follows best practices and is well-commented
-6. All imports and dependencies are correctly specified
-7. Scene elements are properly introduced and removed
-8. Camera movements (if any) are smooth and purposeful
-9. All potential error points have been checked and addressed
-10. Animations render properly at different resolutions
+## 11. Reference Tables
+
+### Common Mobjects
+
+| Mobject       | Description        | Example                                  |
+| ------------- | ------------------ | ---------------------------------------- |
+| `Circle`      | A circle shape     | `Circle(radius=1.0, color=RED)`          |
+| `Square`      | A square shape     | `Square(side_length=2.0, color=BLUE)`    |
+| `Rectangle`   | A rectangle shape  | `Rectangle(width=3.0, height=2.0)`       |
+| `Triangle`    | A triangle shape   | `Triangle(color=GREEN)`                  |
+| `Polygon`     | A custom polygon   | `Polygon(ORIGIN, RIGHT, UP)`             |
+| `Line`        | A straight line    | `Line(start=LEFT, end=RIGHT)`            |
+| `Arrow`       | An arrow           | `Arrow(start=LEFT, end=RIGHT)`           |
+| `Dot`         | A point            | `Dot(point=ORIGIN, radius=0.1)`          |
+| `Text`        | Regular text       | `Text("Hello Manim", font_size=36)`      |
+| `Tex`         | LaTeX text         | `Tex(r"\LaTeX")`                         |
+| `MathTex`     | LaTeX math         | `MathTex(r"e^{i\pi} + 1 = 0")`           |
+| `NumberPlane` | 2D coordinate grid | `NumberPlane()`                          |
+| `Axes`        | Coordinate axes    | `Axes(x_range=[-5, 5], y_range=[-5, 5])` |
+| `VGroup`      | Group of mobjects  | `VGroup(circle, square, triangle)`       |
+
+### Animation Types
+
+| Animation              | Description                        | Example                                          |
+| ---------------------- | ---------------------------------- | ------------------------------------------------ |
+| `Create`               | Draw a mobject                     | `Create(circle)`                                 |
+| `FadeIn`               | Fade in a mobject                  | `FadeIn(square)`                                 |
+| `FadeOut`              | Fade out a mobject                 | `FadeOut(circle)`                                |
+| `Transform`            | Transform one mobject into another | `Transform(circle, square)`                      |
+| `ReplacementTransform` | Replace one mobject with another   | `ReplacementTransform(circle, square)`           |
+| `Write`                | Write text                         | `Write(text)`                                    |
+| `Indicate`             | Briefly highlight a mobject        | `Indicate(circle)`                               |
+| `Rotate`               | Rotate a mobject                   | `Rotate(square, angle=PI/4)`                     |
+| `MoveAlongPath`        | Move a mobject along a path        | `MoveAlongPath(dot, circle)`                     |
+| `AnimationGroup`       | Group animations                   | `AnimationGroup(Create(circle), FadeIn(square))` |
+| `Succession`           | Play animations in sequence        | `Succession(Create(circle), FadeIn(square))`     |
+| `LaggedStart`          | Play animations with a delay       | `LaggedStart(*[Create(dot) for dot in dots])`    |
+
+### Color Constants
+
+| Constant | Color  | Hex Code  |
+| -------- | ------ | --------- |
+| `WHITE`  | White  | `#FFFFFF` |
+| `BLACK`  | Black  | `#000000` |
+| `RED`    | Red    | `#FF0000` |
+| `GREEN`  | Green  | `#00FF00` |
+| `BLUE`   | Blue   | `#0000FF` |
+| `YELLOW` | Yellow | `#FFFF00` |
+| `PURPLE` | Purple | `#800080` |
+| `ORANGE` | Orange | `#FF7F00` |
+| `PINK`   | Pink   | `#FF69B4` |
+| `GRAY`   | Gray   | `#888888` |
+
+### Positioning Constants
+
+| Constant | Direction     | Value         |
+| -------- | ------------- | ------------- |
+| `ORIGIN` | Center        | `[0, 0, 0]`   |
+| `UP`     | Up            | `[0, 1, 0]`   |
+| `DOWN`   | Down          | `[0, -1, 0]`  |
+| `LEFT`   | Left          | `[-1, 0, 0]`  |
+| `RIGHT`  | Right         | `[1, 0, 0]`   |
+| `UR`     | Up-Right      | `[1, 1, 0]`   |
+| `UL`     | Up-Left       | `[-1, 1, 0]`  |
+| `DR`     | Down-Right    | `[1, -1, 0]`  |
+| `DL`     | Down-Left     | `[-1, -1, 0]` |
+| `IN`     | Into screen   | `[0, 0, 1]`   |
+| `OUT`    | Out of screen | `[0, 0, -1]`  |
+
+### Command-line Arguments
+
+| Argument | Description                             | Example                                 |
+| -------- | --------------------------------------- | --------------------------------------- |
+| `-p`     | Preview the animation                   | `manim -p scene.py MyScene`             |
+| `-l`     | Low quality (faster)                    | `manim -l scene.py MyScene`             |
+| `-m`     | Medium quality                          | `manim -m scene.py MyScene`             |
+| `-h`     | High quality                            | `manim -h scene.py MyScene`             |
+| `-k`     | Keep animation playing in a loop        | `manim -pk scene.py MyScene`            |
+| `-s`     | Skip to the end and show the last frame | `manim -s scene.py MyScene`             |
+| `-q`     | Quiet mode (less output)                | `manim -q scene.py MyScene`             |
+| `-f`     | Show the file in the file browser       | `manim -f scene.py MyScene`             |
+| `-a`     | Render all scenes in the file           | `manim -a scene.py`                     |
+| `-o`     | Specify the output file name            | `manim -o custom_name scene.py MyScene` |
