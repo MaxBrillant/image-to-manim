@@ -65,33 +65,40 @@ def review_video(video_url):
         
         # Optimized review prompt with clear structure and evaluation criteria
         review_prompt = """
-        You are a senior animation reviewer specializing in Manim-based mathematical animations. Perform a strict technical evaluation of this animation video.
+        You are a senior animation reviewer who combines 3Blue1Brown's philosophy of mathematical visualization with strict technical quality standards. Evaluate both the animation's effectiveness in revealing mathematical understanding and its technical/visual execution.
         
         # EVALUATION RUBRIC (100 points total):
         
-        ## Visual Clarity (25 points)
+        ## Mathematical Insight (25 points)
+        - Reveals core mathematical relationships visually
+        - Shows why concepts work, not just what they are
+        - Builds intuition before formality
+        - Creates meaningful "aha moments"
+        - Uses transformations to demonstrate structure
+        
+        ## Visual Quality (25 points)
         - Clear visual hierarchy and focus
-        - Appropriate text size and readability
-        - Proper spacing between elements
+        - Proper contrast and visibility
+        - Clean, professional rendering
+        - No glitches or artifacts
+        - Consistent visual style
         - Mathematical notation accuracy
         
-        ## Technical Execution (25 points)  
-        - Elements properly positioned within frame
-        - No objects cut off or outside boundaries
+        ## Technical Execution (25 points)
+        - Elements properly positioned and scaled
+        - No objects cut off or misaligned
+        - Smooth, artifact-free animations
+        - Proper frame composition
         - Consistent spacing and alignment
-        - Appropriate scale of elements
-
-        ## Animation Timing (25 points)
-        - Appropriate animation speed
-        - Proper transition timing
-        - Sufficient pause duration for comprehension
-        - Synchronized animations when needed
+        - Camera movements well-executed
         
-        ## Educational Effectiveness (25 points)
-        - Logical progression of concepts
-        - Appropriate emphasis on key points
-        - Visual reinforcement of verbal concepts
-        - Coherent mathematical storytelling
+        ## Animation Flow (25 points)
+        - Appropriate animation speed and timing
+        - Meaningful transitions that aid understanding
+        - Strategic pauses for insight absorption
+        - Synchronized animations when needed
+        - Progressive build-up of complexity
+        - Effective pacing for comprehension
         
         # SCORING CRITERIA:
         - 90-100: Excellent (Minor improvements only)
@@ -197,7 +204,7 @@ def review_video(video_url):
             "score": score,
             "issues": issues,
             "review": review_text,
-            "needs_improvement": score < 85,  # Consider scores below 85 as needing improvement
+            "needs_improvement": score < 90,  # Consider scores below 90 as needing improvement
             "review_time": time.time() - start_time
         }
         

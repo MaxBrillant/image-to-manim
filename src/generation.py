@@ -374,15 +374,12 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
                     ## YOUR TASK
 
                     Analyze the provided error message carefully and rewrite the Manim code to create a working animation that visualizes the script. Focus on stability and reliability - an elegant working animation is better than a complex broken one.
-
                     
+                    ERROR MESSAGE:
+                    {error_message[:5000]}
+
                     SCRIPT TO VISUALIZE:
                     {script}
-                    
-                    PREVIOUS CODE THAT FAILED TO RENDER:
-                    ```python
-                    {previous_code}
-                    ```
 
                     # MANIM CODE GUIDE REFERENCE:
                     {manim_code_guide}
@@ -390,8 +387,10 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
             }, {
                 "role": "user",
                 "content": f"""
-                    ERROR MESSAGE:
-                    {error_message[:5000]}
+                    FAILED MANIM CODE:
+                    ```python
+                    {previous_code}
+                    ```
                     """
             }],
             temperature=0.2,
@@ -470,13 +469,12 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
                     - All mathematical concepts are accurately represented
                     - The code strictly follows the MANIM CODE GUIDE REFERENCE
 
+                    
+                    REVIEW FEEDBACK (Score: {score}/100):
+                    {review_text}
+
                     SCRIPT TO VISUALIZE:
                     {script}
-                    
-                    PREVIOUS CODE THAT NEEDS IMPROVEMENT:
-                    ```python
-                    {current_code}
-                    ```
 
                     # MANIM CODE GUIDE REFERENCE:
                     {manim_code_guide}
@@ -484,10 +482,12 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
             }, {
                 "role": "user",
                 "content": f"""
-                    REVIEW FEEDBACK (Score: {score}/100):
-                    {review_text}"""
+                    CURRENT MANIM CODE (NEEDING IMPROVEMENT):
+                    ```python
+                    {current_code}
+                    ```"""
             }],
-            temperature=0.4,
+            temperature=0.2,
             max_tokens=8192,
         )
         
