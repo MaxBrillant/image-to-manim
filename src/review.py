@@ -7,7 +7,7 @@ import time
 from io import BytesIO
 from google import genai
 from google.genai import types
-from src.config import GEMINI_API_KEY
+from src.config import GEMINI_API_KEY, PHILOSOPHY
 
 def review_video(video_url):
     """
@@ -64,7 +64,7 @@ def review_video(video_url):
         client = genai.Client(api_key=GEMINI_API_KEY)
         
         # Optimized review prompt with clear structure and evaluation criteria
-        review_prompt = """
+        review_prompt = f"""
         You are a senior animation reviewer who combines 3Blue1Brown's philosophy of mathematical visualization with strict technical quality standards. Evaluate both the animation's effectiveness in revealing mathematical understanding and its technical/visual execution.
         
         # EVALUATION RUBRIC (100 points total):
@@ -135,6 +135,9 @@ def review_video(video_url):
         5. SUMMARY: Brief overall assessment and prioritized improvements
         
         Be extremely strict and thorough in your assessment. The animation must meet professional educational standards. Your honest, critical feedback is essential.
+
+        # PHILOSOPHY OF MATHEMATICAL VISUALIZATION:
+        {PHILOSOPHY}
         """
         
         api_start_time = time.time()
@@ -147,7 +150,7 @@ def review_video(video_url):
                 model="gemini-2.0-flash",
                 contents = [
                     types.Content(
-                        role="user",
+                        role="system",
                         parts=[
                             types.Part.from_bytes(
                                 data=video_content.read(),

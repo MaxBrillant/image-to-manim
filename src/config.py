@@ -22,8 +22,14 @@ def load_prompt_templates():
     """Load prompt templates from resources directory"""
     with open("resources/script-prompt.txt", "r") as f:
         script_prompt_template = f.read()
+    with open("resources/manim_code_guide.txt", "r") as f:
+        manim_code_guide = f.read()
+    with open("resources/manim_guidelines.txt", "r") as f:
+        manim_guidelines = f.read()
+    with open("resources/3blue1brown_philosophy.md", "r") as f:
+        philosophy = f.read()
     
-    return script_prompt_template
+    return script_prompt_template, manim_code_guide, manim_guidelines, philosophy
 
 # Initialize on import
-SCRIPT_PROMPT_TEMPLATE = load_prompt_templates()
+SCRIPT_PROMPT_TEMPLATE, MANIM_CODE_GUIDE, MANIM_GUIDELINES, PHILOSOPHY = load_prompt_templates()

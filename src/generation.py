@@ -12,7 +12,9 @@ import litellm
 
 from src.config import (
     DEEPINFRA_API_KEY,
-    SCRIPT_PROMPT_TEMPLATE
+    SCRIPT_PROMPT_TEMPLATE,
+    MANIM_CODE_GUIDE,
+    MANIM_GUIDELINES
 )
 
 # litellm._turn_on_debug()
@@ -134,7 +136,7 @@ def generate_script(problem_analysis):
             model = "deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": SCRIPT_PROMPT_TEMPLATE,
+                "content": SCRIPT_PROMPT_TEMPLATE
             },
             {
                 "role": "user",
@@ -158,10 +160,6 @@ def generate_manim_code(script, session_id):
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
-        # Load the manim code guide (do this once per function call)
-        manim_guide_path = os.path.join("resources", "manim_code_guide.txt")
-        with open(manim_guide_path, "r") as guide_file:
-            manim_code_guide = guide_file.read()
         
         response = litellm.completion(
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
@@ -169,93 +167,12 @@ def generate_manim_code(script, session_id):
                 "role": "system",
                 "content": f"""You are a specialized Manim expert whose sole focus is translating mathematical animation scripts into reliable, visually impressive Manim code. Your expertise in mathematics visualization and Manim implementation allows you to create code that is both efficient and precisely aligned with the script description.
 
-            ## STRUCTURED CODE GENERATION PROCESS
-
-            Follow this systematic approach to generate high-quality Manim code:
-
-            1. **SCRIPT ANALYSIS PHASE**
-            - Carefully analyze the script to identify:
-                - Core mathematical concepts that need visualization
-                - Key animations and transitions described
-                - Visual elements requiring implementation
-                - Mathematical formulas and equations to render
-                - Camera movements and perspective changes
-            - Extract the narrative flow and timing considerations
-
-            2. **SCENE PLANNING PHASE**
-            - Determine the appropriate scene type (Scene, ThreeDScene, etc.)
-            - Plan the sequence of animations to match the script flow
-            - Identify opportunities for modular code organization
-            - Decide on appropriate object creation and transformation techniques
-            - Choose appropriate visualization methods for mathematical concepts
-
-            3. **IMPLEMENTATION PHASE**
-            - Strictly follow the standard Scene structure from the MANIM CODE GUIDE
-            - Implement the semantic color system exactly as specified
-            - Ensure all animations are properly sequenced with appropriate timing
-            - Create clearly named variables that reflect their mathematical meaning
-            - Add comments explaining complex parts of the implementation
-            - Focus on reliability first, visual complexity second
-
-            4. **VALIDATION PHASE**
-            - Verify all mathematics is accurately represented
-            - Ensure code matches the script's description and intent
-            - Check that all animations have valid mobjects
-            - Verify all references are properly defined before use
-            - Confirm the scene progresses through all key points in the script
-
-            ## CRITICAL RELIABILITY PRIORITIES
-
-            1. **CODE STRUCTURE INTEGRITY**
-            - Always include the complete semantic color system as provided
-            - Follow the exact Scene structure from the guide
-            - Ensure proper class definition with correct inheritance
-            - Implement construct() method properly
-            - Use appropriate imports (from manim import *)
-
-            2. **ANIMATION RELIABILITY**
-            - Ensure every animated object exists before being referenced
-            - Keep animations simple and separate for better reliability
-            - Maintain appropriate wait times between significant steps
-            - Use appropriate run_times for complex animations
-            - Create objects with proper parameters and configurations
-
-            3. **ERROR PREVENTION**
-            - Avoid common Manim errors:
-                - Never reference objects before they're created
-                - Ensure all AnimationGroups contain valid mobjects
-                - Verify all VMobjects have points defined
-                - Use appropriate coordinate systems
-                - Ensure latex expressions are properly formatted
-
-            4. **SIMPLICITY OVER COMPLEXITY**
-            - When in doubt, choose simpler implementations that are more reliable
-            - Split complex animations into sequences of simpler animations
-            - Use built-in Manim objects and methods when available
-            - Limit the number of mobjects in a scene to ensure performance
-            - Use deliberate pacing with wait() calls to improve comprehension
-
-            ## MATHEMATICAL ACCURACY IS NON-NEGOTIABLE
-
-            - Verify all formulas and equations match the script exactly
-            - Ensure visual representations accurately reflect mathematical concepts
-            - Use appropriate mathematical notation and symbolic representation
-            - Maintain consistency in variable naming and mathematical conventions
-            - Verify all calculations and transformations for accuracy
-
-            ## OUTPUT REQUIREMENTS
-
-            1. Generate ONLY the complete Python code for the Manim animation
-            2. Do NOT include explanations, discussions, or descriptions outside the code
-            3. Include all necessary imports at the top of the file
-            4. Implement exactly ONE Scene class that visualizes the entire script
-            5. Define the semantic color system exactly as shown in the MANIM CODE GUIDE
-            6. Add helpful comments explaining complex parts of the implementation
-            7. Ensure the code is complete, runnable, and error-free
+            
+            ## CODE GENERATION PROCESS AND GUIDELINES
+            {MANIM_GUIDELINES}
 
             ## MANIM CODE GUIDE REFERENCE:
-
-            {manim_code_guide}
+            {MANIM_CODE_GUIDE}
             """
             },
             {
@@ -295,10 +212,6 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
-        # Load the manim code guide
-        manim_guide_path = os.path.join("resources", "manim_code_guide.txt")
-        with open(manim_guide_path, "r") as guide_file:
-            manim_code_guide = guide_file.read()
 
         response = litellm.completion(
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
@@ -382,7 +295,7 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
                     {script}
 
                     # MANIM CODE GUIDE REFERENCE:
-                    {manim_code_guide}
+                    {MANIM_CODE_GUIDE}
                     """
             }, {
                 "role": "user",
@@ -426,17 +339,13 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
-        # Load the manim code guide
-        manim_guide_path = os.path.join("resources", "manim_code_guide.txt")
-        with open(manim_guide_path, "r") as guide_file:
-            manim_code_guide = guide_file.read()
         
         # Generate improved code using feedback
         response = litellm.completion(
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""You are a Manim expert whose singular focus is to analyze feedback on mathematical animations and rewrite code to address the specific issues mentioned. Your goal is to generate completely new code that directly solves all problems identified in the feedback.
+                "content": f"""You are a Manim expert whose singular focus is to analyze feedback on mathematical animations and rewrite the entire code to address the specific issues mentioned. Your goal is to generate completely new code that directly solves all problems identified in the feedback.
 
                     ## FEEDBACK UNDERSTANDING PROCESS
 
@@ -476,8 +385,11 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
                     SCRIPT TO VISUALIZE:
                     {script}
 
+                    # CODE GENERATION PROCESS AND GUIDELINES
+                    {MANIM_GUIDELINES}
+
                     # MANIM CODE GUIDE REFERENCE:
-                    {manim_code_guide}
+                    {MANIM_CODE_GUIDE}
                     """
             }, {
                 "role": "user",
