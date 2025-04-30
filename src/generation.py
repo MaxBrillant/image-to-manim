@@ -14,7 +14,8 @@ from src.config import (
     DEEPINFRA_API_KEY,
     SCRIPT_PROMPT_TEMPLATE,
     MANIM_CODE_GUIDE,
-    MANIM_GUIDELINES
+    MANIM_GUIDELINES,
+    VIDEO_QUALITY_STANDARDS
 )
 
 # litellm._turn_on_debug()
@@ -167,8 +168,30 @@ def generate_manim_code(script, session_id):
                 "role": "system",
                 "content": f"""You are a specialized Manim expert whose sole focus is translating mathematical animation scripts into reliable, visually impressive Manim code. Your expertise in mathematics visualization and Manim implementation allows you to create code that is both efficient and precisely aligned with the script description.
 
-            
-            ## CODE GENERATION PROCESS AND GUIDELINES
+            ## CRITICAL REQUIREMENTS
+
+            1. STRICTLY ADHERE TO VIDEO QUALITY STANDARDS
+               - Your primary goal is to create animations that meet or exceed our established video quality standards
+               - Every animation decision must align with these standards
+               - Quality standards take precedence over implementation convenience
+               - Reference VIDEO_QUALITY_STANDARDS for specific requirements
+
+            2. MAINTAIN VISUAL EXCELLENCE
+               - Follow scene composition guidelines religiously
+               - Implement proper animation timing and pacing
+               - Ensure smooth transitions and proper cognitive load management
+               - Create clear visual hierarchies
+
+            3. PRIORITIZE EDUCATIONAL IMPACT
+               - Focus on clarity and understanding
+               - Use progressive disclosure effectively
+               - Maintain proper pacing for cognitive processing
+               - Create memorable visual representations
+
+            ## VIDEO QUALITY STANDARDS REFERENCE:
+            {VIDEO_QUALITY_STANDARDS}
+
+            ## MANIM CODE GENERATION GUIDELINES:
             {MANIM_GUIDELINES}
 
             ## MANIM CODE GUIDE REFERENCE:
@@ -294,6 +317,9 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
                     SCRIPT TO VISUALIZE:
                     {script}
 
+                    ## VIDEO QUALITY STANDARDS REFERENCE:
+                    {VIDEO_QUALITY_STANDARDS}
+
                     # MANIM CODE GUIDE REFERENCE:
                     {MANIM_CODE_GUIDE}
                     """
@@ -370,6 +396,25 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
                        - Write a brief comment explaining how your code addresses this feedback point
                        - Verify your solution fully resolves the issue
 
+                    3. STRICTLY ADHERE TO VIDEO QUALITY STANDARDS:
+                       - Your primary goal is to create animations that meet or exceed our established video quality standards
+                       - Every animation decision must align with these standards
+                       - Quality standards take precedence over implementation convenience
+                       - Reference VIDEO_QUALITY_STANDARDS for specific requirements
+
+                    4. MAINTAIN VISUAL EXCELLENCE
+                       - Follow scene composition guidelines religiously
+                       - Implement proper animation timing and pacing
+                       - Ensure smooth transitions and proper cognitive load management
+                       - Create clear visual hierarchies
+
+                    5. PRIORITIZE EDUCATIONAL IMPACT
+                       - Focus on clarity and understanding
+                       - Use progressive disclosure effectively
+                       - Maintain proper pacing for cognitive processing
+                       - Create memorable visual representations
+
+
                     ## VERIFICATION
 
                     Before submitting the new code, verify:
@@ -385,7 +430,10 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
                     SCRIPT TO VISUALIZE:
                     {script}
 
-                    # CODE GENERATION PROCESS AND GUIDELINES
+                    ## VIDEO QUALITY STANDARDS REFERENCE:
+                    {VIDEO_QUALITY_STANDARDS}
+
+                    # MANIM CODE GENERATION GUIDELINES:
                     {MANIM_GUIDELINES}
 
                     # MANIM CODE GUIDE REFERENCE:

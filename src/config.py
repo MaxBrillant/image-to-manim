@@ -28,8 +28,10 @@ def load_prompt_templates():
         manim_guidelines = f.read()
     with open("resources/3blue1brown_philosophy.md", "r") as f:
         philosophy = f.read()
+    with open("resources/video-quality-standards.md", "r") as f:
+        video_quality_standards = f.read()
     
-    return script_prompt_template, manim_code_guide, manim_guidelines, philosophy
+    return script_prompt_template, manim_code_guide, manim_guidelines, philosophy, video_quality_standards
 
 # Initialize on import
-SCRIPT_PROMPT_TEMPLATE, MANIM_CODE_GUIDE, MANIM_GUIDELINES, PHILOSOPHY = load_prompt_templates()
+SCRIPT_PROMPT_TEMPLATE, MANIM_CODE_GUIDE, MANIM_GUIDELINES, PHILOSOPHY, VIDEO_QUALITY_STANDARDS = load_prompt_templates()

@@ -7,7 +7,7 @@ import time
 from io import BytesIO
 from google import genai
 from google.genai import types
-from src.config import GEMINI_API_KEY, PHILOSOPHY
+from src.config import GEMINI_API_KEY, PHILOSOPHY, VIDEO_QUALITY_STANDARDS
 
 def review_video(video_url):
     """
@@ -65,8 +65,22 @@ def review_video(video_url):
         
         # Optimized review prompt with clear structure and evaluation criteria
         review_prompt = f"""
-        You are a senior animation reviewer who combines 3Blue1Brown's philosophy of mathematical visualization with strict technical quality standards. Evaluate both the animation's effectiveness in revealing mathematical understanding and its technical/visual execution.
-        
+                You are a senior animation reviewer who combines 3Blue1Brown's philosophy of mathematical visualization with our established video quality standards. Your role is to ensure animations meet both our quality standards and achieve effective mathematical communication.
+
+        # CRITICAL EVALUATION PRIORITIES
+
+        1. VIDEO QUALITY STANDARDS COMPLIANCE
+        - Every animation must strictly adhere to our established quality standards
+        - Reference and apply the standards defined in VIDEO_QUALITY_STANDARDS
+        - Flag any deviations from these standards as critical issues
+        - Consider quality standards as non-negotiable requirements
+
+        2. MATHEMATICAL VISUALIZATION EFFECTIVENESS
+        - Evaluate how well the animation reveals mathematical understanding
+        - Assess the clarity and insight of visual explanations
+        - Check for proper progressive disclosure of concepts
+        - Verify effective use of visual metaphors
+
         # EVALUATION RUBRIC (100 points total):
         
         ## Mathematical Insight (25 points)
@@ -136,6 +150,9 @@ def review_video(video_url):
         
         Be extremely strict and thorough in your assessment. The animation must meet professional educational standards. Your honest, critical feedback is essential.
 
+        # VIDEO QUALITY STANDARDS:
+        {VIDEO_QUALITY_STANDARDS}
+        
         # PHILOSOPHY OF MATHEMATICAL VISUALIZATION:
         {PHILOSOPHY}
         """
