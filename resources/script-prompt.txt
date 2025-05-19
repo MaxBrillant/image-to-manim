@@ -104,6 +104,6 @@ For each mathematical domain, include specific visualization techniques that res
 5. Specify complete entry and exit information for every element
 6. Confirm all elements disappear before the script conclusion
 
-## Target Length: 400-800 words (3-5 minutes of animation)
+## Target Length: Varies depending on mathematical complexity and visualization requirements (minimum of 1 minute)
 
 Your script should flow naturally from concept to concept while maintaining absolute mathematical accuracy and strict adherence to element management rules. Focus on creating vivid visual descriptions that enhance understanding while providing precise guidance on element positioning, timing, and lifecycle throughout the animation. This ensures that the visual presentation remains clear, focused, and free from clutter, allowing the mathematics to shine through elegant visual storytelling.

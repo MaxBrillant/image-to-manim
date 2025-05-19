@@ -5,9 +5,6 @@ import os
 import re
 import base64
 from io import BytesIO
-from datetime import datetime
-from PIL import Image
-from litellm import completion
 import litellm
 
 from src.config import (
@@ -21,7 +18,7 @@ from src.config import (
 # litellm._turn_on_debug()
 
 def generate_problem_analysis(image):
-    """Generate animation script from image"""
+    """Generate problem analysis from image"""
     # Convert image to base64 preserving its format
     buffered = BytesIO()
     img_format = image.format if image.format else "JPEG"
@@ -117,8 +114,8 @@ def generate_problem_analysis(image):
         )
         
         # Extract the content from the response
-        script = response.choices[0].message.content
-        return script
+        analysis = response.choices[0].message.content
+        return analysis
         
     except Exception as e:
         print(f"Error generating problem analysis: {str(e)}")
@@ -126,7 +123,7 @@ def generate_problem_analysis(image):
     
 
 def generate_script(problem_analysis):
-    """Generate script script from problem analysis"""
+    """Generate script from problem analysis"""
     
 
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
@@ -156,37 +153,60 @@ def generate_script(problem_analysis):
         raise Exception(f"Failed to generate script: {str(e)}")
 
 def generate_manim_code(script, session_id):
-    """Generate Manim code from script"""
+    """Generate Manim code from script with strict adherence to timing, positioning and element management"""
 
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     try:
-        
         response = litellm.completion(
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""You are a specialized Manim expert whose sole focus is translating mathematical animation scripts into reliable, visually impressive Manim code. Your expertise in mathematics visualization and Manim implementation allows you to create code that is both efficient and precisely aligned with the script description.
+                "content": f"""You are a specialized Manim expert whose sole focus is translating mathematical animation scripts into reliable, visually impressive Manim code. Your expertise in mathematics visualization and Manim implementation allows you to create code that is both efficient and precisely aligned with the script provided to you.
 
-            ## CRITICAL REQUIREMENTS
+            ## ABSOLUTE PRIORITIES
 
-            1. STRICTLY ADHERE TO VIDEO QUALITY STANDARDS
+            1. STRICT SCRIPT ADHERENCE
+                - Follow script timing EXACTLY as specified (e.g. "at 0:30", "for 2 seconds")
+                - Implement precise element positioning using the 3x3 grid system
+                - Never exceed 3 elements on screen simultaneously
+                - Track and manage element lifecycles (entry/exit times)
+                - Maintain exact element spacing (15% minimum separation)
+
+            2. EXACT TIMESTAMP IMPLEMENTATION
+               - Every single timestamp in the script MUST be implemented precisely
+               - When script says "at 0:30", the animation MUST start at exactly 30 seconds
+               - When script says "for 2 seconds", the animation MUST last exactly 2 seconds
+               - Add self.wait() with exact durations to reach specified timestamps
+               - Track cumulative time to ensure perfect timing alignment
+               - Never approximate or round timestamps
+               - Document every timestamp in code comments
+
+            3. POSITIONING AND ELEMENT MANAGEMENT
+               - Implement precise element positioning using the 3x3 grid system
+               - Never exceed 3 elements on screen simultaneously
+               - Track and manage element lifecycles (entry/exit times)
+               - Maintain exact element spacing (15% minimum separation)
+
+            4. ELEMENT POSITIONING SYSTEM
+               - Use the 9-region grid system (TOP_LEFT, TOP_CENTER, etc.)
+               - Specify exact coordinates for each element
+               - Maintain minimum 15% spacing between elements
+               - Handle z-index for overlapping regions
+               - Track element sizes (small: 10-15%, medium: 15-30%, large: 30-50%)
+
+            5. ELEMENT LIFECYCLE
+               - Track creation time for each element
+               - Implement specified exit animations
+               - Ensure all elements are cleared by end
+               - Handle element transitions and transformations
+               - Maintain element count limit
+
+            6. STRICTLY ADHERE TO VIDEO QUALITY STANDARDS
                - Your primary goal is to create animations that meet or exceed our established video quality standards
                - Every animation decision must align with these standards
                - Quality standards take precedence over implementation convenience
-               - Reference VIDEO_QUALITY_STANDARDS for specific requirements
-
-            2. MAINTAIN VISUAL EXCELLENCE
-               - Follow scene composition guidelines religiously
-               - Implement proper animation timing and pacing
-               - Ensure smooth transitions and proper cognitive load management
-               - Create clear visual hierarchies
-
-            3. PRIORITIZE EDUCATIONAL IMPACT
-               - Focus on clarity and understanding
-               - Use progressive disclosure effectively
-               - Maintain proper pacing for cognitive processing
-               - Create memorable visual representations
+               - See the VIDEO QUALITY STANDARDS REFERENCE for specific requirements
 
             ## VIDEO QUALITY STANDARDS REFERENCE:
             {VIDEO_QUALITY_STANDARDS}
@@ -200,7 +220,7 @@ def generate_manim_code(script, session_id):
             },
             {
                 "role": "user",
-                "content": "SCRIPT: \n" + script
+                "content": "## SCRIPT: \n" + script
             }],
             temperature=0.2,  # Lower temperature for more reliable output
             max_tokens=8192,
@@ -287,30 +307,49 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
                     - Check for proper scene setup with appropriate background color
                     - Validate all color definitions match the provided semantic color system
 
-                    ## VISUALIZATION INTEGRITY PRINCIPLES
 
-                    1. **Mathematical Accuracy Is Non-Negotiable**:
-                    - Any simplification must preserve mathematical correctness
-                    - Maintain proper mathematical notation and symbolic representation
-                    - Ensure calculations and visualizations remain precise
+                    ## ABSOLUTE PRIORITIES
 
-                    2. **Visual Clarity Is Essential**:
-                    - Limit on-screen elements (max 2-3 major elements at once)
-                    - Maintain proper spacing between elements (min 1.0 units)
-                    - Use consistent and clear visual hierarchy with the provided color system
+                    1. STRICT SCRIPT ADHERENCE
+                        - Follow script timing EXACTLY as specified (e.g. "at 0:30", "for 2 seconds")
+                        - Implement precise element positioning using the 3x3 grid system
+                        - Never exceed 3 elements on screen simultaneously
+                        - Track and manage element lifecycles (entry/exit times)
+                        - Maintain exact element spacing (15% minimum separation)
 
-                    ## IMPLEMENTATION REQUIREMENTS
+                    2. EXACT TIMESTAMP IMPLEMENTATION
+                    - Every single timestamp in the script MUST be implemented precisely
+                    - When script says "at 0:30", the animation MUST start at exactly 30 seconds
+                    - When script says "for 2 seconds", the animation MUST last exactly 2 seconds
+                    - Add self.wait() with exact durations to reach specified timestamps
+                    - Track cumulative time to ensure perfect timing alignment
+                    - Never approximate or round timestamps
+                    - Document every timestamp in code comments
 
-                    1. **ONLY use elements defined in the MANIM CODE GUIDE REFERENCE**
-                    2. **Always include the complete semantic color system code**
-                    3. **Follow the exact Scene structure from the guide**
-                    4. **Create a simpler alternative if a complex animation fails repeatedly**
-                    5. **If previous fixes failed, take a significantly different approach**
+                    3. POSITIONING AND ELEMENT MANAGEMENT
+                    - Implement precise element positioning using the 3x3 grid system
+                    - Never exceed 3 elements on screen simultaneously
+                    - Track and manage element lifecycles (entry/exit times)
+                    - Maintain exact element spacing (15% minimum separation)
+
+                    4. ELEMENT POSITIONING SYSTEM
+                    - Use the 9-region grid system (TOP_LEFT, TOP_CENTER, etc.)
+                    - Specify exact coordinates for each element
+                    - Maintain minimum 15% spacing between elements
+                    - Handle z-index for overlapping regions
+                    - Track element sizes (small: 10-15%, medium: 15-30%, large: 30-50%)
+
+                    5. ELEMENT LIFECYCLE
+                    - Track creation time for each element
+                    - Implement specified exit animations
+                    - Ensure all elements are cleared by end
+                    - Handle element transitions and transformations
+                    - Maintain element count limit
 
                     ## YOUR TASK
 
-                    Analyze the provided error message carefully and rewrite the Manim code to create a working animation that visualizes the script. Focus on stability and reliability - an elegant working animation is better than a complex broken one.
-                    
+                    Analyze the provided error message carefully and rewrite the failed Manim code to create a working animation that visualizes the provided script. Focus on stability and reliability - an elegant working animation is better than a complex broken one.
+
                     ERROR MESSAGE:
                     {error_message[:5000]}
 
@@ -326,7 +365,7 @@ def regenerate_manim_code(script, previous_code, error_message, session_id):
             }, {
                 "role": "user",
                 "content": f"""
-                    FAILED MANIM CODE:
+                    ## FAILED MANIM CODE:
                     ```python
                     {previous_code}
                     ```
@@ -396,23 +435,50 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
                        - Write a brief comment explaining how your code addresses this feedback point
                        - Verify your solution fully resolves the issue
 
-                    3. STRICTLY ADHERE TO VIDEO QUALITY STANDARDS:
-                       - Your primary goal is to create animations that meet or exceed our established video quality standards
-                       - Every animation decision must align with these standards
-                       - Quality standards take precedence over implementation convenience
-                       - Reference VIDEO_QUALITY_STANDARDS for specific requirements
+                       
+                    ## ABSOLUTE PRIORITIES
 
-                    4. MAINTAIN VISUAL EXCELLENCE
-                       - Follow scene composition guidelines religiously
-                       - Implement proper animation timing and pacing
-                       - Ensure smooth transitions and proper cognitive load management
-                       - Create clear visual hierarchies
+                    1. STRICT SCRIPT ADHERENCE
+                        - Follow script timing EXACTLY as specified (e.g. "at 0:30", "for 2 seconds")
+                        - Implement precise element positioning using the 3x3 grid system
+                        - Never exceed 3 elements on screen simultaneously
+                        - Track and manage element lifecycles (entry/exit times)
+                        - Maintain exact element spacing (15% minimum separation)
 
-                    5. PRIORITIZE EDUCATIONAL IMPACT
-                       - Focus on clarity and understanding
-                       - Use progressive disclosure effectively
-                       - Maintain proper pacing for cognitive processing
-                       - Create memorable visual representations
+                    2. EXACT TIMESTAMP IMPLEMENTATION
+                    - Every single timestamp in the script MUST be implemented precisely
+                    - When script says "at 0:30", the animation MUST start at exactly 30 seconds
+                    - When script says "for 2 seconds", the animation MUST last exactly 2 seconds
+                    - Add self.wait() with exact durations to reach specified timestamps
+                    - Track cumulative time to ensure perfect timing alignment
+                    - Never approximate or round timestamps
+                    - Document every timestamp in code comments
+
+                    3. POSITIONING AND ELEMENT MANAGEMENT
+                    - Implement precise element positioning using the 3x3 grid system
+                    - Never exceed 3 elements on screen simultaneously
+                    - Track and manage element lifecycles (entry/exit times)
+                    - Maintain exact element spacing (15% minimum separation)
+
+                    4. ELEMENT POSITIONING SYSTEM
+                    - Use the 9-region grid system (TOP_LEFT, TOP_CENTER, etc.)
+                    - Specify exact coordinates for each element
+                    - Maintain minimum 15% spacing between elements
+                    - Handle z-index for overlapping regions
+                    - Track element sizes (small: 10-15%, medium: 15-30%, large: 30-50%)
+
+                    5. ELEMENT LIFECYCLE
+                    - Track creation time for each element
+                    - Implement specified exit animations
+                    - Ensure all elements are cleared by end
+                    - Handle element transitions and transformations
+                    - Maintain element count limit
+
+                    6. STRICTLY ADHERE TO VIDEO QUALITY STANDARDS
+                    - Your primary goal is to create animations that meet or exceed our established video quality standards
+                    - Every animation decision must align with these standards
+                    - Quality standards take precedence over implementation convenience
+                    - See the VIDEO QUALITY STANDARDS REFERENCE for specific requirements
 
 
                     ## VERIFICATION
@@ -442,7 +508,7 @@ def improve_video_from_feedback(session_id, current_code, review_text, script, s
             }, {
                 "role": "user",
                 "content": f"""
-                    CURRENT MANIM CODE (NEEDING IMPROVEMENT):
+                    ## MANIM CODE TO IMPROVE:
                     ```python
                     {current_code}
                     ```"""

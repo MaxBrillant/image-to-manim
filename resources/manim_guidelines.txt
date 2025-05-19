@@ -2,29 +2,45 @@
 
 Follow this systematic approach to generate high-quality Manim code:
 
-1. **SCRIPT ANALYSIS PHASE**
-- Carefully analyze the script to identify:
-    - Core mathematical concepts that need visualization
-    - Key animations and transitions described
-    - Visual elements requiring implementation
-    - Mathematical formulas and equations to render
-    - Camera movements and perspective changes
-- Extract the narrative flow and timing considerations
+1. **TIMING IMPLEMENTATION**
+- Initialize timing tracking at scene start:
+  ```python
+  def construct(self):
+      self.current_time = 0  # Track cumulative time
+  ```
+- Calculate exact wait durations:
+  ```python
+  # If script says "at 0:45"
+  wait_time = 45 - self.current_time
+  if wait_time > 0:
+      self.wait(wait_time)
+  self.current_time = 45  # Update after wait
+  ```
+- Set precise animation durations:
+  ```python
+  # If script says "for 2 seconds"
+  animation = Create(obj, run_time=2.0)
+  self.play(animation)
+  self.current_time += 2.0  # Track animation time
+  ```
+- Document timing in comments:
+  ```python
+  # Current time: 0:30
+  self.wait(15)  # Wait until 0:45
+  # At 0:45 - Create first equation
+  self.play(Create(equation), run_time=2)  # Until 0:47
+  self.current_time = 47
+  ```
+- Verify timing alignment:
+  - Add timestamp comments before every animation
+  - Track cumulative time after each action
+  - Calculate exact wait durations
+  - Never skip or approximate timings
 
-3. **IMPLEMENTATION PHASE**
-- Strictly follow the standard Scene structure from the MANIM CODE GUIDE
-- Implement the semantic color system exactly as specified
-- Ensure all animations are properly sequenced with appropriate timing
+2. **IMPLEMENTATION PHASE**
 - Create clearly named variables that reflect their mathematical meaning
 - Add comments explaining complex parts of the implementation
 - Focus on reliability first, visual complexity second
-
-4. **VALIDATION PHASE**
-- Verify all mathematics is accurately represented
-- Ensure code matches the script's description and intent
-- Check that all animations have valid mobjects
-- Verify all references are properly defined before use
-- Confirm the scene progresses through all key points in the script
 
 3. **ERROR PREVENTION**
 - Avoid common Manim errors:
@@ -34,20 +50,10 @@ Follow this systematic approach to generate high-quality Manim code:
     - Use appropriate coordinate systems
     - Ensure latex expressions are properly formatted
 
-4. **SIMPLICITY OVER COMPLEXITY**
-- When in doubt, choose simpler implementations that are more reliable
-- Split complex animations into sequences of simpler animations
-- Use built-in Manim objects and methods when available
-- Limit the number of mobjects in a scene to ensure performance
-- Use deliberate pacing with wait() calls to improve comprehension
-
 ### OUTPUT REQUIREMENTS
 
 1. Generate ONLY the complete Python code for the Manim animation
-2. The animation should be AT LEAST 1 minute long, DO NOT write code that would result in a shorter animation duration
-3. Do NOT include explanations, discussions, or descriptions outside the code
-4. Include all necessary imports at the top of the file
-5. Implement exactly ONE Scene class that visualizes the entire script
-6. Define the semantic color system exactly as shown in the MANIM CODE GUIDE
-7. Add helpful comments explaining complex parts of the implementation
-8. Ensure the code is complete, runnable, and error-free
+2. Do NOT include explanations, discussions, or descriptions outside the code
+3. Include all necessary imports at the top of the file
+4. Add helpful comments explaining complex parts of the implementation
+5. Ensure the code is complete, runnable, and error-free

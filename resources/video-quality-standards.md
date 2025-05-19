@@ -1,12 +1,12 @@
-# Video Quality Standards for Educational Animations
+### Video Quality Standards for Educational Animations
 
 This guide combines best practices from educational animation research, successful YouTube channels (Veritasium, Vsauce, Kurzgesagt), and animation techniques to create engaging and effective educational videos.
 
-## Core Principles
+#### Core Principles
 
-### 1. Visual Design Excellence
+##### 1. Visual Design Excellence
 
-#### Scene Composition
+###### Scene Composition
 
 - Implement clear visual hierarchy
 - Use whitespace effectively
@@ -15,7 +15,7 @@ This guide combines best practices from educational animation research, successf
 - Use Kurzgesagt-inspired minimalist design when appropriate
 - Implement clear focal points for each scene
 
-#### Color Theory
+###### Color Theory
 
 - Use a consistent, vibrant color palette:
   - Primary color for main concepts (e.g., Kurzgesagt's signature bright colors)
@@ -25,7 +25,7 @@ This guide combines best practices from educational animation research, successf
 - Ensure sufficient contrast for readability
 - Use color psychology to enhance learning
 
-#### Typography
+###### Typography
 
 - Implement clear typography hierarchy:
   - Main titles: Large, bold
@@ -34,16 +34,16 @@ This guide combines best practices from educational animation research, successf
 - Use consistent fonts throughout
 - Ensure text remains readable at all times
 
-### 2. Animation Techniques
+##### 2. Animation Techniques
 
-#### Progressive Disclosure
+###### Progressive Disclosure
 
 - Break complex concepts into digestible chunks
 - Build complexity gradually
 - Use smooth transitions between steps
 - Implement the "moment of change" technique from Veritasium
 
-#### Camera Work
+###### Camera Work
 
 - Strategic zooming for emphasis
 - Smooth panning to show relationships
@@ -51,7 +51,7 @@ This guide combines best practices from educational animation research, successf
 - Dynamic camera movements that guide attention
 - Use Vsauce-style dramatic reveals for key concepts
 
-#### Object Transformations
+###### Object Transformations
 
 - Ensure smooth morphing between shapes
 - Use consistent animation durations
@@ -59,23 +59,23 @@ This guide combines best practices from educational animation research, successf
 - Implement object persistence for clarity
 - Create memorable visual metaphors
 
-### 3. Pacing and Timing
+##### 3. Pacing and Timing
 
-#### Scene Duration
+###### Scene Duration
 
 - Fast (2-3 seconds): Building tension, transitions
 - Normal (4-6 seconds): Standard explanations
 - Slow (6-8 seconds): Emphasizing crucial concepts
 - Strategic pauses (2-3 seconds): Allow for absorption
 
-#### Narrative Flow
+###### Narrative Flow
 
 - Start with a compelling question (Veritasium style)
 - Build tension through progressive revelation
 - Include "aha moments" for key insights
 - End with clear takeaways
 
-#### Cognitive Load Management
+###### Cognitive Load Management
 
 - Limit elements on screen
 - Use consistent visual patterns
@@ -83,9 +83,9 @@ This guide combines best practices from educational animation research, successf
 - Include visual anchors
 - Follow Kurzgesagt's principle of "one idea at a time"
 
-### 4. Engagement Techniques
+##### 4. Engagement Techniques
 
-#### Storytelling Elements
+###### Storytelling Elements
 
 - Begin with dramatic questions
 - Use moments of change to maintain interest
@@ -93,7 +93,7 @@ This guide combines best practices from educational animation research, successf
 - Create narrative arcs within explanations
 - Implement Vsauce-style curiosity gaps
 
-#### Visual Interest
+###### Visual Interest
 
 - Add surprising elements
 - Use contrasting elements for emphasis
@@ -101,52 +101,52 @@ This guide combines best practices from educational animation research, successf
 - Implement visual metaphors
 - Create memorable iconic representations
 
-#### Audio-Visual Synchronization
+###### Audio-Visual Synchronization
 
 - Time animations to narration
 - Use sound effects strategically
 - Implement musical cues for emphasis
 - Create rhythmic visual patterns
 
-## Quality Assurance
+#### Quality Assurance
 
-### Pre-Production
+##### Pre-Production
 
 - Script follows narrative best practices
 - Storyboard includes clear visual hierarchy
 - Color palette is defined and consistent
 - Typography system is established
 
-### Production
+##### Production
 
 - Animations follow timing guidelines
 - Camera movements are purposeful
 - Progressive disclosure is implemented
 - Visual metaphors are clear and effective
 
-### Post-Production
+##### Post-Production
 
 - Timing and pacing are verified
 - Visual clarity is confirmed
 - Audio-visual sync is perfect
 - Engagement elements are present
 
-## Resources and References
+#### Resources and References
 
-### Animation Examples
+##### Animation Examples
 
 - 3Blue1Brown's animations
 - Veritasium's visual explanations
 - Kurzgesagt's design style
 - Vsauce's narrative techniques
 
-### Research Papers
+##### Research Papers
 
 - "A Good Story Well Told: Storytelling Components That Impact Science Video Popularity on YouTube" (Huang & Grant, 2020)
 - Educational animation effectiveness studies
 - Visual learning research
 
-## Continuous Improvement
+#### Continuous Improvement
 
 This guide should be treated as a living document, updated regularly with:
 

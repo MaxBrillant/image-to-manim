@@ -511,4 +511,4 @@ if __name__ == '__main__':
     # Run the Flask app
     port = int(os.environ.get("PORT", 5000))
     logger.info(f"Starting Flask app on port {port}")
-    app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False)
+    app.run(debug=False, host='0.0.0.0', port=port, use_reloader=True)
