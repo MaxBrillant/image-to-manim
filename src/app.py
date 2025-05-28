@@ -13,14 +13,14 @@ from PIL import Image
 from typing import Dict, List, Union, Optional
 
 # Import from our modules
-from config import supabase
-from generation.manim_code import generate_manim_code
-from generation.problem_analysis import generate_problem_analysis
-from generation.review import review_video
-from generation.script import generate_script
-from generation.visuals import generate_visual_elements
-from render.render import queue_manim_rendering
-from storage import update_code_in_storage
+from src.config import supabase
+from src.generation.manim_code import generate_manim_code
+from src.generation.problem_analysis import generate_problem_analysis
+from src.generation.review import review_video
+from src.generation.script import generate_script
+from src.generation.visuals import generate_visual_elements
+from src.render.render import queue_manim_rendering
+from src.storage import update_code_in_storage
 
 # Configure logging
 logging.basicConfig(
