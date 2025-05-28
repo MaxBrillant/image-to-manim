@@ -44,7 +44,7 @@ Transforms images of math problems into educational animations using the Manim l
 
 4. Run the app:
    ```
-   python src/app.py
+   python -m src.app
    ```
 
 ## Supabase Setup
