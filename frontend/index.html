@@ -301,6 +301,7 @@
       const stepsState = {
         processImage: { status: "pending", data: null, retryCount: 0 },
         generateScript: { status: "pending", data: null, retryCount: 0 },
+        generateVisuals: { status: "pending", data: null, retryCount: 0 },
         generateVideo: { status: "pending", data: null, retryCount: 0 },
         improveVideo: { status: "pending", data: null, retryCount: 0 },
       };
@@ -315,6 +316,7 @@
       const stepSequence = [
         "processImage",
         "generateScript",
+        "generateVisuals",
         "generateVideo",
         "improveVideo",
       ];
@@ -323,6 +325,7 @@
       const stepTimers = {
         processImage: { startTime: null, interval: null },
         generateScript: { startTime: null, interval: null },
+        generateVisuals: { startTime: null, interval: null },
         generateVideo: { startTime: null, interval: null },
         improveVideo: { startTime: null, interval: null },
       };
@@ -466,7 +469,8 @@
           // Check if this is a step that should render markdown
           if (
             stepId === "step-processImage" ||
-            stepId === "step-generateScript"
+            stepId === "step-generateScript" ||
+            stepId === "step-generateVisuals"
           ) {
             try {
               // Use marked.js to parse markdown
@@ -540,12 +544,89 @@
         const stepMap = {
           processImage: processImage,
           generateScript: generateScript,
+          generateVisuals: generateVisuals,
           generateVideo: generateVideo,
           improveVideo: improveVideo,
         };
 
         if (stepMap[stepKey]) {
           stepMap[stepKey]();
+        }
+      }
+
+      // Generate Visual Elements
+      async function generateVisuals() {
+        if (!currentSessionId) {
+          console.error("No session ID available");
+          return;
+        }
+
+        // Update step status
+        updateStepStatus("step-generateVisuals", "processing", "PROCESSING");
+
+        try {
+          const response = await fetch(`${apiUrl}/generate-visuals`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              session_id: currentSessionId,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.visuals_text) {
+            // Update step status and content
+            updateStepStatus("step-generateVisuals", "completed", "COMPLETED");
+            setStepContent("step-generateVisuals", result.visuals_text, "text");
+
+            // Store data in our state
+            stepsState.generateVisuals.data = result;
+          } else {
+            throw new Error(
+              result.error || "Failed to generate visual elements"
+            );
+          }
+        } catch (error) {
+          if (stepsState.generateVisuals.retryCount < retryConfig.maxRetries) {
+            // Increment retry count
+            stepsState.generateVisuals.retryCount++;
+
+            // Update status with retry attempt
+            updateStepStatus(
+              "step-generateVisuals",
+              "processing",
+              `RETRYING (${stepsState.generateVisuals.retryCount}/${retryConfig.maxRetries})`
+            );
+
+            // Show retry message
+            setStepContent(
+              "step-generateVisuals",
+              `Error encountered: ${error.message}\nRetrying in ${
+                retryConfig.retryDelay / 1000
+              } seconds... (Attempt ${stepsState.generateVisuals.retryCount}/${
+                retryConfig.maxRetries
+              })`,
+              "text"
+            );
+
+            // Retry after delay
+            setTimeout(() => generateVisuals(), retryConfig.retryDelay);
+          } else {
+            // Max retries reached, show error
+            updateStepStatus("step-generateVisuals", "error", "ERROR");
+            setStepContent(
+              "step-generateVisuals",
+              `Error: ${error.message}\nMax retry attempts (${retryConfig.maxRetries}) reached.`,
+              "text"
+            );
+          }
         }
       }
 
@@ -1000,7 +1081,7 @@
         <!-- Step 1: Process Image -->
         <div id="step-processImage" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 1: Process Image</div>
+            <div class="step-title">Step 1: Process image</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
@@ -1020,7 +1101,7 @@
         <!-- Step 2: Generate Script -->
         <div id="step-generateScript" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 2: Generate Animation Script</div>
+            <div class="step-title">Step 2: Generate script</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
@@ -1037,10 +1118,30 @@
           </div>
         </div>
 
-        <!-- Step 3: Generate Video -->
+        <!-- Step 3: Generate Visual Elements -->
+        <div id="step-generateVisuals" class="step pending">
+          <div class="step-header">
+            <div class="step-title">Step 3: Generate visual elements</div>
+            <div class="step-status pending">PENDING</div>
+            <div class="step-spinner"></div>
+          </div>
+          <div id="step-generateVisuals-timer" class="step-timer"></div>
+          <div id="step-generateVisuals-content" class="step-content"></div>
+          <div class="step-buttons">
+            <button
+              onclick="tryAgainFromStep('generateVisuals')"
+              class="try-again-button"
+              style="display: none"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Generate Video -->
         <div id="step-generateVideo" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 3: Generate Video</div>
+            <div class="step-title">Step 4: Generate video</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>
@@ -1057,10 +1158,10 @@
           </div>
         </div>
 
-        <!-- Step 4: Improve Video -->
+        <!-- Step 5: Improve Video -->
         <div id="step-improveVideo" class="step pending">
           <div class="step-header">
-            <div class="step-title">Step 4: Improve Video</div>
+            <div class="step-title">Step 5: Improve video</div>
             <div class="step-status pending">PENDING</div>
             <div class="step-spinner"></div>
           </div>

@@ -2,24 +2,38 @@
 Functions for rendering Manim code into videos using Modal
 """
 import time
+from typing import Dict, Union
 from src.config import supabase
 from src.storage import update_code_in_storage
 
-def queue_manim_rendering(session_id, manim_code, script, code_path, quality):
+def queue_manim_rendering(
+    session_id: str, manim_code: str, code_path: str, quality: str
+) -> Dict[str, Union[str, Dict[str, str]]]:
     """
     Queue Manim rendering job and handle rendering process with retries.
     
     Args:
         session_id (str): Unique session identifier
         manim_code (str): Generated Manim code to render
-        script (str): Script for the animation
+        code_path (str): Path to the stored Manim code in Supabase
+        quality (str): Video quality to render with
+        
+    Returns:
+        dict: Result containing video_url, error (if any), and current_code
+    """
+    """
+    Queue Manim rendering job and handle rendering process with retries.
+    
+    Args:
+        session_id (str): Unique session identifier
+        manim_code (str): Generated Manim code to render
         code_path (str): Path to the stored Manim code in Supabase
         
     Returns:
         dict: Result containing video_url, error (if any), and current_code
     """
     try:
-        from src.modal_renderer import app, ManimRenderer
+        from src.render.modal_renderer import app, ManimRenderer
         
         # Update status
         supabase.table("manim_projects").update({"status": "queued_for_rendering"}).eq("id", session_id).execute()
@@ -45,10 +59,10 @@ def queue_manim_rendering(session_id, manim_code, script, code_path, quality):
                 retry_count += 1
                 
                 # Import here to avoid circular import
-                from src.generation import regenerate_manim_code
+                from src.generation.fixed_code import fix_manim_code
                 
                 # Regenerate the Manim code based on the error
-                current_code = regenerate_manim_code(script, current_code, error_message, session_id)
+                current_code = fix_manim_code(previous_code=current_code, error_message=error_message, session_id=session_id)
                 
                 # Update code in storage (with error handling)
                 update_code_in_storage(code_path, current_code)

@@ -5,21 +5,27 @@ import re
 import requests
 import time
 from io import BytesIO
+from typing import Dict, List, Union, Optional
 from google import genai
 from google.genai import types
-from src.config import GEMINI_API_KEY, PHILOSOPHY, VIDEO_QUALITY_STANDARDS
+from src.config import GEMINI_API_KEY, VIDEO_QUALITY_STANDARDS
 
-def review_video(video_url):
+def review_video(video_url: str) -> Dict[str, Union[int, Dict[str, List[str]], str, bool, float]]:
     """
     Review the video and provide structured feedback with scoring
     
     Args:
-        video_url (str): URL to the video file to be reviewed
+        video_url: URL to the video file to be reviewed
         
     Returns:
-        dict: Contains score (int), categorized issues (dict), and overall review (str)
+        Dict containing:
+            score: int (0-100)
+            issues: Dict with critical, major, minor issues as List[str]
+            review: str (full review text)
+            needs_improvement: bool
+            review_time: float
     """
-    MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB limit
+    MAX_VIDEO_SIZE = 20 * 1024 * 1024  # 20MB limit for Gemini
     DOWNLOAD_TIMEOUT = 60  # 60 seconds timeout for download
     API_TIMEOUT = 90  # 90 seconds timeout for API call
     
@@ -39,7 +45,7 @@ def review_video(video_url):
             
             content_length = int(response.headers.get('content-length', 0))
             if content_length > MAX_VIDEO_SIZE:
-                raise ValueError(f"Video size ({content_length/1024/1024:.2f}MB) exceeds maximum allowed size (50MB)")
+                raise ValueError(f"Video size ({content_length/1024/1024:.2f}MB) exceeds maximum allowed size (20MB)")
             
             video_content = BytesIO()
             downloaded_size = 0
@@ -48,13 +54,15 @@ def review_video(video_url):
                 if chunk:
                     downloaded_size += len(chunk)
                     if downloaded_size > MAX_VIDEO_SIZE:
-                        raise ValueError(f"Video download size exceeded maximum allowed size (50MB)")
+                        raise ValueError(f"Video download size exceeded maximum allowed size (20MB)")
                     video_content.write(chunk)
             
             if downloaded_size == 0:
                 raise ValueError("Downloaded video is empty")
                 
             video_content.seek(0)  # Reset buffer position to the start
+            video_bytes = video_content.read()  # Read entire content into memory
+            
         except requests.exceptions.RequestException as e:
             raise ValueError(f"Error downloading video: {str(e)}")
         
@@ -152,9 +160,6 @@ def review_video(video_url):
 
         # VIDEO QUALITY STANDARDS:
         {VIDEO_QUALITY_STANDARDS}
-        
-        # PHILOSOPHY OF MATHEMATICAL VISUALIZATION:
-        {PHILOSOPHY}
         """
         
         api_start_time = time.time()
@@ -162,38 +167,22 @@ def review_video(video_url):
         
         # Make the API call to review the video with timeout handling
         try:
-            response_text = ""
-            stream_generator = client.models.generate_content_stream(
-                model="gemini-2.0-flash",
-                contents = [
-                    types.Content(
-                        role="system",
-                        parts=[
-                            types.Part.from_bytes(
-                                data=video_content.read(),
-                                mime_type="video/mp4",
-                            ),
-                            types.Part.from_text(text=review_prompt),
-                        ],
-                    ),
-                ],
-                config=types.GenerateContentConfig(
-                    temperature=0.2,  # Lower temperature for more consistent evaluation
-                    max_output_tokens=8192,
-                    response_mime_type="text/plain",
+            response = client.models.generate_content(
+                model='models/gemini-2.0-flash',
+                contents=types.Content(
+                    parts=[
+                        types.Part(
+                            inline_data=types.Blob(
+                                data=video_bytes,
+                                mime_type='video/mp4'
+                            )
+                        ),
+                        types.Part(text=review_prompt)
+                    ]
                 )
             )
             
-            for chunk in stream_generator:
-                # Check if API call timeout exceeded
-                if time.time() - api_start_time > API_TIMEOUT:
-                    raise TimeoutError("API review took too long to complete")
-                
-                if chunk.text:
-                    print(chunk.text, end="", flush=True)
-                    response_text += chunk.text
-                    
-            review_text = response_text
+            review_text = response.text
             print("\nVideo review completed successfully")
             
         except Exception as api_error:
@@ -245,16 +234,16 @@ def review_video(video_url):
             "needs_improvement": True  # Assume needs improvement if review failed
         }
 
-def extract_issues(review_text, section_header):
+def extract_issues(review_text: str, section_header: str) -> List[str]:
     """
     Extract issues from a specific section of the review text
     
     Args:
-        review_text (str): The full review text
-        section_header (str): The section to extract issues from
+        review_text: The full review text
+        section_header: The section to extract issues from
         
     Returns:
-        list: Extracted issues from the section
+        List[str]: Extracted issues from the section
     """
     # Find the section in the review
     pattern = rf"{section_header}:(.*?)(?:(?:{next_section_pattern(section_header)})|$)"
@@ -277,12 +266,12 @@ def extract_issues(review_text, section_header):
     
     return issues
 
-def next_section_pattern(current_section):
+def next_section_pattern(current_section: str) -> str:
     """
     Create regex pattern for the next section header based on the current one
     
     Args:
-        current_section (str): Current section header
+        current_section: Current section header
         
     Returns:
         str: Regex pattern for the next likely section

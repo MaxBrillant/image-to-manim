@@ -4,10 +4,11 @@ Transforms images of math problems into educational animations using the Manim l
 
 ## Overview
 
-1. **Process image** to analyze the math problem (deepinfra/llama-4)
-2. **Generate animation script** for the educational explanation (deepinfra/llama-4)
-3. **Generate video** with Manim animations (deepinfra/llama-4)
-4. **Improve video** quality with automated feedback (Google Gemini)
+1. **Process image** to analyze the math problem (deepinfra/meta-llama/Llama-4-Maverick-17B)
+2. **Generate animation script** for the educational explanation (deepinfra/meta-llama/Llama-4-Maverick-17B)
+3. **Generate visual elements** with precise positioning and timing
+4. **Generate video** with Manim animations using cloud rendering
+5. **Improve video** quality with automated feedback (Google Gemini)
 
 ## Requirements
 
@@ -38,12 +39,12 @@ Transforms images of math problems into educational animations using the Manim l
 3. Deploy Modal renderer:
 
    ```
-   modal deploy modal_renderer.py
+   modal deploy src/render/modal_renderer.py
    ```
 
 4. Run the app:
    ```
-   python app.py
+   python src/app.py
    ```
 
 ## Supabase Setup
@@ -56,6 +57,7 @@ Transforms images of math problems into educational animations using the Manim l
      status text,
      problem_analysis text,
      script_url text,
+     visuals_url text,
      code_url text,
      image_url text,
      video_url text,
@@ -73,6 +75,11 @@ curl -X POST -F "image=@/path/to/image.jpg" http://localhost:5000/process-image
 curl -X POST -H "Content-Type: application/json" \
   -d '{"session_id": "your-session-id"}' \
   http://localhost:5000/generate-script
+
+# Generate visual elements
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"session_id": "your-session-id"}' \
+  http://localhost:5000/generate-visuals
 
 # Generate video (optional quality parameter: low, medium, high)
 curl -X POST -H "Content-Type: application/json" \
@@ -92,13 +99,19 @@ curl http://localhost:5000/health
 
 ```bash
 docker build -t image-to-manim .
-docker run -p 8000:8000 --env-file .env image-to-manim
+docker run -p 5000:5000 --env-file .env image-to-manim
 ```
 
 ## Key Components
 
-- `app.py`: Main Flask API with modular endpoints
-- `src/modal_renderer.py`: Modal-based GPU rendering
-- `src/generation.py`: Problem analysis, script and code generation
-- `src/review.py`: Video quality analysis and improvement
+- `src/app.py`: Main Flask API with modular endpoints
+- `src/generation/`:
+  - `problem_analysis.py`: Image analysis and math problem understanding
+  - `script.py`: Educational script generation
+  - `visuals.py`: Visual elements and storyboard generation
+  - `manim_code.py`: Manim animation code generation
+  - `review.py`: Video quality analysis and improvement
+- `src/render/`:
+  - `modal_renderer.py`: Modal-based GPU rendering
+  - `render.py`: Rendering coordination
 - `frontend/index.html`: Interactive UI with step-by-step processing

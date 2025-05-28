@@ -10,13 +10,17 @@ from io import BytesIO
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from PIL import Image
+from typing import Dict, List, Union, Optional
 
 # Import from our modules
-from src.config import supabase
-from src.generation import generate_problem_analysis, generate_script, generate_manim_code, improve_video_from_feedback
-from src.render import queue_manim_rendering
-from src.review import review_video
-from src.storage import update_code_in_storage
+from config import supabase
+from generation.manim_code import generate_manim_code
+from generation.problem_analysis import generate_problem_analysis
+from generation.review import review_video
+from generation.script import generate_script
+from generation.visuals import generate_visual_elements
+from render.render import queue_manim_rendering
+from storage import update_code_in_storage
 
 # Configure logging
 logging.basicConfig(
@@ -33,13 +37,13 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route('/health', methods=['GET'])
-def health_check():
+def health_check() -> Dict[str, str]:
     """Simple health check endpoint"""
     logger.info("Health check endpoint accessed")
     return jsonify({"status": "ok", "message": "Server is running"})
 
 @app.route('/process-image', methods=['POST'])
-def process_image():
+def process_image() -> Dict[str, Union[str, Dict]]:
     """Endpoint to process an image of a math problem and return a detailed description and solution"""
     start_time = time.time()
     logger.info("Starting image processing")
@@ -90,7 +94,7 @@ def process_image():
         
         # Analyze the math problem from the image
         logger.info("Starting math problem analysis")
-        problem_analysis = generate_problem_analysis(img)
+        problem_analysis = generate_problem_analysis(image=img)
         logger.info("Math problem analysis completed")
         
         # Store the project metadata in Supabase database
@@ -125,7 +129,7 @@ def process_image():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/generate-script', methods=['POST'])
-def generate_script_endpoint():
+def generate_script_endpoint() -> Dict[str, str]:
     """Endpoint to generate a script based on a problem analysis"""
     start_time = time.time()
     logger.info("Starting script generation")
@@ -154,8 +158,8 @@ def generate_script_endpoint():
             return jsonify({"error": "Problem analysis has not been generated yet"}), 400
         
         # Generate script
-        logger.info("Generating script script from problem analysis")
-        script = generate_script(project_data['problem_analysis'])
+        logger.info("Generating script from problem analysis")
+        script = generate_script(problem_analysis=project_data['problem_analysis'])
         logger.info("Script generation completed")
         
         # Store script in Supabase
@@ -194,9 +198,96 @@ def generate_script_endpoint():
         logger.error(f"Error in generate_script: {str(e)}\n{error_trace}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/generate-visuals', methods=['POST'])
+def generate_visuals_endpoint() -> Dict[str, str]:
+    """Endpoint to generate visual element descriptions from a script"""
+    start_time = time.time()
+    logger.info("Starting visual elements generation")
+    data = request.json
+    
+    if not data or 'session_id' not in data:
+        logger.error("No session_id provided in request")
+        return jsonify({"error": "No session_id provided"}), 400
+    
+    try:
+        session_id = data['session_id']
+        logger.info(f"Processing visual elements generation for session: {session_id}")
+        
+        # Get the project data from Supabase
+        logger.info(f"Fetching project data for session: {session_id}")
+        response = supabase.table("manim_projects").select("*").eq("id", session_id).execute()
+        if not response.data:
+            logger.error(f"No project found with session_id: {session_id}")
+            return jsonify({"error": f"No project found with session_id: {session_id}"}), 404
+        
+        project_data = response.data[0]
+        
+        # Check if we have a script
+        if not project_data.get('script_url'):
+            logger.error(f"Script URL not found for session: {session_id}")
+            return jsonify({"error": "Script has not been generated yet"}), 400
+            
+        # Get the script from the stored URL
+        script_url = project_data.get('script_url')
+        logger.info(f"Retrieving script from URL: {script_url}")
+        
+        try:
+            # Download the script content from the URL
+            response = requests.get(script_url)
+            if response.status_code == 200:
+                script = response.text
+                logger.info("Successfully retrieved script content")
+            else:
+                logger.error(f"Failed to retrieve script. Status code: {response.status_code}")
+                return jsonify({"error": f"Failed to retrieve script. Status code: {response.status_code}"}), 500
+        except Exception as e:
+            logger.error(f"Exception while retrieving script: {str(e)}")
+            return jsonify({"error": f"Failed to retrieve script: {str(e)}"}), 500
+        
+        # Generate visual elements
+        logger.info("Generating visual elements from script")
+        visual_elements = generate_visual_elements(script=script)
+        logger.info("Visual elements generation completed")
+        
+        # Store visual elements in Supabase
+        visuals_path = f"{session_id}/visuals.txt"
+        logger.info(f"Storing visual elements at path: {visuals_path}")
+        supabase.storage.from_("manim-generator").upload(
+            visuals_path,
+            visual_elements.encode('utf-8'),
+            {    "cacheControl": '3600',    "upsert": "true"  }
+        )
+        visuals_url = supabase.storage.from_("manim-generator").get_public_url(visuals_path)
+        logger.info(f"Visual elements accessible at URL: {visuals_url}")
+        
+        # Update the project status
+        logger.info(f"Updating project status to 'visuals_generated' for session: {session_id}")
+        supabase.table("manim_projects").update({
+            "status": "visuals_generated",
+            "visuals_url": visuals_url
+        }).eq("id", session_id).execute()
+        
+        response = {
+            "session_id": session_id,
+            "visuals_url": visuals_url,
+            "visuals_text": visual_elements,
+            "status": "visuals_generated",
+            "message": "Visual elements generated successfully. Use the session_id to generate a video."
+        }
+        
+        process_time = round(time.time() - start_time, 2)
+        logger.info(f"Visual elements generation completed in {process_time}s")
+        return jsonify(response)
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error in generate_visuals: {str(e)}\n{error_trace}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/generate-video', methods=['POST'])
-def generate_video():
-    """Endpoint to generate a video from a script"""
+def generate_video() -> Dict[str, Union[str, Dict]]:
+    """Endpoint to generate a video from visual elements"""
     start_time = time.time()
     logger.info("Starting video generation")
     data = request.json
@@ -223,31 +314,31 @@ def generate_video():
         
         project_data = response.data[0]
         
-        # Check if we have a script
-        if not project_data.get('script_url'):
-            logger.error(f"Script URL not found for session: {session_id}")
-            return jsonify({"error": "Script has not been generated yet"}), 400
-        
-        # Get the script from the stored URL
-        script_url = project_data.get('script_url')
-        logger.info(f"Retrieving script from URL: {script_url}")
+        # Check if we have visuals
+        if not project_data.get('visuals_url'):
+            logger.error(f"Visuals URL not found for session: {session_id}")
+            return jsonify({"error": "Visuals has not been generated yet"}), 400
+    
+        # Get the visual elements from the stored URL
+        visuals_url = project_data.get('visuals_url')
+        logger.info(f"Retrieving visual elements from URL: {visuals_url}")
         
         try:
-            # Download the script content from the URL
-            response = requests.get(script_url)
+            # Download the visual elements content from the URL
+            response = requests.get(visuals_url)
             if response.status_code == 200:
-                script = response.text
-                logger.info("Successfully retrieved script content")
+                visual_elements = response.text
+                logger.info("Successfully retrieved visual elements content")
             else:
-                logger.error(f"Failed to retrieve script. Status code: {response.status_code}")
-                return jsonify({"error": f"Failed to retrieve script. Status code: {response.status_code}"}), 500
+                logger.error(f"Failed to retrieve visual elements. Status code: {response.status_code}")
+                return jsonify({"error": f"Failed to retrieve visual elements. Status code: {response.status_code}"}), 500
         except Exception as e:
-            logger.error(f"Exception while retrieving script: {str(e)}")
-            return jsonify({"error": f"Failed to retrieve script: {str(e)}"}), 500
-        
+            logger.error(f"Exception while retrieving visual elements: {str(e)}")
+            return jsonify({"error": f"Failed to retrieve visual elements: {str(e)}"}), 500
+
         # Generate Manim code
-        logger.info("Generating Manim code from script")
-        manim_code = generate_manim_code(script, session_id)
+        logger.info("Generating Manim code from visual elements")
+        manim_code = generate_manim_code(visual_elements=visual_elements, session_id=session_id)
         logger.info("Manim code generation completed")
         
         # Store Manim code in Supabase
@@ -270,7 +361,6 @@ def generate_video():
         render_result = queue_manim_rendering(
             session_id=session_id,
             manim_code=manim_code,
-            script=script,
             code_path=f"{session_id}/scene.py",
             quality=video_quality
         )
@@ -289,7 +379,7 @@ def generate_video():
             
             response = {
                 "session_id": session_id,
-                "script_url": script_url,
+                "visuals_url": visuals_url,
                 "code_url": code_url,
                 "video_url": video_url,
                 "status": "video_generated",
@@ -300,7 +390,7 @@ def generate_video():
             logger.error(f"Video rendering failed: {error_message}")
             response = {
                 "session_id": session_id,
-                "script_url": script_url,
+                "visuals_url": visuals_url,
                 "code_url": code_url,
                 "status": "code_generated",
                 "message": "Code generation complete, but video rendering failed.",
@@ -318,7 +408,7 @@ def generate_video():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/improve-video', methods=['POST'])
-def improve_video():
+def improve_video() -> Dict[str, Union[str, int, Dict]]:
     """Endpoint to review and improve a generated video"""
     start_time = time.time()
     logger.info("Starting video improvement process")
@@ -353,11 +443,10 @@ def improve_video():
         
         video_url = project_data.get('video_url')
         code_url = project_data.get('code_url')
-        script_url = project_data.get('script_url')
         
         # Review the video
         logger.info(f"Reviewing video quality at URL: {video_url}")
-        review_result = review_video(video_url)
+        review_result = review_video(video_url=video_url)
         
         score = review_result["score"]
         review_text = review_result["review"]
@@ -374,114 +463,77 @@ def improve_video():
         if needs_improvement:
             logger.info(f"Video quality score is low ({score}/100). Regenerating based on feedback")
             
-            # Get the script from the stored URL
-            logger.info(f"Retrieving script from URL: {script_url}")
+            # Get the visual elements from the stored URL
+            visuals_url = project_data.get('visuals_url')
+            logger.info(f"Retrieving visual elements from URL: {visuals_url}")
             
             try:
-                # Download the script content from the URL
-                response = requests.get(script_url)
+                # Download the visual elements content from the URL
+                response = requests.get(visuals_url)
                 if response.status_code == 200:
-                    script = response.text
-                    logger.info("Successfully retrieved script content")
+                    visual_elements = response.text
+                    logger.info("Successfully retrieved visual elements content")
                 else:
-                    logger.error(f"Failed to retrieve script. Status code: {response.status_code}")
-                    return jsonify({"error": f"Failed to retrieve script. Status code: {response.status_code}"}), 500
+                    logger.error(f"Failed to retrieve visual elements. Status code: {response.status_code}")
+                    return jsonify({"error": f"Failed to retrieve visual elements. Status code: {response.status_code}"}), 500
             except Exception as e:
-                logger.error(f"Exception while retrieving script: {str(e)}")
-                return jsonify({"error": f"Failed to retrieve script: {str(e)}"}), 500
-            
-            # Get the manim code from the stored URL
-            logger.info(f"Retrieving manim code from URL: {code_url}")
-            
-            try:
-                # Download the manim code content from the URL
-                response = requests.get(code_url)
-                if response.status_code == 200:
-                    manim_code = response.text
-                    logger.info("Successfully retrieved manim code content")
-                else:
-                    logger.error(f"Failed to retrieve manim code. Status code: {response.status_code}")
-                    return jsonify({"error": f"Failed to retrieve manim code. Status code: {response.status_code}"}), 500
-            except Exception as e:
-                logger.error(f"Exception while retrieving manim code: {str(e)}")
-                return jsonify({"error": f"Failed to retrieve manim code: {str(e)}"}), 500
+                logger.error(f"Exception while retrieving visual elements: {str(e)}")
+                return jsonify({"error": f"Failed to retrieve visual elements: {str(e)}"}), 500
             
             # Attempt to improve the video based on feedback
             logger.info("Attempting to improve video based on feedback")
-            improved_result = improve_video_from_feedback(
-                session_id,
-                manim_code,
-                review_text,
-                script,
-                score,
-                f"{session_id}/scene.py"  # code path
+            improved_code = generate_manim_code(
+                visual_elements=visual_elements,
+                improvements=review_text,
+                session_id=session_id,
             )
             
-            if improved_result.get("success", False):
-                # Video was successfully improved
-                logger.info("Successfully generated improved manim code")
-                improved_code = improved_result.get("improved_code")
+            # Store the improved code
+            logger.info(f"Storing improved manim code")
+            update_code_in_storage(f"{session_id}/scene.py", improved_code)
+            
+            logger.info(f"Queuing improved Manim rendering job with quality: {video_quality}")
+            # Call the function to queue the rendering job with quality parameter
+            render_result = queue_manim_rendering(
+                session_id=session_id,
+                manim_code=improved_code,
+                code_path=f"{session_id}/scene.py",
+                quality=video_quality
+            )
+            
+            improved_video_url = render_result.get("video_url")
+            
+            if improved_video_url:
+                # Update the database with the improved video
+                logger.info(f"Rendering of improved video completed successfully, URL: {improved_video_url}")
+                logger.info(f"Updating project status to 'improved_render_complete' for session: {session_id}")
+                supabase.table("manim_projects").update({
+                    "status": "improved_render_complete",
+                    "video_url": improved_video_url,
+                }).eq("id", session_id).execute()
                 
-                # Store the improved code
-                logger.info(f"Storing improved manim code")
-                update_code_in_storage(f"{session_id}/scene.py", improved_code)
-                
-                logger.info(f"Queuing improved Manim rendering job with quality: {video_quality}")
-                # Call the function to queue the rendering job with quality parameter
-                render_result = queue_manim_rendering(
-                    session_id=session_id,
-                    manim_code=improved_code,
-                    script=script,
-                    code_path=f"{session_id}/scene.py",
-                    quality=video_quality
-                )
-                
-                improved_video_url = render_result.get("video_url")
-                
-                if improved_video_url:
-                    # Update the database with the improved video
-                    logger.info(f"Rendering of improved video completed successfully, URL: {improved_video_url}")
-                    logger.info(f"Updating project status to 'improved_render_complete' for session: {session_id}")
-                    supabase.table("manim_projects").update({
-                        "status": "improved_render_complete",
-                        "video_url": improved_video_url,
-                    }).eq("id", session_id).execute()
-                    
-                    response = {
-                        "session_id": session_id,
-                        "improved_video_url": improved_video_url,
-                        "code_url": code_url,
-                        "script_url": script_url,
-                        "status": "improved_render_complete",
-                        "review_score": score,
-                        "review_text": review_text,
-                        "message": f"Video has been improved based on feedback. Original score: {score}/100."
-                    }
-                else:
-                    # Improvement rendering failed
-                    error = render_result.get("error", "Unknown error during rendering")
-                    logger.error(f"Improved video rendering failed: {error}")
-                    response = {
-                        "session_id": session_id,
-                        "code_url": code_url,
-                        "script_url": script_url,
-                        "status": "review_complete",
-                        "review_score": score,
-                        "review_text": review_text,
-                        "message": f"Video was reviewed (score: {score}/100), but improvement rendering failed: {error}"
-                    }
+                response = {
+                    "session_id": session_id,
+                    "improved_video_url": improved_video_url,
+                    "code_url": code_url,
+                    "visuals_url": visuals_url,
+                    "status": "improved_render_complete",
+                    "review_score": score,
+                    "review_text": review_text,
+                    "message": f"Video has been improved based on feedback. Original score: {score}/100."
+                }
             else:
-                # Improvement attempt failed
-                error = improved_result.get("error", "Unknown error during improvement")
-                logger.error(f"Failed to improve video: {error}")
+                # Improvement rendering failed
+                error = render_result.get("error", "Unknown error during rendering")
+                logger.error(f"Improved video rendering failed: {error}")
                 response = {
                     "session_id": session_id,
                     "code_url": code_url,
-                    "script_url": script_url,
+                    "visuals_url": visuals_url,
                     "status": "review_complete",
                     "review_score": score,
                     "review_text": review_text,
-                    "message": f"Video was reviewed (score: {score}/100), but improvement failed: {error}"
+                    "message": f"Video was reviewed (score: {score}/100), but improvement rendering failed: {error}"
                 }
         else:
             # No improvement needed
@@ -490,7 +542,7 @@ def improve_video():
                 "session_id": session_id,
                 "improved_video_url": video_url,
                 "code_url": code_url,
-                "script_url": script_url,
+                "visuals_url": visuals_url,
                 "status": "review_complete",
                 "review_score": score,
                 "review_text": review_text,

@@ -3,11 +3,9 @@ import random
 import tempfile
 import re
 import subprocess
-from io import BytesIO
-from pathlib import Path
-from modal import Image, App, method, fastapi_endpoint, Mount, Secret
+from modal import Image, App, method, fastapi_endpoint, Secret
 
-# Define the Modal image with Manim dependencies
+# Define the Modal image with local Python modules and Manim dependencies
 manim_image = (
     Image.debian_slim(python_version="3.11")  # Using latest stable Python version
     .apt_install(
