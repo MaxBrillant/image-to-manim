@@ -22,6 +22,29 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
     """
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
+    # Prepare improvements section if improvements are provided
+    improvements_section = f"""IMPROVEMENTS TO CONSIDER FROM REVIEW:
+    {improvements}
+
+    ## FEEDBACK UNDERSTANDING PROCESS
+
+        1. READ THE FEEDBACK CAREFULLY, identifying each specific issue mentioned:
+        - Extract every concrete problem mentioned in the feedback
+        - Note exactly what aspects of the animation were criticized
+        - Pay special attention to mathematical accuracy issues
+        
+        2. For each specific issue identified:
+        - Determine precisely what code changes would fix this issue
+        - Prioritize issues affecting mathematical correctness or rendering
+        
+    ## VERIFICATION
+
+        Before submitting the new code, verify:
+        - Each specific piece of feedback has been directly addressed
+        - The code fully implements the script while fixing all issues
+        - All mathematical concepts are accurately represented
+        - The code strictly follows the MANIM CODE GUIDE REFERENCE""" if improvements else ""
+    
     try:
         response = litellm.completion(
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
@@ -81,27 +104,7 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                 - Ensure smooth flow between scenes
                 - Match storyboard timing specifications exactly
 
-                {"" if not improvements else f"""IMPROVEMENTS TO CONSIDER FROM REVIEW:
-                    {improvements}
-
-                    ## FEEDBACK UNDERSTANDING PROCESS
-
-                        1. READ THE FEEDBACK CAREFULLY, identifying each specific issue mentioned:
-                        - Extract every concrete problem mentioned in the feedback
-                        - Note exactly what aspects of the animation were criticized
-                        - Pay special attention to mathematical accuracy issues
-                        
-                        2. For each specific issue identified:
-                        - Determine precisely what code changes would fix this issue
-                        - Prioritize issues affecting mathematical correctness or rendering
-                        
-                    ## VERIFICATION
-
-                        Before submitting the new code, verify:
-                        - Each specific piece of feedback has been directly addressed
-                        - The code fully implements the script while fixing all issues
-                        - All mathematical concepts are accurately represented
-                        - The code strictly follows the MANIM CODE GUIDE REFERENCE"""}    
+                {improvements_section if improvements else ""}
                 
                 MANIM_CODE_GUIDE:
                 {MANIM_CODE_GUIDE}
