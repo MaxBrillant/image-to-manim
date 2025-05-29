@@ -443,6 +443,7 @@ def improve_video() -> Dict[str, Union[str, int, Dict]]:
         
         video_url = project_data.get('video_url')
         code_url = project_data.get('code_url')
+        visuals_url = project_data.get('visuals_url')
         
         # Review the video
         logger.info(f"Reviewing video quality at URL: {video_url}")
@@ -462,9 +463,7 @@ def improve_video() -> Dict[str, Union[str, int, Dict]]:
         # If the video needs improvement
         if needs_improvement:
             logger.info(f"Video quality score is low ({score}/100). Regenerating based on feedback")
-            
-            # Get the visual elements from the stored URL
-            visuals_url = project_data.get('visuals_url')
+    
             logger.info(f"Retrieving visual elements from URL: {visuals_url}")
             
             try:

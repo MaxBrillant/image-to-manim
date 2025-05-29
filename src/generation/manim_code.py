@@ -23,91 +23,286 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
     os.environ["DEEPINFRA_API_KEY"] = DEEPINFRA_API_KEY
     
     # Prepare improvements section if improvements are provided
-    improvements_section = f"""IMPROVEMENTS TO CONSIDER FROM REVIEW:
+    improvements_section = f"""
+    <context>
+    The following feedback has been provided for improving the animation:
     {improvements}
+    </context>
 
-    ## FEEDBACK UNDERSTANDING PROCESS
+    <success_criteria>
+    1. All feedback points are addressed completely
+    2. Mathematical accuracy is maintained or improved
+    3. Visual clarity is enhanced
+    4. Code quality meets standards
+    5. Animation timing is optimized
+    </success_criteria>
 
-        1. READ THE FEEDBACK CAREFULLY, identifying each specific issue mentioned:
-        - Extract every concrete problem mentioned in the feedback
-        - Note exactly what aspects of the animation were criticized
-        - Pay special attention to mathematical accuracy issues
-        
-        2. For each specific issue identified:
-        - Determine precisely what code changes would fix this issue
-        - Prioritize issues affecting mathematical correctness or rendering
-        
-    ## VERIFICATION
+    <analysis_process>
+    1. Feedback Analysis:
+        - Extract each distinct issue
+        - Categorize by type (mathematical, visual, technical)
+        - Identify dependencies between issues
+        - Prioritize critical problems
 
-        Before submitting the new code, verify:
-        - Each specific piece of feedback has been directly addressed
-        - The code fully implements the script while fixing all issues
-        - All mathematical concepts are accurately represented
-        - The code strictly follows the MANIM CODE GUIDE REFERENCE""" if improvements else ""
+    2. Solution Planning:
+        - Map each issue to specific code sections
+        - Determine required modifications
+        - Plan testing approach
+        - Consider impact on other components
+
+    3. Implementation Strategy:
+        - Address fundamental issues first
+        - Maintain existing functionality
+        - Follow code style guidelines
+        - Document all changes
+    </analysis_process>
+
+    <validation_checklist>
+    [ ] Each feedback point has a corresponding solution
+    [ ] Mathematical representations are accurate
+    [ ] Visual elements follow style guide
+    [ ] Code meets quality standards
+    [ ] Performance impact is acceptable
+    [ ] Changes are properly documented
+    </validation_checklist>
+
+    <verification_steps>
+    1. Code Review:
+        - Compare against original feedback
+        - Verify mathematical accuracy
+        - Check animation timing
+        - Validate style compliance
+
+    2. Quality Assurance:
+        - Test each modified component
+        - Verify scene transitions
+        - Check resource usage
+        - Validate error handling
+
+    3. Final Verification:
+        - Run complete animation
+        - Compare with requirements
+        - Verify documentation
+        - Check for regressions
+    </verification_steps>
+    """ if improvements else ""
     
     try:
         response = litellm.completion(
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""You are an expert Manim developer specializing in educational animations.
-                Generate complete, production-ready Manim code from the provided visual elements specifications.
+                "content": f"""
+                <context>
+                You are an expert Manim developer specializing in educational animations. Your task is to generate complete, production-ready Manim code from visual elements specifications.
+                </context>
 
-                Follow this systematic approach to generate high-quality Manim code:
+                <success_criteria>
+                1. Code compiles and runs without errors
+                2. Animations match visual specifications exactly
+                3. Mathematical concepts are accurately represented
+                4. Timing and synchronization are precise
+                5. Code is well-documented and maintainable
+                </success_criteria>
 
-                1. **IMPLEMENTATION PHASE**
-                - Create clearly named variables that reflect their mathematical meaning
-                - Add comments explaining complex parts of the implementation
-                - Focus on reliability first, visual complexity second
+                <implementation_guide>
+                ## Phase 1: Planning and Setup
+                1. Analyze the visual elements specification
+                2. Break down complex animations into steps
+                3. Plan object lifecycles and transitions
+                4. Identify potential mathematical challenges
 
-                2. **ERROR PREVENTION**
-                - Avoid common Manim errors:
-                    - Never reference objects before they're created
-                    - Ensure all AnimationGroups contain valid mobjects
-                    - Verify all VMobjects have points defined
-                    - Use appropriate coordinate systems
-                    - Ensure latex expressions are properly formatted
+                ## Phase 2: Implementation
+                - Create descriptive variable names reflecting mathematical meaning
+                - Add detailed comments for complex logic
+                - Focus on reliability before visual complexity
+                - Follow test-driven development approach:
+                    1. Start with basic shapes/positions
+                    2. Add animations incrementally
+                    3. Verify each step before proceeding
 
-                3. OUTPUT REQUIREMENTS (VERY IMPORTANT):
-                    1. ONLY and ALWAYS refer to the MANIM_CODE_GUIDE
-                    2. Generate ONLY the complete Python code for the Manim animation. Do NOT include explanations, discussions, or descriptions outside the code
-                    3. Include all necessary imports at the top of the file
-                    4. Add helpful comments explaining complex parts of the implementation
-                    5. Ensure the code is complete, runnable, and error-free
+                ## Phase 3: Error Prevention
+                - Common Manim Errors to Avoid:
+                    * Never reference objects before creation
+                    * Verify AnimationGroup mobject validity
+                    * Ensure VMobjects have defined points
+                    * Use appropriate coordinate systems
+                    * Validate latex expression formatting
 
-                4. STRICT VISUALS ADHERENCE (VERY IMPORTANT):
-                
-                ## Scene Structure Implementation
-                - Create a ManimScene class that calls all the other scenes
-                - Create a separate class for each storyboard scene
-                - Implement exact durations using wait() calls
-                - Match initial state setup precisely
-                - Follow key frame sequence in order
-                
-                ## Grid System Translation
-                - Map 3×3 grid positions to Manim coordinates:
-                    * top-left: (-4, 2, 0)     top-center: (0, 2, 0)     top-right: (4, 2, 0)
-                    * middle-left: (-4, 0, 0)   middle-center: (0, 0, 0)   middle-right: (4, 0, 0)
-                    * bottom-left: (-4, -2, 0)  bottom-center: (0, -2, 0)  bottom-right: (4, -2, 0)
-                - Scale elements according to specified size percentages
-                - Maintain minimum 15% spacing between elements
-                
-                ## Element Lifecycle Management
-                - Create precise entry animations as specified
-                - Implement all transitions between key frames
-                - Execute exit animations exactly as described
-                - Track element states throughout the scene
-                
-                ## Timing and Synchronization
-                - Use AnimationGroups for simultaneous animations
-                - Implement precise wait times between key frames
-                - Ensure smooth flow between scenes
-                - Match storyboard timing specifications exactly
+                ## Phase 4: Quality Control
+                - Self-Validation Steps:
+                    1. Check all mathematical representations
+                    2. Verify timing synchronization
+                    3. Confirm smooth transitions
+                    4. Test edge cases
+                    5. Validate against specifications
+                </implementation_guide>
 
+                <technical_requirements>
+                1. Scene Structure:
+                    - Create ManimScene class as main controller
+                    - Implement separate classes per storyboard scene
+                    - Use precise wait() calls for timing
+                    - Match initial states exactly
+                    - Follow keyframe sequence order
+
+                2. Grid System (3×3):
+                    ```python
+                    # Grid Position Mapping
+                    GRID_POSITIONS = {{
+                        "top_left": (-4, 2, 0),
+                        "top_center": (0, 2, 0),
+                        "top_right": (4, 2, 0),
+                        "middle_left": (-4, 0, 0),
+                        "middle_center": (0, 0, 0),
+                        "middle_right": (4, 0, 0),
+                        "bottom_left": (-4, -2, 0),
+                        "bottom_center": (0, -2, 0),
+                        "bottom_right": (4, -2, 0)
+                    }}
+                    ```
+                    - Scale elements by specified percentages
+                    - Maintain 15% minimum element spacing
+                    - PRIMORDIAL RULE: If a grid position is being used or occupied by an element,
+                    no other element can use that grid position until it is removed
+
+                3. Element Management:
+                    ```python
+                    # Example: Proper element lifecycle
+                    def create_element(self):
+                        element = Square()
+                        self.play(
+                            Create(element),
+                            run_time=1
+                        )
+                        return element
+
+                    def transition_element(self, element, target):
+                        self.play(
+                            Transform(element, target),
+                            run_time=0.5
+                        )
+
+                    def remove_element(self, element):
+                        self.play(
+                            Uncreate(element),
+                            run_time=0.8
+                        )
+                    ```
+
+                4. Animation Synchronization:
+                    ```python
+                    # Example: Synchronized animations
+                    def synchronized_animation(self):
+                        self.play(
+                            AnimationGroup(
+                                Create(obj1),
+                                FadeIn(obj2),
+                                lag_ratio=0.1
+                            )
+                        )
+                    ```
+                </technical_requirements>
+
+                <output_format>
+                1. Code Structure:
+                    ```python
+                    # Required imports
+                    from manim import *
+
+                    GRID_POSITIONS = {{
+                        "top_left": (-4, 2, 0),
+                        "top_center": (0, 2, 0),
+                        "top_right": (4, 2, 0),
+                        "middle_left": (-4, 0, 0),
+                        "middle_center": (0, 0, 0),
+                        "middle_right": (4, 0, 0),
+                        "bottom_left": (-4, -2, 0),
+                        "bottom_center": (0, -2, 0),
+                        "bottom_right": (4, -2, 0)
+                    }}
+
+                    class MainScene(Scene):
+                        def construct(self):
+                            # Initialize shared variables and objects
+                            self.setup_scene()
+                            
+                            # Execute animation sequence
+                            self.play_sequence()
+                        
+                        def setup_scene(self):
+                            pass
+                            
+                        def play_sequence(self):
+                            # Example sequence structure:
+                            # 1. Introduction
+                            self.play_introduction()
+                            
+                            # 2. Main content
+                            self.play_main_content()
+                            
+                            # 3. Conclusion
+                            self.play_conclusion()
+                        
+                        def play_introduction(self):
+                            pass
+                            
+                        def play_main_content(self):
+                            pass
+                            
+                        def play_conclusion(self):
+                            pass
+                    ```
+
+                2. Documentation Requirements:
+                    - File-level docstring explaining purpose and usage
+                    - Class-level docstring describing the overall animation structure
+                    - Method-level docstrings for each animation sequence
+                    - Inline comments explaining complex logic or mathematical concepts
+                    - TODO comments for potential optimizations
+                    
+                3. Scene Organization:
+                    - Single MainScene class controls entire animation flow
+                    - Modular methods for different animation sequences
+                    - Clear separation of setup and animation logic
+                    - Proper timing and transitions between sequences
+                    - Shared state management through class attributes
+                    - If a grid position is being used by an element,
+                    no other element can use that grid position until it is removed
+                </output_format>
+
+                <validation_checklist>
+                - [ ] All imports are present and necessary
+                - [ ] Scene hierarchy matches specification
+                - [ ] Grid positions are accurately mapped
+                - [ ] Animations follow timing requirements
+                - [ ] Mathematical representations are correct
+                - [ ] Element lifecycles are properly managed
+                - [ ] Elements are positioned using the grid positions provided in GRID_POSITIONS
+                - [ ] Code is well-documented
+                - [ ] Error handling is implemented
+                </validation_checklist>
+
+                IMPORTANT:
+                1. ONLY and ALWAYS refer to the MANIM_CODE_GUIDE
+                2. Generate ONLY complete Python code
+                3. No explanations outside the code
+                4. Include all necessary imports
+                5. Add detailed comments
+                6. Ensure code is complete and error-free
+
+                # If improvements are requested, follow this process:
                 {improvements_section if improvements else ""}
-                
-                MANIM_CODE_GUIDE:
+
+                # Reference guide for all implementations:                
+                <manim_code_guide>
+                <description>
+                Standard reference for Manim code implementation, covering all aspects from basic structure to advanced techniques.
+                </description>
+                <content>
                 {MANIM_CODE_GUIDE}
+                </content>
+                </manim_code_guide>
                 """
             },
             {
@@ -118,8 +313,11 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
             max_tokens=8192,
         )
         
-        # Extract the content from the response
+        
         manim_code = response.choices[0].message.content
+        # Extract content after </think>
+        if "</think>" in manim_code:
+            manim_code = response.choices[0].message.content.split("</think>")[1].strip()
         
         # Extract code if it's wrapped in markdown code blocks
         if "```python" in manim_code and "```" in manim_code:

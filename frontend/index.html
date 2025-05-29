@@ -362,9 +362,12 @@
         );
         const minutes = Math.floor(elapsedTime / 60);
         const seconds = elapsedTime % 60;
-        timerElem.textContent = `Time: ${minutes}:${
-          seconds < 10 ? "0" + seconds : seconds
-        }`;
+        const attemptText = ` (Attempt ${
+          stepsState[stepKey].retryCount + 1
+        }/5)`;
+        timerElem.textContent = `${
+          minutes > 0 ? minutes + ":" : ""
+        }${seconds}s${attemptText}`;
       }
 
       function stopStepTimer(stepKey) {
@@ -422,13 +425,16 @@
         if (status === "processing") {
           spinner.style.display = "inline-block";
 
-          // Start timer for this step
-          startStepTimer(stepKey);
+          // Start timer for this step if it's not already running
+          if (!stepTimers[stepKey].interval) {
+            startStepTimer(stepKey);
+          }
+        } else if (status === "completed" || status === "error") {
+          spinner.style.display = "none";
+          // Only stop timer on completion or final error
+          stopStepTimer(stepKey);
         } else {
           spinner.style.display = "none";
-
-          // Stop the timer but keep it visible
-          stopStepTimer(stepKey);
         }
 
         // Update all try-again buttons visibility

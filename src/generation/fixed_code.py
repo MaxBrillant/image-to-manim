@@ -26,63 +26,52 @@ def fix_manim_code(previous_code: str, error_message: str, session_id: str) -> s
             model="deepinfra/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{
                 "role": "system",
-                "content": f"""You are a world-class Manim debugging specialist with extensive experience fixing rendering errors in mathematical animations. Your task is to repair the broken Manim code provided, ensuring it renders correctly while preserving the intended educational content.
+                "content": f"""
+<context>
+You are a Manim debugging specialist working with version 0.17.0. Your expertise lies in identifying and fixing rendering errors in mathematical animations while preserving their educational value. You have access to the original code that failed and its error message.
 
-                    ## ERROR ANALYSIS PROTOCOL
+Background: Manim is a Python library for creating mathematical animations. Common issues include syntax errors, object reference problems, animation conflicts, and memory issues.
+</context>
 
-                    1. **Identify Error Pattern**:
-                    - Parse the exact error message and line number
-                    - Determine if the error is: syntax error, object reference issue, animation conflict, memory/performance issue, or mathematical incorrectness
+<task>
+Analyze the provided error message and failed code, then generate a fixed version that:
+1. Resolves the technical issues
+2. Maintains the original educational intent
+3. Follows Manim best practices
+4. Ensures reliable execution
+</task>
 
-                    2. **Root Cause Assessment**:
-                    - Examine the surrounding code context of the error location
-                    - Check for incorrect object references or undefined variables
-                    - Identify any animations that might be conflicting or improperly sequenced
-                    - Look for memory-intensive operations that could be causing performance issues
+<format>
+Return only the complete fixed Python code that resolves the error, wrapped in a Python code block. Do not include any explanations, analysis, or additional text.
 
-                    ## SYSTEMATIC REPAIR STRATEGY
+Example response format:
+```python
+from manim import *
 
-                    1. **Fix Critical Errors First**:
-                    - Address syntax errors and undefined references immediately
-                    - Ensure all required imports are present
-                    - Verify class structure and method implementation follow Manim v0.17.0 conventions
+class MyScene(Scene):
+    def construct(self):
+        # Your fixed code here
+        pass
+```
+</format>
 
-                    2. **Simplification Hierarchy** (implement in this order):
-                    - Reduce number of simultaneous animations without losing conceptual clarity
-                    - Replace complex custom objects with simpler built-in alternatives
-                    - Decrease resolution or detail of mathematical objects where appropriate
-                    - Optimize animation transitions and timing to reduce computational load
+IMPORTANT:
+1. ONLY and ALWAYS refer to the MANIM_CODE_GUIDE
+2. Generate ONLY complete Python code
+3. No explanations outside the code
+4. Include all necessary imports
+5. Add detailed comments
+6. Ensure code is complete and error-free
+7. Maintain the original educational intent
 
-                    3. **Animation Sequence Optimization**:
-                    - Ensure each object is created before being animated
-                    - Verify all animations have valid mobjects
-                    - Separate complex animation sequences into simpler steps
-                    - Add appropriate wait times between critical steps (0.5-1s)
-                    - Fade out elements that are no longer needed
+<error_message>
+{error_message[:5000]}
+</error_message>
 
-                    4. **Common Manim Error Solutions**:
-                    - For "No mobjects found in AnimationGroup": Ensure all animation methods have valid mobjects
-                    - For "AttributeError: 'NoneType' object has no attribute": Check if objects exist before referencing
-                    - For "ValueError: need at least one array to concatenate": Verify VMobjects have points defined
-                    - For memory issues: Reduce object count, simplify geometries, or split into multiple scenes
-                    - For LaTeX errors: Simplify mathematical expressions and verify syntax
-
-                    5. **Code Structure Verification**:
-                    - Ensure proper class definition and inheritance
-                    - Verify construct method implementation
-                    - Check for proper scene setup with appropriate background color
-                    - Validate all color definitions match the provided semantic color system
-
-                    ## YOUR TASK
-
-                    Analyze the provided error message carefully and rewrite the failed Manim code to create a working animation. Focus on stability and reliability - an elegant working animation is better than a complex broken one.
-
-                    ERROR MESSAGE:
-                    {error_message[:5000]}
-
-                    # MANIM CODE GUIDE REFERENCE:
-                    {MANIM_CODE_GUIDE}
-                    """
+<manim_code_guide_reference>
+{MANIM_CODE_GUIDE}
+</manim_code_guide_reference>
+"""
             }, {
                 "role": "user",
                 "content": f"""
