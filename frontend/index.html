@@ -250,7 +250,8 @@
         display: flex;
         justify-content: flex-end;
       }
-      .try-again-button {
+      .try-again-button,
+      .cancel-button {
         border: none;
         border-radius: 0.25rem;
         padding: 0.5rem 1rem;
@@ -258,7 +259,8 @@
         font-size: 0.9rem;
         display: none;
       }
-      .try-again-button:hover {
+      .try-again-button:hover,
+      .cancel-button:hover {
         background-color: transparent;
       }
       .video-container {
@@ -293,9 +295,10 @@
     </style>
     <script>
       let currentSessionId = null;
-      let apiUrl = "https://image-to-manim.onrender.com"; // Replace with your API URL
+      let currentController = null;
+      // let apiUrl = "https://image-to-manim.onrender.com"; // Replace with your API URL
       // For local development, uncomment this line:
-      // let apiUrl = "http://localhost:5000";
+      let apiUrl = "http://localhost:5000";
 
       // Track the state of each step
       const stepsState = {
@@ -362,12 +365,9 @@
         );
         const minutes = Math.floor(elapsedTime / 60);
         const seconds = elapsedTime % 60;
-        const attemptText = ` (Attempt ${
-          stepsState[stepKey].retryCount + 1
-        }/5)`;
-        timerElem.textContent = `${
-          minutes > 0 ? minutes + ":" : ""
-        }${seconds}s${attemptText}`;
+        timerElem.textContent = `${minutes > 0 ? minutes + "m " : ""}${
+          seconds < 10 ? "0" + seconds : seconds
+        }s`;
       }
 
       function stopStepTimer(stepKey) {
@@ -405,11 +405,30 @@
         });
       }
 
+      // Function to handle request cancellation
+      async function handleCancel(stepKey) {
+        if (currentController) {
+          currentController.abort();
+          currentController = null;
+
+          // Update step status to error and show cancelled message
+          updateStepStatus(`step-${stepKey}`, "error", "CANCELLED");
+          setStepContent(`step-${stepKey}`, "Request cancelled", "text");
+        }
+      }
+
       function updateStepStatus(stepId, status, message = null) {
         const step = document.getElementById(stepId);
         const statusElem = step.querySelector(".step-status");
         const spinner = step.querySelector(".step-spinner");
         const stepKey = stepId.replace("step-", "");
+
+        // Update cancel button visibility
+        const cancelBtn = step.querySelector(".cancel-button");
+        if (cancelBtn) {
+          cancelBtn.style.display =
+            status === "processing" ? "inline-block" : "none";
+        }
 
         // Update CSS classes based on status
         step.className = `step ${status}`;
@@ -571,6 +590,10 @@
         updateStepStatus("step-generateVisuals", "processing", "PROCESSING");
 
         try {
+          // Create new AbortController for this request
+          currentController = new AbortController();
+          const signal = currentController.signal;
+
           const response = await fetch(`${apiUrl}/generate-visuals`, {
             method: "POST",
             headers: {
@@ -579,6 +602,7 @@
             body: JSON.stringify({
               session_id: currentSessionId,
             }),
+            signal: signal,
           });
 
           if (!response.ok) {
@@ -600,6 +624,11 @@
             );
           }
         } catch (error) {
+          // Don't retry if the request was cancelled
+          if (error.name === "AbortError") {
+            return;
+          }
+
           if (stepsState.generateVisuals.retryCount < retryConfig.maxRetries) {
             // Increment retry count
             stepsState.generateVisuals.retryCount++;
@@ -682,9 +711,14 @@
         updateStepStatus("step-processImage", "processing", "PROCESSING");
 
         try {
+          // Create new AbortController for this request
+          currentController = new AbortController();
+          const signal = currentController.signal;
+
           const response = await fetch(`${apiUrl}/process-image`, {
             method: "POST",
             body: formData,
+            signal: signal,
           });
 
           if (!response.ok) {
@@ -712,6 +746,11 @@
             throw new Error(result.error || "Unknown error occurred");
           }
         } catch (error) {
+          // Don't retry if the request was cancelled
+          if (error.name === "AbortError") {
+            return;
+          }
+
           if (stepsState.processImage.retryCount < retryConfig.maxRetries) {
             // Increment retry count
             stepsState.processImage.retryCount++;
@@ -762,6 +801,10 @@
         updateStepStatus("step-generateScript", "processing", "PROCESSING");
 
         try {
+          // Create new AbortController for this request
+          currentController = new AbortController();
+          const signal = currentController.signal;
+
           const response = await fetch(`${apiUrl}/generate-script`, {
             method: "POST",
             headers: {
@@ -770,6 +813,7 @@
             body: JSON.stringify({
               session_id: currentSessionId,
             }),
+            signal: signal,
           });
 
           if (!response.ok) {
@@ -789,6 +833,11 @@
             throw new Error(result.error || "Failed to generate script");
           }
         } catch (error) {
+          // Don't retry if the request was cancelled
+          if (error.name === "AbortError") {
+            return;
+          }
+
           if (stepsState.generateScript.retryCount < retryConfig.maxRetries) {
             // Increment retry count
             stepsState.generateScript.retryCount++;
@@ -836,6 +885,10 @@
         updateStepStatus("step-generateVideo", "processing", "PROCESSING");
 
         try {
+          // Create new AbortController for this request
+          currentController = new AbortController();
+          const signal = currentController.signal;
+
           const response = await fetch(`${apiUrl}/generate-video`, {
             method: "POST",
             headers: {
@@ -845,6 +898,7 @@
               session_id: currentSessionId,
               video_quality: "low",
             }),
+            signal: signal,
           });
 
           if (!response.ok) {
@@ -864,6 +918,11 @@
             throw new Error(result.error || "Failed to generate video");
           }
         } catch (error) {
+          // Don't retry if the request was cancelled
+          if (error.name === "AbortError") {
+            return;
+          }
+
           if (stepsState.generateVideo.retryCount < retryConfig.maxRetries) {
             // Increment retry count
             stepsState.generateVideo.retryCount++;
@@ -911,6 +970,10 @@
         updateStepStatus("step-improveVideo", "processing", "PROCESSING");
 
         try {
+          // Create new AbortController for this request
+          currentController = new AbortController();
+          const signal = currentController.signal;
+
           const response = await fetch(`${apiUrl}/improve-video`, {
             method: "POST",
             headers: {
@@ -920,6 +983,7 @@
               session_id: currentSessionId,
               video_quality: "medium", // Default to medium quality
             }),
+            signal: signal,
           });
 
           if (!response.ok) {
@@ -954,6 +1018,11 @@
             throw new Error(result.error || "Failed to improve video");
           }
         } catch (error) {
+          // Don't retry if the request was cancelled
+          if (error.name === "AbortError") {
+            return;
+          }
+
           if (stepsState.improveVideo.retryCount < retryConfig.maxRetries) {
             // Increment retry count
             stepsState.improveVideo.retryCount++;
@@ -1095,6 +1164,13 @@
           <div id="step-processImage-content" class="step-content"></div>
           <div class="step-buttons">
             <button
+              onclick="handleCancel('processImage')"
+              class="cancel-button"
+              style="display: none"
+            >
+              Cancel
+            </button>
+            <button
               onclick="tryAgainFromStep('processImage')"
               class="try-again-button"
               style="display: none"
@@ -1114,6 +1190,13 @@
           <div id="step-generateScript-timer" class="step-timer"></div>
           <div id="step-generateScript-content" class="step-content"></div>
           <div class="step-buttons">
+            <button
+              onclick="handleCancel('generateScript')"
+              class="cancel-button"
+              style="display: none"
+            >
+              Cancel
+            </button>
             <button
               onclick="tryAgainFromStep('generateScript')"
               class="try-again-button"
@@ -1135,6 +1218,13 @@
           <div id="step-generateVisuals-content" class="step-content"></div>
           <div class="step-buttons">
             <button
+              onclick="handleCancel('generateVisuals')"
+              class="cancel-button"
+              style="display: none"
+            >
+              Cancel
+            </button>
+            <button
               onclick="tryAgainFromStep('generateVisuals')"
               class="try-again-button"
               style="display: none"
@@ -1155,6 +1245,13 @@
           <div id="step-generateVideo-content" class="step-content"></div>
           <div class="step-buttons">
             <button
+              onclick="handleCancel('generateVideo')"
+              class="cancel-button"
+              style="display: none"
+            >
+              Cancel
+            </button>
+            <button
               onclick="tryAgainFromStep('generateVideo')"
               class="try-again-button"
               style="display: none"
@@ -1174,6 +1271,13 @@
           <div id="step-improveVideo-timer" class="step-timer"></div>
           <div id="step-improveVideo-content" class="step-content"></div>
           <div class="step-buttons">
+            <button
+              onclick="handleCancel('improveVideo')"
+              class="cancel-button"
+              style="display: none"
+            >
+              Cancel
+            </button>
             <button
               onclick="tryAgainFromStep('improveVideo')"
               class="try-again-button"

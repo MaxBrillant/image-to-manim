@@ -45,24 +45,24 @@ def generate_script(problem_analysis: str) -> str:
 
                 <format>
                 Your script must follow this structure:
-                1. Hook (30-45 seconds)
+                1. Hook (15% of the total animation duration)
                    - Captivating opening that creates curiosity
                    - Clear statement of what viewers will learn
                    - Why this concept matters
 
-                2. Main Content (3-5 minutes)
+                2. Main Content (60% of the total animation duration)
                    - Step-by-step concept development
                    - Visual-first explanations
                    - Strategic use of analogies
                    - Clear mathematical notation descriptions
                    - Anticipation of common misconceptions
 
-                3. Conclusion (30-45 seconds)
+                3. Conclusion (25% of the total animation duration)
                    - Key insights summary
                    - Real-world connections
                    - Next steps for learning
 
-                Total length: 4-6 minutes when narrated at natural pace
+                Total length: 1-3 minutes when narrated at natural pace
                 </format>
 
                 <cognitive_load>
@@ -164,7 +164,7 @@ def generate_script(problem_analysis: str) -> str:
                 - Be technically accurate and mathematically sound
                 - Flow naturally with visual animations
                 - Be engaging and clear to the target audience
-                - Take 4-6 minutes when read at a natural pace
+                - Take 1-3 minutes when read at a natural pace
                 - Include clear markers for visual elements
                 - Build understanding progressively
                 - Effectively manage cognitive load

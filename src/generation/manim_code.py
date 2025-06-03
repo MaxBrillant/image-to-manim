@@ -102,7 +102,9 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                 2. Animations match visual specifications exactly
                 3. Mathematical concepts are accurately represented
                 4. Timing and synchronization are precise
-                5. Code is well-documented and maintainable
+                5. Each element or object appears and disappears at the specified time
+                6. All objects have been successfully cleared from the screen at the appropriate time
+                7. Code is well-documented and maintainable
                 </success_criteria>
 
                 <implementation_guide>
@@ -120,6 +122,8 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                     1. Start with basic shapes/positions
                     2. Add animations incrementally
                     3. Verify each step before proceeding
+                    4. Clear all objects/elements at the provided disappearance time
+                    5. In the end, all objects have to be cleared from the screen
 
                 ## Phase 3: Error Prevention
                 - Common Manim Errors to Avoid:
@@ -136,72 +140,17 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                     3. Confirm smooth transitions
                     4. Test edge cases
                     5. Validate against specifications
+                    4. Clear all objects/elements at the provided disappearance time
+                    5. In the end, all objects have to be cleared from the screen
                 </implementation_guide>
 
                 <technical_requirements>
                 1. Scene Structure:
                     - Create ManimScene class as main controller
                     - Implement separate classes per storyboard scene
-                    - Use precise wait() calls for timing
                     - Match initial states exactly
                     - Follow keyframe sequence order
-
-                2. Grid System (3×3):
-                    ```python
-                    # Grid Position Mapping
-                    GRID_POSITIONS = {{
-                        "top_left": (-4, 2, 0),
-                        "top_center": (0, 2, 0),
-                        "top_right": (4, 2, 0),
-                        "middle_left": (-4, 0, 0),
-                        "middle_center": (0, 0, 0),
-                        "middle_right": (4, 0, 0),
-                        "bottom_left": (-4, -2, 0),
-                        "bottom_center": (0, -2, 0),
-                        "bottom_right": (4, -2, 0)
-                    }}
-                    ```
-                    - Scale elements by specified percentages
-                    - Maintain 15% minimum element spacing
-                    - PRIMORDIAL RULE: If a grid position is being used or occupied by an element,
-                    no other element can use that grid position until it is removed
-
-                3. Element Management:
-                    ```python
-                    # Example: Proper element lifecycle
-                    def create_element(self):
-                        element = Square()
-                        self.play(
-                            Create(element),
-                            run_time=1
-                        )
-                        return element
-
-                    def transition_element(self, element, target):
-                        self.play(
-                            Transform(element, target),
-                            run_time=0.5
-                        )
-
-                    def remove_element(self, element):
-                        self.play(
-                            Uncreate(element),
-                            run_time=0.8
-                        )
-                    ```
-
-                4. Animation Synchronization:
-                    ```python
-                    # Example: Synchronized animations
-                    def synchronized_animation(self):
-                        self.play(
-                            AnimationGroup(
-                                Create(obj1),
-                                FadeIn(obj2),
-                                lag_ratio=0.1
-                            )
-                        )
-                    ```
+                    - Clear all objects/elements at the provided disappearance time
                 </technical_requirements>
 
                 <output_format>
@@ -219,7 +168,9 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                         "middle_right": (4, 0, 0),
                         "bottom_left": (-4, -2, 0),
                         "bottom_center": (0, -2, 0),
-                        "bottom_right": (4, -2, 0)
+                        "bottom_right": (4, -2, 0),
+                        "custom_position_1": ...,
+                        "custom_position_2": ...
                     }}
 
                     class MainScene(Scene):
@@ -267,8 +218,8 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                     - Clear separation of setup and animation logic
                     - Proper timing and transitions between sequences
                     - Shared state management through class attributes
-                    - If a grid position is being used by an element,
-                    no other element can use that grid position until it is removed
+                    - VERY IMPORTANT: If a grid position is being used by another element,
+                    remove or clear the old object/element before positioning the new object/element
                 </output_format>
 
                 <validation_checklist>
@@ -277,6 +228,8 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                 - [ ] Grid positions are accurately mapped
                 - [ ] Animations follow timing requirements
                 - [ ] Mathematical representations are correct
+                - [ ] Clear all objects/elements at the provided disappearance time
+                - [ ] In the end, all objects have to be cleared from the screen
                 - [ ] Element lifecycles are properly managed
                 - [ ] Elements are positioned using the grid positions provided in GRID_POSITIONS
                 - [ ] Code is well-documented

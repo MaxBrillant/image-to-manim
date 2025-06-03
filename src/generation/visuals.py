@@ -62,21 +62,21 @@ Success criteria:
 - Optimal use of screen space
 Required elements:
 - Use 3×3 grid system for precise positioning
-  1. top_left
-  2. top_center
-  3. top_right
-  4. middle_left
-  5. middle_center
-  6. middle_right
-  7. bottom_left
-  8. bottom_center
-  9. bottom_right
+  - top_left
+  - top_center
+  - top_right
+  - middle_left
+  - middle_center
+  - middle_right
+  - bottom_left
+  - bottom_center
+  - bottom_right
+  - custom (provide its positioning, relative to the screen or to other elements)
 
 - Maximum 3 elements on screen at once
 - Each element must have:
   * Clear entry point and animation
   * Defined position (which grid section)
-  * Size specification (% of screen)
   * Exit strategy (when and how it leaves)
 - Maintain clear spacing (minimum 15% screen width/height)
 Error cases to avoid:
@@ -169,8 +169,7 @@ Key Frames:
 
 Elements:
 1. [element name]
-   - Position: [grid location, e.g., "top-left (1,1)"]
-   - Size: [% of screen, 20-40% recommended]
+   - Position: [grid location, e.g., "top-left"]
    - Appear on screen(entry) at: [timestamp MM:SS]
    - Disappear from screen(exit) at: [timestamp MM:SS]
 2. [next element]
