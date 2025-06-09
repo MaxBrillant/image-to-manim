@@ -71,6 +71,7 @@ Required elements:
   - bottom_left
   - bottom_center
   - bottom_right
+  - subtitle_area
   - custom (provide its positioning, relative to the screen or to other elements)
 
 - Maximum 3 elements on screen at once
@@ -87,7 +88,32 @@ Error cases to avoid:
 - If a grid position is being used by an element,
 no other element can use that grid position until it is removed
 
-3. MATHEMATICAL ELEMENTS
+3. ACCESSIBILITY AND SUBTITLES
+Success criteria:
+- Clear and concise text descriptions
+- Synchronized with visual elements
+- Supports understanding for all users
+Required elements:
+- Subtitles must:
+  * Describe what's happening on screen
+  * Explain mathematical concepts clearly
+  * Be timed precisely with visual changes
+  * Use clear, accessible language, avoiding jargon and complex terms
+  * Avoid including mathematical symbols or equations in subtitles at all costs
+  * Use simple language to explain concepts
+  * Be concise (maximum 2 lines, 40 characters per line)
+  * Support multiple learning styles
+- Caption positioning:
+  * Bottom of screen
+  * Maximum 2 lines of text
+  * Readable font size (minimum 24pt)
+- Timing requirements:
+  * Display duration matches concept complexity
+  * Minimum 3 seconds per subtitle
+  * Smooth transitions between captions
+  * Synchronized with visual element changes
+
+4. MATHEMATICAL ELEMENTS
 Success criteria:
 - Clear build-up of concepts
 - Logical transformation sequences
@@ -105,7 +131,7 @@ Color psychology (based on learning psychology):
   * Red: Key distinctions/warnings (demands attention)
   * Black: Background color (for better contrast and readability)
 
-4. TRANSITIONS & ANIMATIONS
+5. TRANSITIONS & ANIMATIONS
 Success criteria:
 - Smooth visual flow
 - Clear connection between concepts
@@ -121,7 +147,7 @@ Error cases to avoid:
 - Too rapid changes
 - Unclear transformations
 
-5. EDUCATIONAL CLARITY
+6. EDUCATIONAL CLARITY
 Success criteria:
 - Clear concept progression
 - Effective information hierarchy
@@ -177,6 +203,14 @@ Elements:
 2. [next element]
    ...
 
+Subtitles:
+1. [MM:SS - MM:SS]
+   - Text: "[Clear description of what's happening]"
+   - Font size: [pt]
+   - Position: [subtitle_area]
+2. [next subtitle]
+   ...
+
 Transitions:
 - [Describe how elements move/change]
 
@@ -184,6 +218,7 @@ Educational Focus:
 - [What concept is being conveyed]
 - [How visual elements support learning]
 - [How timing and positioning enhance understanding]
+- [How subtitles enhance accessibility]
 ```
 </output_format>
 

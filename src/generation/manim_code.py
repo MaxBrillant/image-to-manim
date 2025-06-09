@@ -169,6 +169,7 @@ def generate_manim_code(visual_elements: str, improvements: Optional[str] = None
                         "bottom_left": (-4, -2, 0),
                         "bottom_center": (0, -2, 0),
                         "bottom_right": (4, -2, 0),
+                        "subtitle_area": (0, -3, 0),
                         "custom_position_1": ...,
                         "custom_position_2": ...
                     }}
