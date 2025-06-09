@@ -75,7 +75,8 @@ Required elements:
 
 - Maximum 3 elements on screen at once
 - Each element must have:
-  * Clear entry point and animation
+  * Detailed description of the element and its appearance
+  * Precise entry and exit points with exact timestamp (MM:SS format)
   * Defined position (which grid section)
   * Exit strategy (when and how it leaves)
 - Maintain clear spacing (minimum 15% screen width/height)
@@ -158,17 +159,18 @@ Initial State:
 For each scene, provide:
 ```
 SCENE [number]: [brief description]
-Duration: [approximate seconds, 15-60 recommended]
+Duration: [approximate seconds]
 Initial State:
-- [List any elements present at start]
+- [Detailed list of elements present at start, including exact positions and appearance]
 
 Key Frames:
-1. [entry and exit timestamps in MM:SS - MM:SS format] - [what happens]
+1. [entry and exit timestamps in MM:SS - MM:SS format] - [detailed description of what happens]
 2. [next key frame]
 ...
 
 Elements:
 1. [element name]
+   - Description: [detailed description of the element and its appearance, behavior and purpose]
    - Position: [grid location, e.g., "top-left"]
    - Appear on screen(entry) at: [timestamp MM:SS]
    - Disappear from screen(exit) at: [timestamp MM:SS]
@@ -181,6 +183,7 @@ Transitions:
 Educational Focus:
 - [What concept is being conveyed]
 - [How visual elements support learning]
+- [How timing and positioning enhance understanding]
 ```
 </output_format>
 

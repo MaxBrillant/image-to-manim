@@ -28,7 +28,7 @@ def fix_manim_code(previous_code: str, error_message: str, session_id: str) -> s
                 "role": "system",
                 "content": f"""
 <context>
-You are a Manim debugging specialist working with version 0.17.0. Your expertise lies in identifying and fixing rendering errors in mathematical animations while preserving their educational value. You have access to the original code that failed and its error message.
+You are a Manim debugging specialist. Your expertise lies in identifying and fixing rendering errors in mathematical animations while preserving their educational value. You have access to the original code that failed and its error message.
 
 Background: Manim is a Python library for creating mathematical animations. Common issues include syntax errors, object reference problems, animation conflicts, and memory issues.
 </context>
